@@ -1,0 +1,620 @@
+"use client"
+
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { 
+  UserPlus, 
+  Users, 
+  User,
+  Plus,
+  ArrowLeft, 
+  CheckCircle, 
+  AlertCircle,
+  Phone,
+  Mail,
+  MapPin,
+  Calendar,
+  Heart
+} from "lucide-react"
+import { UserRole } from "@prisma/client"
+
+interface FamilyMember {
+  name: string
+  relationship: string
+  dateOfBirth: string
+  gender: string
+}
+
+export default function RegisterPatient() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    // Personal Information
+    name: "",
+    email: "",
+    phone: "",
+    dateOfBirth: "",
+    gender: "",
+    bloodGroup: "",
+    emergencyContact: "",
+    
+    // Address
+    address: "",
+    city: "",
+    state: "",
+    country: "",
+    postalCode: "",
+    
+    // Medical Information
+    chiefComplaint: "",
+    medicalHistory: "",
+    allergies: "",
+    currentMedications: "",
+    
+    // Family Members
+    familyMembers: [] as FamilyMember[]
+  })
+
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [success, setSuccess] = useState(false)
+
+  useEffect(() => {
+    if (status === "loading") return
+
+    if (!session) {
+      router.push("/auth/signin")
+      return
+    }
+
+    if (session.user?.role !== "ATTENDANT") {
+      router.push("/dashboard")
+      return
+    }
+
+    setIsLoading(false)
+  }, [session, status, router])
+
+  if (status === "loading" || isLoading) {
+    return (
+      <DashboardLayout userRole={UserRole.ATTENDANT}>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  if (!session) {
+    return null
+  }
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.name.trim()) newErrors.name = "Name is required"
+    if (!formData.email.trim()) newErrors.email = "Email is required"
+    if (!formData.phone.trim()) newErrors.phone = "Phone is required"
+    if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required"
+    if (!formData.gender) newErrors.gender = "Gender is required"
+    if (!formData.address.trim()) newErrors.address = "Address is required"
+    if (!formData.city.trim()) newErrors.city = "City is required"
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!validateForm()) return
+
+    setIsSubmitting(true)
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      setSuccess(true)
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        dateOfBirth: "",
+        gender: "",
+        bloodGroup: "",
+        emergencyContact: "",
+        address: "",
+        city: "",
+        state: "",
+        country: "",
+        postalCode: "",
+        chiefComplaint: "",
+        medicalHistory: "",
+        allergies: "",
+        currentMedications: "",
+        familyMembers: []
+      })
+    } catch (error) {
+      setErrors({ submit: "Failed to register patient. Please try again." })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const addFamilyMember = () => {
+    setFormData({
+      ...formData,
+      familyMembers: [
+        ...formData.familyMembers,
+        { name: "", relationship: "", dateOfBirth: "", gender: "" }
+      ]
+    })
+  }
+
+  const removeFamilyMember = (index: number) => {
+    const newFamilyMembers = formData.familyMembers.filter((_, i) => i !== index)
+    setFormData({ ...formData, familyMembers: newFamilyMembers })
+  }
+
+  const updateFamilyMember = (index: number, field: keyof FamilyMember, value: string) => {
+    const newFamilyMembers = [...formData.familyMembers]
+    newFamilyMembers[index] = { ...newFamilyMembers[index], [field]: value }
+    setFormData({ ...formData, familyMembers: newFamilyMembers })
+  }
+
+  if (success) {
+    return (
+      <DashboardLayout userRole={UserRole.ATTENDANT}>
+        <div className="space-y-6">
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+              onClick={() => {
+                setSuccess(false)
+                router.push("/dashboard/attendant/patients")
+              }}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Patients
+            </Button>
+          </div>
+          
+          <Card className="border-emerald-200">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <CheckCircle className="h-16 w-16 text-emerald-600 mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Patient Registered Successfully!
+              </h2>
+              <p className="text-gray-600 text-center mb-6">
+                The patient has been successfully registered in the system.
+              </p>
+              <div className="flex space-x-4">
+                <Button 
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                  onClick={() => {
+                    setSuccess(false)
+                  }}
+                >
+                  Register Another Patient
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                  onClick={() => router.push("/dashboard/attendant/patients")}
+                >
+                  View All Patients
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  return (
+    <DashboardLayout userRole={UserRole.ATTENDANT}>
+      <div className="space-y-6">
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+            onClick={() => router.push("/dashboard/attendant/patients")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Patients
+          </Button>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          <UserPlus className="h-8 w-8 text-emerald-600" />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Register New Patient</h1>
+            <p className="text-gray-600 mt-2">
+              Fill in the patient's information to create a new account
+            </p>
+          </div>
+        </div>
+
+        {errors.submit && (
+          <Card className="border-red-200">
+            <CardContent className="flex items-center space-x-2 p-4">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              <p className="text-red-600">{errors.submit}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Personal Information */}
+          <Card className="border-emerald-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <User className="h-5 w-5" />
+                <span>Personal Information</span>
+              </CardTitle>
+              <CardDescription>
+                Basic information about the patient
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className={errors.name ? "border-red-500" : "border-emerald-200"}
+                  />
+                  {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className={errors.email ? "border-red-500" : "border-emerald-200"}
+                  />
+                  {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className={errors.phone ? "border-red-500" : "border-emerald-200"}
+                  />
+                  {errors.phone && <p className="text-sm text-red-600">{errors.phone}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="emergencyContact">Emergency Contact</Label>
+                  <Input
+                    id="emergencyContact"
+                    value={formData.emergencyContact}
+                    onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
+                    className="border-emerald-200"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                    className={errors.dateOfBirth ? "border-red-500" : "border-emerald-200"}
+                  />
+                  {errors.dateOfBirth && <p className="text-sm text-red-600">{errors.dateOfBirth}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Gender *</Label>
+                  <Select 
+                    value={formData.gender} 
+                    onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                  >
+                    <SelectTrigger className={errors.gender ? "border-red-500" : "border-emerald-200"}>
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MALE">Male</SelectItem>
+                      <SelectItem value="FEMALE">Female</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
+                      <SelectItem value="PREFER_NOT_TO_SAY">Prefer not to say</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.gender && <p className="text-sm text-red-600">{errors.gender}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bloodGroup">Blood Group</Label>
+                  <Select 
+                    value={formData.bloodGroup} 
+                    onValueChange={(value) => setFormData({ ...formData, bloodGroup: value })}
+                  >
+                    <SelectTrigger className="border-emerald-200">
+                      <SelectValue placeholder="Select blood group" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A+">A+</SelectItem>
+                      <SelectItem value="A-">A-</SelectItem>
+                      <SelectItem value="B+">B+</SelectItem>
+                      <SelectItem value="B-">B-</SelectItem>
+                      <SelectItem value="AB+">AB+</SelectItem>
+                      <SelectItem value="AB-">AB-</SelectItem>
+                      <SelectItem value="O+">O+</SelectItem>
+                      <SelectItem value="O-">O-</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Address Information */}
+          <Card className="border-emerald-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <MapPin className="h-5 w-5" />
+                <span>Address Information</span>
+              </CardTitle>
+              <CardDescription>
+                Patient's residential address
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="address">Street Address *</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className={errors.address ? "border-red-500" : "border-emerald-200"}
+                />
+                {errors.address && <p className="text-sm text-red-600">{errors.address}</p>}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City *</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    className={errors.city ? "border-red-500" : "border-emerald-200"}
+                  />
+                  {errors.city && <p className="text-sm text-red-600">{errors.city}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state">State/Province</Label>
+                  <Input
+                    id="state"
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    className="border-emerald-200"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country</Label>
+                  <Input
+                    id="country"
+                    value={formData.country}
+                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                    className="border-emerald-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">Postal Code</Label>
+                  <Input
+                    id="postalCode"
+                    value={formData.postalCode}
+                    onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                    className="border-emerald-200"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Medical Information */}
+          <Card className="border-emerald-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <Heart className="h-5 w-5" />
+                <span>Medical Information</span>
+              </CardTitle>
+              <CardDescription>
+                Patient's medical history and current health status
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="chiefComplaint">Chief Complaint (if registering for appointment)</Label>
+                <Textarea
+                  id="chiefComplaint"
+                  value={formData.chiefComplaint}
+                  onChange={(e) => setFormData({ ...formData, chiefComplaint: e.target.value })}
+                  className="border-emerald-200"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="medicalHistory">Medical History</Label>
+                <Textarea
+                  id="medicalHistory"
+                  value={formData.medicalHistory}
+                  onChange={(e) => setFormData({ ...formData, medicalHistory: e.target.value })}
+                  className="border-emerald-200"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="allergies">Allergies</Label>
+                  <Textarea
+                    id="allergies"
+                    value={formData.allergies}
+                    onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
+                    className="border-emerald-200"
+                    rows={2}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currentMedications">Current Medications</Label>
+                  <Textarea
+                    id="currentMedications"
+                    value={formData.currentMedications}
+                    onChange={(e) => setFormData({ ...formData, currentMedications: e.target.value })}
+                    className="border-emerald-200"
+                    rows={2}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Family Members */}
+          <Card className="border-emerald-200">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                    <Users className="h-5 w-5" />
+                    <span>Family Members</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Add family members under this patient's account (optional)
+                  </CardDescription>
+                </div>
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                  onClick={addFamilyMember}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Family Member
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {formData.familyMembers.map((member, index) => (
+                <div key={index} className="border border-emerald-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-medium text-gray-900">Family Member {index + 1}</h4>
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      size="sm"
+                      className="border-red-600 text-red-600 hover:bg-red-50"
+                      onClick={() => removeFamilyMember(index)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Name</Label>
+                      <Input
+                        value={member.name}
+                        onChange={(e) => updateFamilyMember(index, 'name', e.target.value)}
+                        className="border-emerald-200"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Relationship</Label>
+                      <Select 
+                        value={member.relationship} 
+                        onValueChange={(value) => updateFamilyMember(index, 'relationship', value)}
+                      >
+                        <SelectTrigger className="border-emerald-200">
+                          <SelectValue placeholder="Select relationship" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="SPOUSE">Spouse</SelectItem>
+                          <SelectItem value="CHILD">Child</SelectItem>
+                          <SelectItem value="PARENT">Parent</SelectItem>
+                          <SelectItem value="SIBLING">Sibling</SelectItem>
+                          <SelectItem value="OTHER">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Date of Birth</Label>
+                      <Input
+                        type="date"
+                        value={member.dateOfBirth}
+                        onChange={(e) => updateFamilyMember(index, 'dateOfBirth', e.target.value)}
+                        className="border-emerald-200"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Gender</Label>
+                      <Select 
+                        value={member.gender} 
+                        onValueChange={(value) => updateFamilyMember(index, 'gender', value)}
+                      >
+                        <SelectTrigger className="border-emerald-200">
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MALE">Male</SelectItem>
+                          <SelectItem value="FEMALE">Female</SelectItem>
+                          <SelectItem value="OTHER">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Submit Button */}
+          <div className="flex justify-end space-x-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+              onClick={() => router.push("/dashboard/attendant/patients")}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Registering..." : "Register Patient"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </DashboardLayout>
+  )
+}

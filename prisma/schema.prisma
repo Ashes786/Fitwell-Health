@@ -1,0 +1,689 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User base model with role-based access
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String?
+  phone       String?
+  avatar      String?
+  role        UserRole
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  patient     Patient?
+  doctor      Doctor?
+  attendant   Attendant?
+  controlRoom ControlRoom?
+  admin       Admin?
+  superAdmin  SuperAdmin?
+  
+  // Chat relations
+  sentMessages   ChatMessage[] @relation("ChatSender")
+  receivedMessages ChatMessage[] @relation("ChatReceiver")
+  
+  // Notification relation
+  notifications Notification[]
+  
+  // Subscription relation
+  userSubscriptions UserSubscription[]
+  
+  // Network relations
+  networkUsers NetworkUser[]
+  
+  @@map("users")
+}
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  ATTENDANT
+  CONTROL_ROOM
+  ADMIN
+  SUPER_ADMIN
+}
+
+// Patient model with family management
+model Patient {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  nhrNumber       String?  @unique // National Health Record number
+  cnicNumber      String?  @unique // Computerized National Identity Card number
+  dateOfBirth     DateTime?
+  gender          Gender?
+  bloodGroup      String?
+  emergencyContact String?
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  postalCode      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User           @relation(fields: [userId], references: [id])
+  familyMembers   FamilyMember[]
+  appointments    Appointment[]
+  healthRecords   HealthRecord[]
+  prescriptions   Prescription[]
+  labTests        LabTest[]
+  vitals          Vital[]
+  healthCard      HealthCard?
+  aiReports       AIHealthReport[]
+  
+  @@map("patients")
+}
+
+// Family members under a patient account
+model FamilyMember {
+  id          String   @id @default(cuid())
+  patientId   String
+  name        String
+  relationship String
+  dateOfBirth DateTime?
+  gender      Gender?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  patient     Patient @relation(fields: [patientId], references: [id])
+  
+  @@map("family_members")
+}
+
+// Doctor model with specializations
+model Doctor {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  licenseNumber   String   @unique
+  cnicNumber      String?  @unique // Computerized National Identity Card number
+  specialization  String
+  experience      Int?     // years
+  rating          Float    @default(0)
+  consultationFee Float
+  isAvailable     Boolean  @default(true)
+  bio             String?
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  postalCode      String?
+  availabilitySchedule String? // JSON string of availability schedule
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User           @relation(fields: [userId], references: [id])
+  appointments    Appointment[]
+  prescriptions   Prescription[]
+  labTests        LabTest[]
+  availability    DoctorAvailability[]
+  
+  @@map("doctors")
+}
+
+// Doctor availability slots
+model DoctorAvailability {
+  id          String   @id @default(cuid())
+  doctorId    String
+  dayOfWeek   Int      // 0-6 (Sunday-Saturday)
+  startTime   String   // HH:MM format
+  endTime     String   // HH:MM format
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  doctor      Doctor @relation(fields: [doctorId], references: [id])
+  
+  @@unique([doctorId, dayOfWeek, startTime])
+  @@map("doctor_availability")
+}
+
+// Attendant model
+model Attendant {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  employeeId  String   @unique
+  department  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User       @relation(fields: [userId], references: [id])
+  appointments Appointment[]
+  
+  @@map("attendants")
+}
+
+// Control Room staff
+model ControlRoom {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  employeeId  String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User @relation(fields: [userId], references: [id])
+  
+  @@map("control_room")
+}
+
+// Appointment model
+model Appointment {
+  id                String            @id @default(cuid())
+  patientId         String
+  doctorId          String?
+  attendantId       String?
+  appointmentNumber String            @unique
+  type              AppointmentType
+  status            AppointmentStatus
+  chiefComplaint    String?
+  notes             String?
+  scheduledAt       DateTime
+  completedAt       DateTime?
+  consultationFee   Float?
+  paymentStatus     PaymentStatus     @default(PENDING)
+  paymentId         String?
+  videoLink         String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  patient           Patient    @relation(fields: [patientId], references: [id])
+  doctor            Doctor?    @relation(fields: [doctorId], references: [id])
+  attendant         Attendant? @relation(fields: [attendantId], references: [id])
+  healthRecords     HealthRecord[]
+  prescriptions     Prescription[]
+  labTests          LabTest[]
+  chatMessages      ChatMessage[]
+  
+  @@map("appointments")
+}
+
+enum AppointmentType {
+  GP_CONSULTATION
+  SPECIALIST_CONSULTATION
+  PHYSICAL_VISIT
+  VIDEO_CONSULTATION
+  PHONE_CONSULTATION
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+// Health Records (EHR)
+model HealthRecord {
+  id            String   @id @default(cuid())
+  patientId     String
+  appointmentId String?
+  type          HealthRecordType
+  title         String
+  description   String?
+  fileUrl       String?  // URL to stored file
+  fileName      String?
+  fileSize      Int?
+  fileType      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient       Patient     @relation(fields: [patientId], references: [id])
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  
+  @@map("health_records")
+}
+
+enum HealthRecordType {
+  CONSULTATION
+  LAB_TEST
+  PRESCRIPTION
+  HOSPITAL_REPORT
+  IMAGING
+  VACCINATION
+  OTHER
+}
+
+// Prescription model
+model Prescription {
+  id            String   @id @default(cuid())
+  patientId     String
+  doctorId      String
+  appointmentId String?
+  medication    String
+  dosage        String
+  frequency     String
+  duration      String
+  instructions  String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient       Patient     @relation(fields: [patientId], references: [id])
+  doctor        Doctor      @relation(fields: [doctorId], references: [id])
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  
+  @@map("prescriptions")
+}
+
+// Lab Test model
+model LabTest {
+  id            String   @id @default(cuid())
+  patientId     String
+  doctorId      String
+  appointmentId String?
+  testName      String
+  description   String?
+  instructions  String?
+  results       String?
+  normalRange   String?
+  isCompleted   Boolean  @default(false)
+  completedAt   DateTime?
+  labPartnerId  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient       Patient     @relation(fields: [patientId], references: [id])
+  doctor        Doctor      @relation(fields: [doctorId], references: [id])
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  labPartner    LabPartner? @relation(fields: [labPartnerId], references: [id])
+  
+  @@map("lab_tests")
+}
+
+// Vitals model
+model Vital {
+  id          String   @id @default(cuid())
+  patientId   String
+  type        VitalType
+  value       Float
+  unit        String
+  notes       String?
+  recordedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  patient     Patient @relation(fields: [patientId], references: [id])
+  
+  @@map("vitals")
+}
+
+enum VitalType {
+  BLOOD_PRESSURE_SYSTOLIC
+  BLOOD_PRESSURE_DIASTOLIC
+  HEART_RATE
+  TEMPERATURE
+  WEIGHT
+  HEIGHT
+  BLOOD_SUGAR
+  OXYGEN_SATURATION
+  RESPIRATORY_RATE
+}
+
+// Health Card model
+model HealthCard {
+  id              String   @id @default(cuid())
+  patientId       String   @unique
+  cardNumber      String   @unique
+  issuedAt        DateTime @default(now())
+  expiresAt       DateTime?
+  discountTier    String   @default("BASIC")
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  patient         Patient            @relation(fields: [patientId], references: [id])
+  discounts       HealthCardDiscount[]
+  
+  @@map("health_cards")
+}
+
+// Health Card Discounts
+model HealthCardDiscount {
+  id          String   @id @default(cuid())
+  healthCardId String
+  partnerType PartnerType
+  partnerId   String
+  discount    Float    // percentage
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  healthCard  HealthCard @relation(fields: [healthCardId], references: [id])
+  labPartner  LabPartner? @relation(fields: [partnerId], references: [id])
+  pharmacyPartner PharmacyPartner? @relation(fields: [partnerId], references: [id])
+  hospitalPartner HospitalPartner? @relation(fields: [partnerId], references: [id])
+  
+  @@map("health_card_discounts")
+}
+
+enum PartnerType {
+  LAB
+  PHARMACY
+  HOSPITAL
+  SPECIALIST
+}
+
+// Lab Partners
+model LabPartner {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  phone       String?
+  email       String?
+  website     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  labTests    LabTest[]
+  discounts   HealthCardDiscount[]
+  networkPartners NetworkPartner[]
+  
+  @@map("lab_partners")
+}
+
+// Pharmacy Partners
+model PharmacyPartner {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  phone       String?
+  email       String?
+  website     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  discounts   HealthCardDiscount[]
+  networkPartners NetworkPartner[]
+  
+  @@map("pharmacy_partners")
+}
+
+// Hospital Partners
+model HospitalPartner {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  phone       String?
+  email       String?
+  website     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  discounts   HealthCardDiscount[]
+  networkPartners NetworkPartner[]
+  
+  @@map("hospital_partners")
+}
+
+// Organizations (for bulk onboarding)
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  type        OrganizationType
+  address     String?
+  phone       String?
+  email       String?
+  website     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("organizations")
+}
+
+enum OrganizationType {
+  COMPANY
+  SCHOOL
+  HOSPITAL
+  GOVERNMENT
+  INSURANCE
+  OTHER
+}
+
+// User Subscriptions
+model UserSubscription {
+  id            String   @id @default(cuid())
+  userId        String
+  subscriptionPlanId String
+  startDate     DateTime
+  endDate       DateTime
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User             @relation(fields: [userId], references: [id])
+  subscriptionPlan SubscriptionPlan @relation(fields: [subscriptionPlanId], references: [id])
+  
+  @@unique([userId, subscriptionPlanId])
+  @@map("user_subscriptions")
+}
+
+// Chat/Messaging system
+model ChatMessage {
+  id            String   @id @default(cuid())
+  appointmentId String?
+  senderId      String
+  receiverId    String
+  message       String
+  isRead        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  sender        User        @relation("ChatSender", fields: [senderId], references: [id])
+  receiver      User        @relation("ChatReceiver", fields: [receiverId], references: [id])
+  
+  @@map("chat_messages")
+}
+
+// Notifications
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User @relation(fields: [userId], references: [id])
+  
+  @@map("notifications")
+}
+
+enum NotificationType {
+  APPOINTMENT_REMINDER
+  APPOINTMENT_CONFIRMED
+  APPOINTMENT_CANCELLED
+  PRESCRIPTION_READY
+  LAB_TEST_READY
+  PAYMENT_RECEIVED
+  SYSTEM_ALERT
+  CHAT_MESSAGE
+}
+
+// AI Health Reports
+model AIHealthReport {
+  id          String   @id @default(cuid())
+  patientId   String
+  reportType  AIReportType
+  title       String
+  content     String   // JSON content
+  generatedAt DateTime @default(now())
+  isLatest    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  patient     Patient @relation(fields: [patientId], references: [id])
+  
+  @@map("ai_health_reports")
+}
+
+enum AIReportType {
+  GENERAL_HEALTH
+  NUTRITION
+  SUPPLEMENTS
+  MEDICATION_REMINDERS
+  HYDRATION_REMINDERS
+  EXERCISE_RECOMMENDATIONS
+}
+
+// Gender enum
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+// Super Admin
+model SuperAdmin {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User @relation(fields: [userId], references: [id])
+  adminAccounts Admin[]
+  systemStatus SystemStatus[]
+  
+  @@map("super_admins")
+}
+
+// Admin user with network management
+model Admin {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  networkName String   // Admin's network name
+  permissions String   // JSON string of permissions
+  isActive    Boolean  @default(true)
+  createdBy   String   // Super Admin ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User           @relation(fields: [userId], references: [id])
+  creator     SuperAdmin     @relation(fields: [createdBy], references: [id])
+  subscriptionPlans SubscriptionPlan[]
+  networkUsers NetworkUser[]
+  networkPartners NetworkPartner[]
+  
+  @@map("admins")
+}
+
+// Subscription Plans created by Super Admins
+model SubscriptionPlan {
+  id          String   @id @default(cuid())
+  adminId     String
+  name        String
+  description String?
+  price       Float
+  duration    Int      // in days
+  durationUnit String   // DAYS, MONTHS, YEARS
+  category    String   // BASIC, PREMIUM, ENTERPRISE, CUSTOM
+  maxConsultations Int? // Maximum number of consultations
+  maxFamilyMembers Int? // Maximum number of family members
+  discountPercentage Float? // Discount percentage
+  features    String? // JSON string of features
+  specializations String? // JSON string of specializations
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  admin       Admin                    @relation(fields: [adminId], references: [id])
+  userSubscriptions UserSubscription[]
+  
+  @@map("subscription_plans")
+}
+
+// Network Users (Patients, Doctors, etc. under an admin's network)
+model NetworkUser {
+  id          String   @id @default(cuid())
+  adminId     String
+  userId      String
+  userType    UserRole
+  joinedAt    DateTime @default(now())
+
+  admin       Admin @relation(fields: [adminId], references: [id])
+  user        User  @relation(fields: [userId], references: [id])
+  
+  @@unique([adminId, userId])
+  @@map("network_users")
+}
+
+// Network Partners (Hospitals, Labs, etc. under an admin's network)
+model NetworkPartner {
+  id          String   @id @default(cuid())
+  adminId     String
+  partnerType PartnerType
+  partnerId   String
+  addedAt     DateTime @default(now())
+
+  admin       Admin           @relation(fields: [adminId], references: [id])
+  labPartner  LabPartner?     @relation(fields: [partnerId], references: [id])
+  pharmacyPartner PharmacyPartner? @relation(fields: [partnerId], references: [id])
+  hospitalPartner HospitalPartner? @relation(fields: [partnerId], references: [id])
+  
+  @@unique([adminId, partnerId])
+  @@map("network_partners")
+}
+
+// System Status Monitoring
+model SystemStatus {
+  id          String   @id @default(cuid())
+  superAdminId String
+  serviceName String   // DATABASE, API, STORAGE, etc.
+  status      SystemStatusType
+  responseTime Float?  // in milliseconds
+  lastChecked DateTime @default(now())
+  message     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  superAdmin  SuperAdmin @relation(fields: [superAdminId], references: [id])
+  
+  @@map("system_status")
+}
+
+enum SystemStatusType {
+  ONLINE
+  OFFLINE
+  DEGRADED
+  MAINTENANCE
+}
+
+// System Events for monitoring and auditing
+model SystemEvent {
+  id          String   @id @default(cuid())
+  eventType   String   // Type of event (database_performance, security_incident, etc.)
+  severity    String   // low, medium, high, critical
+  message     String   // Description of the event
+  component   String?  // System component affected
+  ipAddress   String?  // Source IP address
+  metadata    String?  // JSON string with additional event data
+  timestamp   DateTime @default(now())
+
+  @@map("system_events")
+}
