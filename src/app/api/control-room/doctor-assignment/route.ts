@@ -37,16 +37,12 @@ export async function GET(request: Request) {
     // Get available doctors
     const availableDoctors = await db.doctor.findMany({
       where: {
-        doctorProfile: {
-          specialization: {
-            contains: 'General Practitioner',
-            mode: 'insensitive'
-          }
+        specialization: {
+          contains: 'General Practitioner'
         }
       },
       include: {
-        user: true,
-        doctorProfile: true
+        user: true
       },
       orderBy: {
         createdAt: 'desc'

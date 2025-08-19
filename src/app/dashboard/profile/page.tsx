@@ -76,24 +76,24 @@ export default function ProfilePage() {
         setProfile({
           name: session.user?.name || '',
           email: session.user?.email || '',
-          phone: session.user?.phone || '',
+          phone: '',
           role: session.user?.role || '',
           image: session.user?.image || '',
           bio: 'System administrator with full access to all platform features and settings.',
           location: 'San Francisco, CA',
-          joinedAt: session.user?.createdAt || new Date().toISOString(),
+          joinedAt: new Date().toISOString(),
           lastLogin: new Date().toISOString()
         })
         
         setEditedProfile({
           name: session.user?.name || '',
           email: session.user?.email || '',
-          phone: session.user?.phone || '',
+          phone: '',
           role: session.user?.role || '',
           image: session.user?.image || '',
           bio: 'System administrator with full access to all platform features and settings.',
           location: 'San Francisco, CA',
-          joinedAt: session.user?.createdAt || new Date().toISOString(),
+          joinedAt: new Date().toISOString(),
           lastLogin: new Date().toISOString()
         })
       } catch (error) {

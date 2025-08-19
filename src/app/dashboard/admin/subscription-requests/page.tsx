@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -8,6 +9,7 @@ import { Info, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function AdminSubscriptionRequests() {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null)
 
@@ -103,7 +105,7 @@ export default function AdminSubscriptionRequests() {
                   variant="outline"
                   onClick={() => {
                     // Navigate to subscription plans page if it exists
-                    window.location.href = '/dashboard/admin/subscription-plans'
+                    router.push('/dashboard/admin/subscription-plans')
                   }}
                 >
                   View Available Plans

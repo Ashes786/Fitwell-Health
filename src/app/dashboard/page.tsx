@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -946,51 +949,54 @@ function ControlRoomDashboard({ session }: { session: any }) {
 
 // Navigation configuration for each role
 const getNavigationConfig = (role: string) => {
+  // Default to empty current path during SSR
+  const currentPath = ''
+  
   switch (role) {
     case 'SUPER_ADMIN':
       return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Admins', href: '/dashboard/super-admin/admins', icon: Users },
-        { name: 'Analytics', href: '/dashboard/super-admin/analytics', icon: ChartBar },
-        { name: 'Settings', href: '/dashboard/super-admin/settings', icon: Settings },
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
+        { name: 'Admins', href: '/dashboard/super-admin/admins', icon: Users, current: false },
+        { name: 'Analytics', href: '/dashboard/super-admin/analytics', icon: ChartBar, current: false },
+        { name: 'Settings', href: '/dashboard/super-admin/settings', icon: Settings, current: false },
       ]
     case 'ADMIN':
       return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Users', href: '/dashboard/admin/users', icon: Users },
-        { name: 'Doctors', href: '/dashboard/admin/doctors', icon: Stethoscope },
-        { name: 'Analytics', href: '/dashboard/admin/analytics', icon: ChartBar },
-        { name: 'Settings', href: '/dashboard/admin/settings', icon: Settings },
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
+        { name: 'Users', href: '/dashboard/admin/users', icon: Users, current: false },
+        { name: 'Doctors', href: '/dashboard/admin/doctors', icon: Stethoscope, current: false },
+        { name: 'Analytics', href: '/dashboard/admin/analytics', icon: ChartBar, current: false },
+        { name: 'Settings', href: '/dashboard/admin/settings', icon: Settings, current: false },
       ]
     case 'DOCTOR':
       return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Appointments', href: '/dashboard/doctor/appointments', icon: Calendar },
-        { name: 'Patients', href: '/dashboard/doctor/patients', icon: UserCheck },
-        { name: 'Prescriptions', href: '/dashboard/doctor/prescriptions', icon: FileText },
-        { name: 'Messages', href: '/dashboard/doctor/messages', icon: MessageSquare },
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
+        { name: 'Appointments', href: '/dashboard/doctor/appointments', icon: Calendar, current: false },
+        { name: 'Patients', href: '/dashboard/doctor/patients', icon: UserCheck, current: false },
+        { name: 'Prescriptions', href: '/dashboard/doctor/prescriptions', icon: FileText, current: false },
+        { name: 'Messages', href: '/dashboard/doctor/messages', icon: MessageSquare, current: false },
       ]
     case 'PATIENT':
       return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Book Appointment', href: '/dashboard/patient/book-appointment', icon: Plus },
-        { name: 'My Appointments', href: '/dashboard/patient/appointments', icon: Calendar },
-        { name: 'Health Vitals', href: '/dashboard/patient/vitals', icon: HeartPulse },
-        { name: 'AI Reports', href: '/dashboard/patient/ai-reports', icon: FileText },
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
+        { name: 'Book Appointment', href: '/dashboard/patient/book-appointment', icon: Plus, current: false },
+        { name: 'My Appointments', href: '/dashboard/patient/appointments', icon: Calendar, current: false },
+        { name: 'Health Vitals', href: '/dashboard/patient/vitals', icon: HeartPulse, current: false },
+        { name: 'AI Reports', href: '/dashboard/patient/ai-reports', icon: FileText, current: false },
       ]
     case 'ATTENDANT':
       return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Register Patient', href: '/dashboard/attendant/register-patient', icon: Plus },
-        { name: 'Patients', href: '/dashboard/attendant/patients', icon: Users },
-        { name: 'Appointments', href: '/dashboard/attendant/appointments', icon: Calendar },
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
+        { name: 'Register Patient', href: '/dashboard/attendant/register-patient', icon: Plus, current: false },
+        { name: 'Patients', href: '/dashboard/attendant/patients', icon: Users, current: false },
+        { name: 'Appointments', href: '/dashboard/attendant/appointments', icon: Calendar, current: false },
       ]
     case 'CONTROL_ROOM':
       return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Doctor Assignment', href: '/dashboard/control-room/doctor-assignment', icon: Clipboard },
-        { name: 'Appointments', href: '/dashboard/control-room/appointments', icon: Calendar },
-        { name: 'Escalations', href: '/dashboard/control-room/escalations', icon: Activity },
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
+        { name: 'Doctor Assignment', href: '/dashboard/control-room/doctor-assignment', icon: Clipboard, current: false },
+        { name: 'Appointments', href: '/dashboard/control-room/appointments', icon: Calendar, current: false },
+        { name: 'Escalations', href: '/dashboard/control-room/escalations', icon: Activity, current: false },
       ]
     default:
       return []
@@ -1021,6 +1027,7 @@ export default function Dashboard() {
   ])
 
   const [navigation, setNavigation] = useState(getNavigationConfig(session?.user?.role || ''))
+  const [currentPath, setCurrentPath] = useState('')
 
   // Update navigation when session changes
   useEffect(() => {
@@ -1029,16 +1036,24 @@ export default function Dashboard() {
     }
   }, [session])
 
-  // Update current page based on pathname
+  // Update current page based on pathname - only on client side
   useEffect(() => {
-    const currentPath = window.location.pathname
-    setNavigation(prev => 
-      prev.map(item => ({
-        ...item,
-        current: item.href === currentPath
-      }))
-    )
+    if (typeof window !== 'undefined') {
+      setCurrentPath(window.location.pathname)
+    }
   }, [])
+
+  // Update navigation when current path changes
+  useEffect(() => {
+    if (currentPath) {
+      setNavigation(prev => 
+        prev.map(item => ({
+          ...item,
+          current: item.href === currentPath
+        }))
+      )
+    }
+  }, [currentPath])
 
   if (status === "loading") {
     return (

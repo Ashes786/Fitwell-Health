@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
+import bcrypt from 'bcryptjs'
 
 export async function GET(request: NextRequest) {
   try {
@@ -94,8 +95,11 @@ export async function POST(request: NextRequest) {
       address,
       city,
       emergencyContact,
-      medicalHistory
+      password
     } = body
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password || 'patient123', 12)
 
     // Check if user already exists
     const existingUser = await db.user.findUnique({
@@ -112,6 +116,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         phone,
+        password: hashedPassword,
         role: 'PATIENT',
         isActive: true,
         patient: {
@@ -121,8 +126,7 @@ export async function POST(request: NextRequest) {
             bloodGroup,
             address,
             city,
-            emergencyContact,
-            medicalHistory
+            emergencyContact
           }
         }
       },

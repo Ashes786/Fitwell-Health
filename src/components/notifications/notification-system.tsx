@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Bell, X, Check, CheckCheck, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -33,6 +34,7 @@ interface Notification {
 }
 
 export function NotificationSystem() {
+  const router = useRouter()
   const { data: session } = useSession()
   const { toast } = useToast()
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -40,7 +42,7 @@ export function NotificationSystem() {
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { superAdminNotifications } = useSuperAdminNotifications()
-  const { socket, isConnected } = useWebSocket()
+  const { isConnected } = useWebSocket()
 
   // Sound effects
   const playNotificationSound = useCallback((type: 'default' | 'urgent' = 'default') => {
@@ -71,7 +73,7 @@ export function NotificationSystem() {
           variant="outline" 
           size="sm"
           onClick={() => {
-            window.location.href = notification.actionUrl!
+            router.push(notification.actionUrl!)
           }}
         >
           View
@@ -118,25 +120,6 @@ export function NotificationSystem() {
     }
   }, [superAdminNotifications, handleNotification])
 
-  // WebSocket event listeners
-  useEffect(() => {
-    if (socket && isConnected) {
-      socket.on('notification', handleNotification)
-      socket.on('appointment_reminder', handleNotification)
-      socket.on('new_message', handleNotification)
-      socket.on('prescription_update', handleNotification)
-      socket.on('lab_result_ready', handleNotification)
-
-      return () => {
-        socket.off('notification', handleNotification)
-        socket.off('appointment_reminder', handleNotification)
-        socket.off('new_message', handleNotification)
-        socket.off('prescription_update', handleNotification)
-        socket.off('lab_result_ready', handleNotification)
-      }
-    }
-  }, [socket, isConnected, handleNotification])
-
   // Mark notification as read
   const markAsRead = (id: string) => {
     setNotifications(prev => 
@@ -169,7 +152,7 @@ export function NotificationSystem() {
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id)
     if (notification.actionUrl) {
-      window.location.href = notification.actionUrl
+      router.push(notification.actionUrl)
     }
     setIsOpen(false)
   }

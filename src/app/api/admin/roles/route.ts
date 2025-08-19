@@ -11,55 +11,88 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
-    const search = searchParams.get('search') || ''
-    const status = searchParams.get('status') || 'all'
+    // Return predefined user roles since there's no role model
+    const predefinedRoles = [
+      {
+        id: 'PATIENT',
+        name: 'Patient',
+        description: 'Regular patient with access to personal health records',
+        isActive: true,
+        isSystemRole: true,
+        permissions: ['view_own_records', 'book_appointments', 'manage_profile'],
+        userAssignments: 0
+      },
+      {
+        id: 'DOCTOR',
+        name: 'Doctor',
+        description: 'Medical doctor with access to patient records and appointments',
+        isActive: true,
+        isSystemRole: true,
+        permissions: ['view_patient_records', 'manage_appointments', 'prescribe_medications', 'view_lab_results'],
+        userAssignments: 0
+      },
+      {
+        id: 'ATTENDANT',
+        name: 'Attendant',
+        description: 'Service attendant for patient registration and basic support',
+        isActive: true,
+        isSystemRole: true,
+        permissions: ['register_patients', 'manage_appointments', 'basic_support'],
+        userAssignments: 0
+      },
+      {
+        id: 'CONTROL_ROOM',
+        name: 'Control Room',
+        description: 'Control room staff for managing doctor assignments and coordination',
+        isActive: true,
+        isSystemRole: true,
+        permissions: ['manage_doctor_assignments', 'coordinate_appointments', 'system_monitoring'],
+        userAssignments: 0
+      },
+      {
+        id: 'ADMIN',
+        name: 'Admin',
+        description: 'Network administrator with full access to network management',
+        isActive: true,
+        isSystemRole: true,
+        permissions: ['user_management', 'appointments', 'billing', 'reports', 'patients', 'doctors', 'subscriptions', 'analytics'],
+        userAssignments: 0
+      },
+      {
+        id: 'SUPER_ADMIN',
+        name: 'Super Admin',
+        description: 'System administrator with full system access',
+        isActive: true,
+        isSystemRole: true,
+        permissions: ['full_system_access', 'manage_admins', 'system_configuration', 'analytics', 'security_management'],
+        userAssignments: 0
+      }
+    ]
 
-    const skip = (page - 1) * limit
+    // Get actual user counts for each role
+    const userCounts = await db.user.groupBy({
+      by: ['role'],
+      _count: {
+        role: true
+      }
+    })
 
-    // Build where clause
-    const where: any = {
-      isSystemRole: false // Only show custom roles
-    }
-    
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
-      ]
-    }
-
-    if (status !== 'all') {
-      where.isActive = status === 'active'
-    }
-
-    const [roles, total] = await Promise.all([
-      db.role.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          permissions: true,
-          _count: {
-            select: {
-              userAssignments: true
-            }
-          }
-        }
-      }),
-      db.role.count({ where })
-    ])
+    // Update user assignments count
+    const rolesWithCounts = predefinedRoles.map(role => {
+      const userCount = userCounts.find(uc => uc.role === role.id)
+      return {
+        ...role,
+        userAssignments: userCount?._count.role || 0
+      }
+    })
 
     return NextResponse.json({
-      roles,
+      roles: rolesWithCounts,
       pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
+        page: 1,
+        limit: rolesWithCounts.length,
+        total: rolesWithCounts.length,
+        pages: 1
       }
     })
   } catch (error) {
@@ -76,28 +109,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { name, description, permissionIds, isActive } = body
-
-    // Create role
-    const role = await db.role.create({
-      data: {
-        name,
-        description,
-        isActive,
-        isSystemRole: false,
-        permissions: {
-          connect: permissionIds.map((id: string) => ({ id }))
-        }
-      },
-      include: {
-        permissions: true
-      }
+    return NextResponse.json({ 
+      message: 'Role management is not available. User roles are predefined and cannot be modified.',
+      availableRoles: [
+        'PATIENT',
+        'DOCTOR', 
+        'ATTENDANT',
+        'CONTROL_ROOM',
+        'ADMIN',
+        'SUPER_ADMIN'
+      ]
     })
-
-    return NextResponse.json({ role, message: 'Role created successfully' })
   } catch (error) {
-    console.error('Error creating role:', error)
+    console.error('Error processing role request:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { 
   LayoutDashboard, 
@@ -66,15 +69,17 @@ export default function SuperAdminLayout({
     { name: 'Settings', href: '/dashboard/super-admin/settings', icon: Settings, current: false },
   ])
 
-  // Update current page based on pathname
+  // Update current page based on pathname - only on client side
   useEffect(() => {
-    const currentPath = window.location.pathname
-    setNavigation(prev => 
-      prev.map(item => ({
-        ...item,
-        current: item.href === currentPath
-      }))
-    )
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname
+      setNavigation(prev => 
+        prev.map(item => ({
+          ...item,
+          current: item.href === currentPath
+        }))
+      )
+    }
   }, [])
 
   if (status === "loading") {

@@ -170,6 +170,11 @@ export default function SettingsPage() {
 
   const exportSettings = async () => {
     try {
+      if (typeof window === 'undefined') {
+        toast.error('Export not available on server')
+        return
+      }
+
       // Generate settings export with current configuration
       const exportData = {
         timestamp: new Date().toISOString(),

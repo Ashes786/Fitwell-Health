@@ -31,7 +31,6 @@ import {
   Bone,
   Brain,
   Baby,
-  Tooth,
   Eye as EyeIcon,
   UserCheck,
   Calendar,
@@ -306,7 +305,7 @@ export default function AdminHospitalTreatments() {
       case 'ophthalmology':
         return <EyeIcon className="h-5 w-5 text-green-600" />
       case 'dentistry':
-        return <Tooth className="h-5 w-5 text-yellow-600" />
+        return <Stethoscope className="h-5 w-5 text-yellow-600" />
       default:
         return <Stethoscope className="h-5 w-5 text-gray-600" />
     }

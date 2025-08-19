@@ -241,6 +241,11 @@ export default function SecurityPage() {
 
   const handleGenerateReport = async () => {
     try {
+      if (typeof window === 'undefined') {
+        toast.error('Report generation not available on server')
+        return
+      }
+
       // Generate security report with logs and metrics
       const reportData = {
         timestamp: new Date().toISOString(),

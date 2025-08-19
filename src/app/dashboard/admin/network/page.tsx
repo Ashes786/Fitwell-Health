@@ -121,7 +121,7 @@ export default function NetworkManagementPage() {
         const partners = await response.json()
         // Filter out partners already in network
         const networkPartnerIds = networkData.partners.map(np => np.partnerId)
-        const availablePartners = []
+        const availablePartners: Array<{ id: string; type: PartnerType; [key: string]: any }> = []
         
         // Add lab partners
         if (partners.labPartners) {

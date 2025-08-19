@@ -483,7 +483,7 @@ export default function SuperAdminDashboard() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Admins</p>
                 <p className="text-2xl font-bold text-gray-900">{analytics?.totalAdmins || 0}</p>
-                <p className="text-sm text-green-600">+{analytics?.totalAdmins > 0 ? '8' : '0'}% from last month</p>
+                <p className="text-sm text-green-600">+{(analytics?.totalAdmins || 0) > 0 ? '8' : '0'}% from last month</p>
               </div>
               <div className="p-3 bg-purple-100 rounded-full">
                 <Users className="h-6 w-6 text-purple-600" />

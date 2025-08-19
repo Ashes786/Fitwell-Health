@@ -2,7 +2,7 @@ import { db } from '@/lib/db'
 import { UserRole } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
-async function main() {
+export async function main() {
   console.log('Starting database seeding...')
 
   // Create Super Admin
@@ -115,7 +115,8 @@ async function main() {
         await db.systemStatus.create({
           data: {
             superAdminId: superAdmin.id,
-            ...status
+            ...status,
+            status: status.status as 'ONLINE' | 'OFFLINE' | 'DEGRADED' | 'MAINTENANCE'
           }
         })
         console.log(`✅ Created system status: ${status.serviceName}`)
@@ -288,7 +289,7 @@ async function main() {
         data: {
           userId: user.id,
           dateOfBirth: patient.dateOfBirth,
-          gender: patient.gender,
+          gender: patient.gender as 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY',
           bloodGroup: patient.bloodGroup,
           city: patient.city,
           address: patient.address

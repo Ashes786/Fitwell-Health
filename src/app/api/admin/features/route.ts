@@ -20,17 +20,23 @@ export async function GET() {
       return NextResponse.json({ error: 'Admin not found' }, { status: 404 })
     }
 
-    const adminFeatures = await db.adminFeature.findMany({
-      where: { adminId: admin.id },
-      include: {
-        feature: true
-      },
-      orderBy: {
-        grantedAt: 'desc'
-      }
-    })
+    // Since admin features have been made native, return the native features
+    const nativeFeatures = [
+      'userManagement',
+      'appointments', 
+      'billing',
+      'reports',
+      'patients',
+      'doctors',
+      'subscriptions',
+      'analytics'
+    ]
 
-    return NextResponse.json(adminFeatures)
+    return NextResponse.json({ 
+      message: 'Admin features are now native to all admin accounts. Feature assignment has been removed.',
+      adminFeatures: [],
+      nativeFeatures: nativeFeatures
+    })
   } catch (error) {
     console.error('Error fetching admin features:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

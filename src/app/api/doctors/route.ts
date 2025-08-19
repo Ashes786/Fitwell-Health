@@ -30,13 +30,13 @@ export async function GET() {
     // Transform the data to match the frontend interface
     const formattedDoctors = doctors.map(doctor => ({
       id: doctor.id,
-      name: `${doctor.firstName} ${doctor.lastName}`,
+      name: doctor.name,
       specialization: doctor.doctor?.specialization || 'General Practitioner',
       experience: doctor.doctor?.experience || 0,
       rating: doctor.doctor?.rating || 0,
       consultationFee: doctor.doctor?.consultationFee || 100,
       availableSlots: [], // This would be calculated based on doctor's availability
-      city: doctor.doctor?.city || doctor.city,
+      city: doctor.doctor?.city || 'N/A',
       avatar: doctor.avatar
     }))
 

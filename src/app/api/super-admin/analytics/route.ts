@@ -68,8 +68,8 @@ export async function GET(request: NextRequest) {
           user: {
             select: { id: true, name: true, email: true }
           },
-          subscriptionPlan: {
-            select: { id: true, name: true, price: true, startDate: true, endDate: true }
+          subscriptionPlans: {
+            select: { id: true, name: true, price: true, duration: true, durationUnit: true, category: true }
           }
         }
       }),
@@ -105,25 +105,23 @@ export async function GET(request: NextRequest) {
 
     // Calculate revenue analytics based on active admin subscriptions
     const activeAdminSubscriptions = admins.filter(admin => 
-      admin.subscriptionPlan && 
-      new Date(admin.subscriptionPlan.endDate) >= now
+      admin.subscriptionPlans && admin.subscriptionPlans.length > 0
     )
-    const totalRevenue = activeAdminSubscriptions.reduce((sum, admin) => sum + (admin.subscriptionPlan?.price || 0), 0)
+    const totalRevenue = activeAdminSubscriptions.reduce((sum, admin) => 
+      sum + admin.subscriptionPlans.reduce((planSum, plan) => planSum + plan.price, 0), 0
+    )
     
     // Generate monthly revenue data
-    const monthlyRevenue = []
+    const monthlyRevenue: { month: string; revenue: number }[] = []
     for (let i = 0; i < 6; i++) {
       const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
       const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1)
       const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)
       
       const monthRevenue = activeAdminSubscriptions
-        .filter(admin => {
-          if (!admin.subscriptionPlan) return false
-          const subDate = new Date(admin.subscriptionPlan.startDate)
-          return subDate >= monthStart && subDate <= monthEnd
-        })
-        .reduce((sum, admin) => sum + (admin.subscriptionPlan?.price || 0), 0)
+        .reduce((sum, admin) => 
+          sum + admin.subscriptionPlans.reduce((planSum, plan) => planSum + plan.price, 0), 0
+        )
       
       monthlyRevenue.unshift({
         month: monthDate.toLocaleDateString('en-US', { month: 'short' }),
@@ -134,15 +132,13 @@ export async function GET(request: NextRequest) {
     // Calculate subscription analytics
     const subscriptionsByStatus = [
       { status: 'ACTIVE', count: activeAdminSubscriptions.length },
-      { status: 'EXPIRED', count: admins.filter(admin => 
-        admin.subscriptionPlan && 
-        new Date(admin.subscriptionPlan.endDate) < now
-      ).length },
-      { status: 'NO_SUBSCRIPTION', count: admins.filter(admin => !admin.subscriptionPlan).length }
+      { status: 'NO_SUBSCRIPTION', count: admins.filter(admin => !admin.subscriptionPlans || admin.subscriptionPlans.length === 0).length }
     ]
 
     const subscriptionsByPlan = subscriptionPlans.reduce((acc, plan) => {
-      const adminCount = admins.filter(admin => admin.subscriptionPlan?.id === plan.id).length
+      const adminCount = admins.filter(admin => 
+        admin.subscriptionPlans && admin.subscriptionPlans.some(sp => sp.id === plan.id)
+      ).length
       if (adminCount > 0) {
         acc.push({ plan: plan.name, count: adminCount })
       }
@@ -186,7 +182,7 @@ export async function GET(request: NextRequest) {
     const cancelledAppointments = appointments.filter(apt => apt.status === 'CANCELLED').length
 
     // Generate monthly appointment data
-    const appointmentsByMonth = []
+    const appointmentsByMonth: { month: string; count: number }[] = []
     for (let i = 0; i < 6; i++) {
       const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
       const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1)

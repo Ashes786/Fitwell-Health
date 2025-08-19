@@ -137,5 +137,4 @@ export const authOptions: NextAuthOptions = {
     signOut: "/auth/signout",
   },
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
-  url: process.env.NEXTAUTH_URL || 'http://localhost:3000',
 }

@@ -1,3 +1,5 @@
+import React from 'react'
+
 interface ChartProps {
   width?: number
   height?: number
@@ -29,8 +31,8 @@ interface GridProps {
 }
 
 export function ChartGrid({ width, height, horizontalLines = 5, verticalLines = 0, color = '#e5e7eb' }: GridProps) {
-  const hLines = []
-  const vLines = []
+  const hLines: React.ReactElement[] = []
+  const vLines: React.ReactElement[] = []
   
   // Horizontal lines
   for (let i = 0; i <= horizontalLines; i++) {

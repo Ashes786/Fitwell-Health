@@ -428,7 +428,9 @@ export default function DoctorAssignment() {
                 className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
                 onClick={(e) => {
                   e.stopPropagation()
-                  window.open(`tel:${appointment.patient.phone}`, '_self')
+                  if (typeof window !== 'undefined') {
+                    window.open(`tel:${appointment.patient.phone}`, '_self')
+                  }
                 }}
               >
                 <Phone className="h-4 w-4" />

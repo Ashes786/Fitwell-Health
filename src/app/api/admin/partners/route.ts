@@ -16,38 +16,58 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const search = searchParams.get('search') || ''
     const type = searchParams.get('type') || 'all'
-    const status = searchParams.get('status') || 'all'
 
     const skip = (page - 1) * limit
 
-    // Build where clause
-    const where: any = {}
-    
+    // Build where clauses for each partner type
+    const whereClause: any = {}
     if (search) {
-      where.OR = [
+      whereClause.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { city: { contains: search, mode: 'insensitive' } }
+        { address: { contains: search, mode: 'insensitive' } }
       ]
     }
 
-    if (type !== 'all') {
-      where.type = type
-    }
+    // Fetch all partner types based on filter
+    let labPartners: any[] = []
+    let pharmacyPartners: any[] = []
+    let hospitalPartners: any[] = []
 
-    if (status !== 'all') {
-      where.isActive = status === 'active'
-    }
-
-    const [partners, total] = await Promise.all([
-      db.partner.findMany({
-        where,
+    if (type === 'all' || type === 'LAB') {
+      labPartners = await db.labPartner.findMany({
+        where: whereClause,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' }
-      }),
-      db.partner.count({ where })
-    ])
+      })
+    }
+
+    if (type === 'all' || type === 'PHARMACY') {
+      pharmacyPartners = await db.pharmacyPartner.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' }
+      })
+    }
+
+    if (type === 'all' || type === 'HOSPITAL') {
+      hospitalPartners = await db.hospitalPartner.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' }
+      })
+    }
+
+    // Transform to unified partner format
+    const partners = [
+      ...labPartners.map(p => ({ ...p, type: 'LAB' })),
+      ...pharmacyPartners.map(p => ({ ...p, type: 'PHARMACY' })),
+      ...hospitalPartners.map(p => ({ ...p, type: 'HOSPITAL' }))
+    ]
+
+    const total = partners.length
 
     return NextResponse.json({
       partners,
@@ -80,41 +100,57 @@ export async function POST(request: NextRequest) {
       email,
       phone,
       address,
-      city,
-      state,
-      zipCode,
-      country,
-      website,
-      specialties,
-      services,
-      contactPerson,
-      partnershipLevel
+      website
     } = body
 
-    // Create partner
-    const partner = await db.partner.create({
-      data: {
-        name,
-        type,
-        description,
-        email,
-        phone,
-        address,
-        city,
-        state,
-        zipCode,
-        country,
-        website,
-        specialties,
-        services,
-        contactPerson,
-        partnershipLevel,
-        isActive: true,
-        rating: 5.0
-      }
-    })
+    let partner
 
-    return NextResponse.json({ partner, message: 'Partner created successfully' })
+    // Create partner based on type
+    switch (type) {
+      case 'LAB':
+        partner = await db.labPartner.create({
+          data: {
+            name,
+            address,
+            phone,
+            email,
+            website,
+            isActive: true
+          }
+        })
+        break
+      case 'PHARMACY':
+        partner = await db.pharmacyPartner.create({
+          data: {
+            name,
+            address,
+            phone,
+            email,
+            website,
+            isActive: true
+          }
+        })
+        break
+      case 'HOSPITAL':
+        partner = await db.hospitalPartner.create({
+          data: {
+            name,
+            address,
+            phone,
+            email,
+            website,
+            isActive: true
+          }
+        })
+        break
+      default:
+        return NextResponse.json({ error: 'Invalid partner type' }, { status: 400 })
+    }
+
+    // Add type to the response
+    const partnerWithType = { ...partner, type }
+
+    return NextResponse.json({ partner: partnerWithType, message: 'Partner created successfully' })
   } catch (error) {
     console.error('Error creating partner:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

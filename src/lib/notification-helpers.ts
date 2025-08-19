@@ -208,7 +208,7 @@ export class NotificationHelpers {
     servicesChecked: string[],
     issues?: string[]
   ): Promise<void> {
-    const priority = status === 'critical' ? 'CRITICAL' : status === 'warning' ? 'HIGH' : 'LOW'
+    const priority = status === 'critical' ? 'MEDIUM' : status === 'warning' ? 'MEDIUM' : 'LOW'
     
     await NotificationService.createSystemStatus(
       `System Health Check - ${status.toUpperCase()}`,
@@ -249,7 +249,7 @@ export class NotificationHelpers {
     threatsFound: number,
     issuesResolved: number
   ): Promise<void> {
-    const priority = threatsFound > 0 ? 'HIGH' : 'LOW'
+    const priority = threatsFound > 0 ? 'HIGH' : 'MEDIUM'
     
     await NotificationService.createSecurityAlert(
       'Security Scan Complete',
@@ -402,7 +402,7 @@ export class NotificationHelpers {
     await NotificationService.createSecurityAlert(
       'Password Reset Successful',
       `Password for ${email} was successfully reset from ${ipAddress}`,
-      'LOW',
+      'MEDIUM',
       { 
         email, 
         ipAddress, 
@@ -560,7 +560,7 @@ export class NotificationHelpers {
     threshold: number,
     serverName: string
   ): Promise<void> {
-    const priority = usagePercentage > 90 ? 'CRITICAL' : usagePercentage > 75 ? 'HIGH' : 'MEDIUM'
+    const priority = usagePercentage > 90 ? 'MEDIUM' : usagePercentage > 75 ? 'MEDIUM' : 'LOW'
     
     await NotificationService.createSystemStatus(
       `High ${resourceType} Usage Alert`,

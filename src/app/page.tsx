@@ -37,12 +37,12 @@ export default function Home() {
         // Redirect directly to the correct dashboard based on role
         if (session.user?.role) {
           const dashboardRoute = getDashboardRoute(session.user.role)
-          window.location.href = dashboardRoute
+          router.push(dashboardRoute)
         } else {
-          window.location.href = "/dashboard"
+          router.push("/dashboard")
         }
       } else {
-        window.location.href = "/auth/signup"
+        router.push("/auth/signup")
       }
     } catch (error) {
       console.error('Navigation error:', error)
@@ -96,9 +96,9 @@ export default function Home() {
             onClick={() => {
               if (session.user?.role) {
                 const dashboardRoute = getDashboardRoute(session.user.role)
-                window.location.href = dashboardRoute
+                router.push(dashboardRoute)
               } else {
-                window.location.href = "/dashboard"
+                router.push("/dashboard")
               }
             }} 
             className="bg-[#2ba664] hover:bg-[#238a52] text-white transition-colors duration-200 text-sm px-4 py-2"

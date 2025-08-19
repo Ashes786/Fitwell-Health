@@ -140,6 +140,11 @@ export default function DatabasePage() {
 
   const handleBackup = async () => {
     try {
+      if (typeof window === 'undefined') {
+        toast.error('Backup not available on server')
+        return
+      }
+
       // Simulate database backup process
       toast.loading('Initiating database backup...')
       
@@ -176,6 +181,11 @@ export default function DatabasePage() {
 
   const handleExport = async () => {
     try {
+      if (typeof window === 'undefined') {
+        toast.error('Export not available on server')
+        return
+      }
+
       // Generate CSV export of database tables
       if (!stats?.tables) {
         toast.error('No table data available to export')

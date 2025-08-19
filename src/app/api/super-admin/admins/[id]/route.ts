@@ -6,9 +6,10 @@ import { NotificationHelpers } from '@/lib/notification-helpers'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.role || session.user.role !== 'SUPER_ADMIN') {
@@ -51,9 +52,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.role || session.user.role !== 'SUPER_ADMIN') {
@@ -159,9 +161,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.role || session.user.role !== 'SUPER_ADMIN') {
@@ -204,11 +207,6 @@ export async function DELETE(
 
     // Delete admin and user in transaction
     await db.$transaction(async (tx) => {
-      // Delete admin features if any exist
-      await tx.adminFeature.deleteMany({
-        where: { adminId: params.id }
-      })
-
       // Delete admin
       await tx.admin.delete({
         where: { id: params.id }

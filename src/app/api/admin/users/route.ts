@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { UserRole } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,7 +45,6 @@ export async function GET(request: NextRequest) {
       db.user.findMany({
         where,
         include: {
-          profile: true,
           doctor: true,
           patient: true,
           attendant: true
@@ -94,8 +94,12 @@ export async function POST(request: NextRequest) {
       city,
       specialization,
       experience,
-      licenseNumber
+      licenseNumber,
+      password
     } = body
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password || 'default123', 12)
 
     // Check if user already exists
     const existingUser = await db.user.findUnique({
@@ -106,22 +110,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 })
     }
 
-    // Create user with profile
+    // Create user with role-specific data
     const userData: any = {
       name,
       email,
       phone,
+      password: hashedPassword,
       role: role as UserRole,
-      isActive: true,
-      profile: {
-        create: {
-          dateOfBirth,
-          gender,
-          bloodGroup,
-          address,
-          city
-        }
-      }
+      isActive: true
     }
 
     // Add role-specific data
@@ -130,7 +126,25 @@ export async function POST(request: NextRequest) {
         create: {
           specialization,
           experience: parseInt(experience) || 0,
-          licenseNumber
+          licenseNumber,
+          consultationFee: 100 // Default consultation fee
+        }
+      }
+    } else if (role === 'PATIENT') {
+      userData.patient = {
+        create: {
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+          gender,
+          bloodGroup,
+          address,
+          city
+        }
+      }
+    } else if (role === 'ATTENDANT') {
+      userData.attendant = {
+        create: {
+          employeeId: `ATT${Date.now()}`,
+          department: 'Patient Services'
         }
       }
     }
@@ -138,7 +152,6 @@ export async function POST(request: NextRequest) {
     const user = await db.user.create({
       data: userData,
       include: {
-        profile: true,
         doctor: true,
         patient: true,
         attendant: true

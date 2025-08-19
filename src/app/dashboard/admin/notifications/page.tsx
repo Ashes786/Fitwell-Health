@@ -110,6 +110,7 @@ export default function AdminNotificationsPage() {
           id: "4",
           title: "Appointment Reminder",
           message: "Reminder: You have 3 appointments scheduled for today",
+          type: "INFO",
           recipient: "Dr. Sarah Johnson",
           recipientType: "USER",
           status: "SENT",

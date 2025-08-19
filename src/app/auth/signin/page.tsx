@@ -50,9 +50,9 @@ export default function SignIn() {
         setError("Invalid email or password")
         setIsLoading(false)
       } else {
-        // Use window.location for faster redirect
+        // Use router for redirect
         setTimeout(() => {
-          window.location.href = "/dashboard"
+          router.push("/dashboard")
         }, 500)
       }
     } catch (error) {
@@ -76,9 +76,9 @@ export default function SignIn() {
         setError("Quick login failed. Please try manual login.")
         setIsLoading(false)
       } else {
-        // Use window.location for faster redirect
+        // Use router for redirect
         setTimeout(() => {
-          window.location.href = `/dashboard/${role.toLowerCase()}`
+          router.push(`/dashboard/${role.toLowerCase()}`)
         }, 500)
       }
     } catch (error) {

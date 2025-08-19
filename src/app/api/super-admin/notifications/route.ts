@@ -112,7 +112,7 @@ async function generateSystemNotifications() {
     const admins = adminsRes.status === 'fulfilled' && adminsRes.value.ok ? await adminsRes.value.json() : []
     const plans = plansRes.status === 'fulfilled' && plansRes.value.ok ? await plansRes.value.json() : []
 
-    const notifications = []
+    const notifications: any[] = []
 
     // Generate notifications based on real data
     if (plans && Array.isArray(plans)) {

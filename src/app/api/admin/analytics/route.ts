@@ -49,11 +49,12 @@ export async function GET(request: NextRequest) {
           isActive: true
         }
       }),
-      db.partner.count({
-        where: {
-          isActive: true
-        }
-      }),
+      // Count all partner types (lab, pharmacy, hospital)
+      await Promise.all([
+        db.labPartner.count({ where: { isActive: true } }),
+        db.pharmacyPartner.count({ where: { isActive: true } }),
+        db.hospitalPartner.count({ where: { isActive: true } })
+      ]).then(([lab, pharmacy, hospital]) => lab + pharmacy + hospital),
       // This would be calculated from actual payment data
       Promise.resolve(125000),
       db.appointment.count({
@@ -75,24 +76,24 @@ export async function GET(request: NextRequest) {
     // Calculate appointment completion rate
     const appointmentCompletion = totalAppointments > 0 ? (completedAppointments / totalAppointments) * 100 : 0
 
-    // Get user demographics
-    const patients = await db.user.findMany({
+    // Get user demographics (patients with date of birth)
+    const patientsWithProfile = await db.user.findMany({
       where: {
         role: 'PATIENT',
-        profile: {
+        patient: {
           dateOfBirth: { not: null }
         }
       },
       include: {
-        profile: true
+        patient: true
       }
     })
 
     // Calculate age groups
-    const ageGroups = patients.reduce((acc, patient) => {
-      if (!patient.profile?.dateOfBirth) return acc
+    const ageGroups = patientsWithProfile.reduce((acc, patient) => {
+      if (!patient.patient?.dateOfBirth) return acc
       
-      const age = new Date().getFullYear() - new Date(patient.profile.dateOfBirth).getFullYear()
+      const age = new Date().getFullYear() - new Date(patient.patient.dateOfBirth).getFullYear()
       let group = ''
       
       if (age >= 18 && age <= 25) group = '18-25'
@@ -109,8 +110,8 @@ export async function GET(request: NextRequest) {
     }, {} as Record<string, number>)
 
     // Calculate gender distribution
-    const genderDistribution = patients.reduce((acc, patient) => {
-      const gender = patient.profile?.gender || 'Other'
+    const genderDistribution = patientsWithProfile.reduce((acc, patient) => {
+      const gender = patient.patient?.gender || 'Other'
       acc[gender] = (acc[gender] || 0) + 1
       return acc
     }, {} as Record<string, number>)
@@ -140,24 +141,51 @@ export async function GET(request: NextRequest) {
       return acc
     }, {} as Record<string, number>)
 
-    // Get partner performance
-    const partners = await db.partner.findMany({
-      where: {
-        isActive: true
-      },
-      include: {
-        _count: {
-          select: {
-            appointments: true
+    // Get partner performance (combine all partner types)
+    const [labPartners, pharmacyPartners, hospitalPartners] = await Promise.all([
+      db.labPartner.findMany({
+        where: { isActive: true },
+        include: {
+          labTests: {
+            select: {
+              id: true
+            }
           }
         }
-      }
-    })
+      }),
+      db.pharmacyPartner.findMany({
+        where: { isActive: true },
+        include: {
+          discounts: {
+            select: {
+              id: true
+            }
+          }
+        }
+      }),
+      db.hospitalPartner.findMany({
+        where: { isActive: true },
+        include: {
+          discounts: {
+            select: {
+              id: true
+            }
+          }
+        }
+      })
+    ])
 
-    const partnerPerformance = partners.map(partner => ({
+    const allPartners = [
+      ...labPartners.map(p => ({ ...p, type: 'Lab', appointments: p.labTests.length })),
+      ...pharmacyPartners.map(p => ({ ...p, type: 'Pharmacy', appointments: p.discounts.length })),
+      ...hospitalPartners.map(p => ({ ...p, type: 'Hospital', appointments: p.discounts.length }))
+    ]
+
+    const partnerPerformance = allPartners.slice(0, 8).map(partner => ({
       name: partner.name,
-      rating: partner.rating,
-      appointments: partner._count.appointments
+      type: partner.type,
+      rating: 4.5, // Default rating since not all partners have ratings
+      appointments: partner.appointments
     }))
 
     // Get partner utilization rates (mock data)

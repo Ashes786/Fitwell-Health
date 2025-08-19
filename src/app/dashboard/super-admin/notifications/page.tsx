@@ -317,6 +317,11 @@ export default function SuperAdminNotificationsPage() {
 
   const exportNotifications = async () => {
     try {
+      if (typeof window === 'undefined') {
+        toast.error('Export not available on server')
+        return
+      }
+
       const filtered = filteredNotifications
       const csvContent = [
         ['Type', 'Title', 'Message', 'Priority', 'Status', 'Target User', 'Created At'],

@@ -135,6 +135,11 @@ export default function AnalyticsPage() {
 
   const exportReport = async () => {
     try {
+      if (typeof window === 'undefined') {
+        toast.error('Export not available on server')
+        return
+      }
+
       // Generate CSV report from analytics data
       if (!analytics) {
         toast.error('No data available to export')

@@ -97,17 +97,14 @@ export async function POST(request: Request) {
     // Create prescription
     const prescription = await db.prescription.create({
       data: {
-        prescriptionNumber,
         medication,
         dosage,
         frequency,
         duration,
         instructions: instructions || null,
-        notes: notes || null,
         patientId,
         doctorId: doctor.id,
-        appointmentId: appointmentId || null,
-        status: 'ACTIVE'
+        appointmentId: appointmentId || null
       },
       include: {
         patient: {

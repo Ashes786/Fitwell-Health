@@ -76,7 +76,7 @@ export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
       }
     ]
 
-    const roleSpecificItems = []
+    const roleSpecificItems: Array<{ title: string; href: string; icon: any; permission: string }> = []
 
     switch (userRole) {
       case "PATIENT":

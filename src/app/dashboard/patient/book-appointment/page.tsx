@@ -105,13 +105,13 @@ export default function BookAppointment() {
     try {
       const response = await fetch('/api/doctors')
       if (response.ok) {
-        const data = await response.json()
+        const data = await response.json() as Doctor[]
         setDoctors(data)
         setFilteredDoctors(data)
         
         // Extract unique specializations and cities
         const specs = Array.from(new Set(data.map((d: Doctor) => d.specialization)))
-        const cits = Array.from(new Set(data.map((d: Doctor) => d.city).filter(Boolean)))
+        const cits = Array.from(new Set(data.map((d: Doctor) => d.city).filter(Boolean))) as string[]
         setSpecializations(specs)
         setCities(cits)
       }

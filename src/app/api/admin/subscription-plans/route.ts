@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
         include: {
           _count: {
             select: {
-              subscriptions: true
+              userSubscriptions: true
             }
           }
         }
@@ -93,9 +93,19 @@ export async function POST(request: NextRequest) {
       specializations
     } = body
 
+    // Get admin ID from session
+    const admin = await db.admin.findFirst({
+      where: { userId: session.user.id }
+    })
+
+    if (!admin) {
+      return NextResponse.json({ error: 'Admin not found' }, { status: 404 })
+    }
+
     // Create subscription plan
     const plan = await db.subscriptionPlan.create({
       data: {
+        adminId: admin.id,
         name,
         description,
         price,

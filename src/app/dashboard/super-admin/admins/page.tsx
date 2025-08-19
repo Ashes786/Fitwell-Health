@@ -256,7 +256,7 @@ export default function AdminsPage() {
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={admin.user.image || ""} alt={admin.user.name} />
+                          <AvatarImage src="" alt={admin.user.name} />
                           <AvatarFallback>
                             {admin.user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                           </AvatarFallback>

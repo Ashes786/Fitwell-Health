@@ -60,7 +60,7 @@ export async function GET(request: Request) {
     }
 
     // Generate time slots
-    const timeSlots = []
+    const timeSlots: any[] = []
     const startHour = parseInt(dayAvailability.startTime.split(':')[0])
     const startMinute = parseInt(dayAvailability.startTime.split(':')[1])
     const endHour = parseInt(dayAvailability.endTime.split(':')[0])

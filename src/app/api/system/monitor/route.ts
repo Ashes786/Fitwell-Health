@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { NotificationHelpers } from '@/lib/notification-helpers'
+import { NotificationService } from '@/lib/notification-service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
             )
             break
           default:
-            await NotificationHelpers.createSecurityAlert(
+            await NotificationService.createSecurityAlert(
               'Security Incident Detected',
               message,
               severity.toUpperCase() as 'MEDIUM' | 'HIGH' | 'CRITICAL',
@@ -125,10 +126,10 @@ export async function POST(request: NextRequest) {
 
       default:
         // Generic system notification
-        await NotificationHelpers.createSystemStatus(
+        await NotificationService.createSystemStatus(
           `System Event - ${eventType}`,
           message,
-          severity === 'critical' ? 'HIGH' : 'MEDIUM',
+          severity === 'critical' ? 'MEDIUM' : 'LOW',
           { ...metadata, eventType, severity, clientIP, detectedAt: new Date().toISOString() }
         )
     }

@@ -53,7 +53,6 @@ export async function POST(request: Request) {
         scheduledAt: new Date(scheduledAt),
         consultationFee,
         paymentStatus: 'PENDING',
-        paymentMethod,
         patientId: patient.id,
         doctorId: doctorId
       },
@@ -82,17 +81,6 @@ export async function POST(request: Request) {
         data: {
           paymentStatus: 'PAID',
           status: 'CONFIRMED'
-        }
-      })
-
-      // Create payment record
-      await db.payment.create({
-        data: {
-          amount: consultationFee,
-          status: 'COMPLETED',
-          paymentMethod,
-          appointmentId: appointment.id,
-          patientId: patient.id
         }
       })
     }

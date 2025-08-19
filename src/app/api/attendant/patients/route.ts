@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
+import bcrypt from 'bcryptjs'
 
 export async function GET(request: Request) {
   try {
@@ -69,10 +70,7 @@ export async function POST(request: Request) {
       address,
       city,
       emergencyContactName,
-      emergencyContactPhone,
-      medicalHistory,
-      allergies,
-      currentMedications
+      emergencyContactPhone
     } = body
 
     // Validate required fields
@@ -89,35 +87,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 })
     }
 
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12)
+
     // Create user account
     const user = await db.user.create({
       data: {
         email,
-        password, // In production, this should be hashed
-        firstName,
-        lastName,
+        password: hashedPassword,
+        name: `${firstName} ${lastName}`,
         phone,
-        role: 'PATIENT',
-        city: city || null
+        role: 'PATIENT'
       }
     })
-
-    // Generate patient number
-    const patientCount = await db.patient.count()
-    const patientNumber = `PAT-${new Date().getFullYear()}-${String(patientCount + 1).padStart(3, '0')}`
 
     // Create patient profile
     const patient = await db.patient.create({
       data: {
-        patientNumber,
         dateOfBirth: new Date(dateOfBirth),
         gender,
         address: address || null,
-        emergencyContactName: emergencyContactName || null,
-        emergencyContactPhone: emergencyContactPhone || null,
-        medicalHistory: medicalHistory || null,
-        allergies: allergies || null,
-        currentMedications: currentMedications || null,
+        emergencyContact: emergencyContactName || null,
         userId: user.id
       },
       include: {

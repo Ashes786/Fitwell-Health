@@ -53,7 +53,7 @@ export const setupSocket = (io: Server) => {
         // Update appointment in database
         const updatedAppointment = await db.appointment.update({
           where: { id: appointmentId },
-          data: { status },
+          data: { status: status as 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' },
           include: {
             patient: {
               include: {
@@ -450,16 +450,12 @@ async function sendInitialData(socket: any, role: string, userId: string) {
         const availableDoctors = await db.doctor.findMany({
           where: {
             isAvailable: true,
-            doctorProfile: {
-              specialization: {
-                contains: 'General Practitioner',
-                mode: 'insensitive'
-              }
+            specialization: {
+              contains: 'General Practitioner'
             }
           },
           include: {
             user: true,
-            doctorProfile: true
           }
         });
         
