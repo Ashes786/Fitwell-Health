@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { 
   User, 
   Mail, 
@@ -18,8 +18,6 @@ import {
   MapPin, 
   Calendar,
   Stethoscope,
-  Users,
-  Building,
   Shield,
   AlertCircle,
   CheckCircle,
@@ -28,7 +26,9 @@ import {
   Fingerprint,
   CreditCard,
   FileText,
-  HeartPulse
+  HeartPulse,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react"
 import Link from "next/link"
 import { UserRole, Gender } from "@prisma/client"
@@ -75,6 +75,7 @@ export default function SignUp() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [success, setSuccess] = useState(false)
   const [nhrNumber, setNhrNumber] = useState<string | null>(null)
+  const [showAdvanced, setShowAdvanced] = useState(false)
   
   const [formData, setFormData] = useState<FormData>({
     email: "",
@@ -94,13 +95,9 @@ export default function SignUp() {
 
   // Generate NHR number from CNIC
   const generateNHRNumber = (cnic: string): string => {
-    // Remove dashes and spaces from CNIC
     const cleanCnic = cnic.replace(/[-\s]/g, "")
-    
-    // Simple NHR generation: NHR + last 6 digits of CNIC + random 3 digits
     const last6Digits = cleanCnic.slice(-6)
     const random3Digits = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
-    
     return `NHR-${last6Digits}${random3Digits}`
   }
 
@@ -168,7 +165,6 @@ export default function SignUp() {
     
     if (step === 1) {
       if (validateStep1()) {
-        // Generate NHR number for patients
         if (formData.role === UserRole.PATIENT && formData.cnicNumber) {
           const generatedNhr = generateNHRNumber(formData.cnicNumber)
           setNhrNumber(generatedNhr)
@@ -184,10 +180,8 @@ export default function SignUp() {
       setIsLoading(true)
       
       try {
-        // Prepare submission data
         const submitData = {
           ...formData,
-          // Add NHR number for patients
           ...(formData.role === UserRole.PATIENT && nhrNumber && { nhrNumber })
         }
 
@@ -220,7 +214,6 @@ export default function SignUp() {
 
   const updateFormData = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }))
     }
@@ -230,26 +223,23 @@ export default function SignUp() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md border-emerald-200">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <CheckCircle className="h-16 w-16 text-emerald-600 mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <CheckCircle className="h-12 w-12 text-emerald-600 mb-3" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
               Account Created Successfully!
             </h2>
             {nhrNumber && (
-              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                <p className="text-sm text-emerald-700 font-medium">
+              <div className="mb-3 p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-center">
+                <p className="text-xs text-emerald-700 font-medium">
                   Your NHR Number: <span className="font-bold">{nhrNumber}</span>
-                </p>
-                <p className="text-xs text-emerald-600 mt-1">
-                  This number is tied to your CNIC and will be used for all health records.
                 </p>
               </div>
             )}
-            <p className="text-gray-600 text-center mb-6">
+            <p className="text-sm text-gray-600 text-center mb-4">
               Your account has been created. Please sign in to continue.
             </p>
             <Button 
-              className="bg-emerald-600 hover:bg-emerald-700 w-full"
+              className="bg-emerald-600 hover:bg-emerald-700 w-full h-8 text-sm"
               onClick={() => router.push("/auth/signin")}
             >
               Sign In
@@ -261,585 +251,423 @@ export default function SignUp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center p-4">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 25% 25%, #2ba664 2px, transparent 2px),
-                           radial-gradient(circle at 75% 75%, #2ba664 1px, transparent 1px)`,
-          backgroundSize: '50px 50px'
-        }}></div>
-      </div>
-
-      <div className="relative w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-        {/* Left Side - Information */}
-        <div className="space-y-8 text-center lg:text-left">
-          {/* Logo */}
-          <div className="flex items-center justify-center lg:justify-start space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#2ba664] to-[#238a52] rounded-xl flex items-center justify-center shadow-lg">
-              <HeartPulse className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Fitwell</h1>
-              <p className="text-lg font-semibold text-[#2ba664]">H.E.A.L.T.H.</p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="flex items-center justify-center space-x-3 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-br from-[#2ba664] to-[#238a52] rounded-lg flex items-center justify-center shadow-lg">
+            <HeartPulse className="h-6 w-6 text-white" />
           </div>
-
-          {/* Main Content */}
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                Create Your Account
-                <span className="block bg-gradient-to-r from-[#2ba664] to-[#238a52] bg-clip-text text-transparent mt-2">
-                  Join Healthcare Excellence
-                </span>
-              </h2>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Experience comprehensive healthcare with NHR (National Health Record) integration. 
-                Your CNIC will generate a unique NHR number for all your medical records.
-              </p>
-            </div>
-
-            {/* Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-              <div className="flex items-center space-x-3 p-3 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200">
-                <Fingerprint className="h-5 w-5 text-[#2ba664]" />
-                <span className="text-sm font-medium text-gray-700">NHR Number Integration</span>
-              </div>
-              <div className="flex items-center space-x-3 p-3 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200">
-                <CreditCard className="h-5 w-5 text-[#2ba664]" />
-                <span className="text-sm font-medium text-gray-700">CNIC-based Identity</span>
-              </div>
-              <div className="flex items-center space-x-3 p-3 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200">
-                <FileText className="h-5 w-5 text-[#2ba664]" />
-                <span className="text-sm font-medium text-gray-700">Comprehensive Health Records</span>
-              </div>
-            </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Fitwell</h1>
+            <p className="text-sm font-semibold text-[#2ba664]">H.E.A.L.T.H.</p>
           </div>
         </div>
 
-        {/* Right Side - Sign Up Form */}
-        <div className="space-y-6">
-          <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
-            <CardHeader className="space-y-4 text-center pb-6">
-              <div className="space-y-2">
-                <CardTitle className="text-2xl font-bold text-gray-900">Sign Up</CardTitle>
-                <CardDescription className="text-gray-600">
-                  Create your Fitwell H.E.A.L.T.H. account
-                </CardDescription>
-              </div>
-              
-              {/* Progress bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-[#2ba664] to-[#238a52] h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(step / 2) * 100}%` }}
-                ></div>
-              </div>
-            </CardHeader>
+        {/* Sign Up Card */}
+        <Card className="border-0 shadow-lg bg-white">
+          <CardHeader className="space-y-2 text-center pb-3">
+            <CardTitle className="text-xl font-bold text-gray-900">Sign Up</CardTitle>
+            <CardDescription className="text-sm text-gray-600">
+              Create your Fitwell H.E.A.L.T.H. account
+            </CardDescription>
+            
+            {/* Progress bar */}
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
+              <div 
+                className="bg-gradient-to-r from-[#2ba664] to-[#238a52] h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${(step / 2) * 100}%` }}
+              ></div>
+            </div>
+          </CardHeader>
 
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {errors.submit && (
-                  <Alert variant="destructive" className="border-red-200 bg-red-50">
-                    <AlertDescription className="text-red-700">{errors.submit}</AlertDescription>
-                  </Alert>
-                )}
+          <CardContent className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              {errors.submit && (
+                <Alert variant="destructive" className="border-red-200 bg-red-50 py-2">
+                  <AlertDescription className="text-sm text-red-700">{errors.submit}</AlertDescription>
+                </Alert>
+              )}
 
-                {step === 1 && (
-                  <>
-                    {/* Role Selection */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-gray-700">I am a *</Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          type="button"
-                          variant={formData.role === UserRole.PATIENT ? "default" : "outline"}
-                          className={`h-auto p-4 flex flex-col items-center space-y-2 ${formData.role === UserRole.PATIENT ? "bg-gradient-to-r from-[#2ba664] to-[#238a52] hover:from-[#238a52] hover:to-[#1f7a47]" : "border-[#2ba664]/30 hover:border-[#2ba664] hover:bg-[#2ba664]/5"}`}
-                          onClick={() => updateFormData("role", UserRole.PATIENT)}
-                        >
-                          <User className="h-6 w-6" />
-                          <span className="text-sm font-medium">Patient</span>
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={formData.role === UserRole.DOCTOR ? "default" : "outline"}
-                          className={`h-auto p-4 flex flex-col items-center space-y-2 ${formData.role === UserRole.DOCTOR ? "bg-gradient-to-r from-[#2ba664] to-[#238a52] hover:from-[#238a52] hover:to-[#1f7a47]" : "border-[#2ba664]/30 hover:border-[#2ba664] hover:bg-[#2ba664]/5"}`}
-                          onClick={() => updateFormData("role", UserRole.DOCTOR)}
-                        >
-                          <Stethoscope className="h-6 w-6" />
-                          <span className="text-sm font-medium">Doctor</span>
-                        </Button>
-                      </div>
-                      {errors.role && <p className="text-sm text-red-600">{errors.role}</p>}
+              {step === 1 && (
+                <>
+                  {/* Role Selection */}
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-gray-700">I am a *</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant={formData.role === UserRole.PATIENT ? "default" : "outline"}
+                        className={`h-auto p-3 flex flex-col items-center space-y-1 ${formData.role === UserRole.PATIENT ? "bg-gradient-to-r from-[#2ba664] to-[#238a52]" : "border-[#2ba664]/30"}`}
+                        onClick={() => updateFormData("role", UserRole.PATIENT)}
+                      >
+                        <User className="h-4 w-4" />
+                        <span className="text-xs font-medium">Patient</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={formData.role === UserRole.DOCTOR ? "default" : "outline"}
+                        className={`h-auto p-3 flex flex-col items-center space-y-1 ${formData.role === UserRole.DOCTOR ? "bg-gradient-to-r from-[#2ba664] to-[#238a52]" : "border-[#2ba664]/30"}`}
+                        onClick={() => updateFormData("role", UserRole.DOCTOR)}
+                      >
+                        <Stethoscope className="h-4 w-4" />
+                        <span className="text-xs font-medium">Doctor</span>
+                      </Button>
                     </div>
+                    {errors.role && <p className="text-xs text-red-600">{errors.role}</p>}
+                  </div>
 
-                    {/* Name Fields */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">First Name *</Label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input
-                            id="firstName"
-                            type="text"
-                            placeholder="John"
-                            className={`pl-10 ${errors.firstName ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
-                            value={formData.firstName}
-                            onChange={(e) => updateFormData("firstName", e.target.value)}
-                          />
-                        </div>
-                        {errors.firstName && <p className="text-sm text-red-600">{errors.firstName}</p>}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">Last Name *</Label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input
-                            id="lastName"
-                            type="text"
-                            placeholder="Doe"
-                            className={`pl-10 ${errors.lastName ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
-                            value={formData.lastName}
-                            onChange={(e) => updateFormData("lastName", e.target.value)}
-                          />
-                        </div>
-                        {errors.lastName && <p className="text-sm text-red-600">{errors.lastName}</p>}
-                      </div>
+                  {/* Name Fields */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="firstName" className="text-xs font-medium text-gray-700">First Name *</Label>
+                      <Input
+                        id="firstName"
+                        type="text"
+                        placeholder="John"
+                        className={`text-xs ${errors.firstName ? "border-red-500" : "border-gray-300"}`}
+                        value={formData.firstName}
+                        onChange={(e) => updateFormData("firstName", e.target.value)}
+                      />
                     </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="lastName" className="text-xs font-medium text-gray-700">Last Name *</Label>
+                      <Input
+                        id="lastName"
+                        type="text"
+                        placeholder="Doe"
+                        className={`text-xs ${errors.lastName ? "border-red-500" : "border-gray-300"}`}
+                        value={formData.lastName}
+                        onChange={(e) => updateFormData("lastName", e.target.value)}
+                      />
+                    </div>
+                  </div>
 
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address *</Label>
+                  {/* Email */}
+                  <div className="space-y-1">
+                    <Label htmlFor="email" className="text-xs font-medium text-gray-700">Email *</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="john@example.com"
+                        className={`pl-7 text-xs ${errors.email ? "border-red-500" : "border-gray-300"}`}
+                        value={formData.email}
+                        onChange={(e) => updateFormData("email", e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="password" className="text-xs font-medium text-gray-700">Password *</Label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="john.doe@example.com"
-                          className={`pl-10 ${errors.email ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
-                          value={formData.email}
-                          onChange={(e) => updateFormData("email", e.target.value)}
-                        />
-                      </div>
-                      {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
-                    </div>
-
-                    {/* Phone */}
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone Number *</Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="phone"
-                          type="tel"
-                          placeholder="+1 (555) 123-4567"
-                          className={`pl-10 ${errors.phone ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
-                          value={formData.phone}
-                          onChange={(e) => updateFormData("phone", e.target.value)}
-                        />
-                      </div>
-                      {errors.phone && <p className="text-sm text-red-600">{errors.phone}</p>}
-                    </div>
-
-                    {/* CNIC Number */}
-                    {formData.role === UserRole.PATIENT && (
-                      <div className="space-y-2">
-                        <Label htmlFor="cnicNumber" className="text-sm font-medium text-gray-700 flex items-center">
-                          <CreditCard className="h-4 w-4 mr-2 text-[#2ba664]" />
-                          CNIC Number *
-                        </Label>
-                        <div className="relative">
-                          <Fingerprint className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input
-                            id="cnicNumber"
-                            type="text"
-                            placeholder="42101-1234567-1"
-                            className={`pl-10 ${errors.cnicNumber ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
-                            value={formData.cnicNumber || ""}
-                            onChange={(e) => updateFormData("cnicNumber", e.target.value)}
-                          />
-                        </div>
-                        {errors.cnicNumber && <p className="text-sm text-red-600">{errors.cnicNumber}</p>}
-                        <p className="text-xs text-gray-500">
-                          Format: XXXXX-XXXXXXX-X (e.g., 42101-1234567-1)
-                        </p>
-                      </div>
-                    )}
-
-                    {formData.role === UserRole.DOCTOR && (
-                      <div className="space-y-2">
-                        <Label htmlFor="cnicDoctorNumber" className="text-sm font-medium text-gray-700 flex items-center">
-                          <CreditCard className="h-4 w-4 mr-2 text-[#2ba664]" />
-                          CNIC Number *
-                        </Label>
-                        <div className="relative">
-                          <Fingerprint className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input
-                            id="cnicDoctorNumber"
-                            type="text"
-                            placeholder="42101-1234567-1"
-                            className={`pl-10 ${errors.cnicDoctorNumber ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
-                            value={formData.cnicDoctorNumber || ""}
-                            onChange={(e) => updateFormData("cnicDoctorNumber", e.target.value)}
-                          />
-                        </div>
-                        {errors.cnicDoctorNumber && <p className="text-sm text-red-600">{errors.cnicDoctorNumber}</p>}
-                        <p className="text-xs text-gray-500">
-                          Format: XXXXX-XXXXXXX-X (e.g., 42101-1234567-1)
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Password */}
-                    <div className="space-y-2">
-                      <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password *</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Lock className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
                         <Input
                           id="password"
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          className={`pl-10 pr-10 ${errors.password ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
+                          className={`pl-7 pr-7 text-xs ${errors.password ? "border-red-500" : "border-gray-300"}`}
                           value={formData.password}
                           onChange={(e) => updateFormData("password", e.target.value)}
                         />
                         <button
                           type="button"
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                           onClick={() => setShowPassword(!showPassword)}
                         >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {showPassword ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                         </button>
                       </div>
-                      {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
                     </div>
-
-                    {/* Confirm Password */}
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password *</Label>
+                    <div className="space-y-1">
+                      <Label htmlFor="confirmPassword" className="text-xs font-medium text-gray-700">Confirm *</Label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Lock className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
                         <Input
                           id="confirmPassword"
                           type={showConfirmPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          className={`pl-10 pr-10 ${errors.confirmPassword ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
+                          className={`pl-7 pr-7 text-xs ${errors.confirmPassword ? "border-red-500" : "border-gray-300"}`}
                           value={formData.confirmPassword}
                           onChange={(e) => updateFormData("confirmPassword", e.target.value)}
                         />
                         <button
                           type="button"
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
-                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {showConfirmPassword ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                         </button>
                       </div>
-                      {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword}</p>}
                     </div>
+                  </div>
 
-                    {/* Terms and Conditions */}
-                    <div className="flex items-start space-x-2">
-                      <Checkbox
-                        id="agreeToTerms"
-                        checked={formData.agreeToTerms}
-                        onCheckedChange={(checked) => updateFormData("agreeToTerms", checked)}
+                  {/* Phone */}
+                  <div className="space-y-1">
+                    <Label htmlFor="phone" className="text-xs font-medium text-gray-700">Phone *</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="+1 234 567 8900"
+                        className={`pl-7 text-xs ${errors.phone ? "border-red-500" : "border-gray-300"}`}
+                        value={formData.phone}
+                        onChange={(e) => updateFormData("phone", e.target.value)}
                       />
-                      <label htmlFor="agreeToTerms" className="text-sm text-gray-600 leading-relaxed">
-                        I agree to the{" "}
-                        <a href="#" className="text-[#2ba664] hover:underline">Terms of Service</a>
-                        {" "}and{" "}
-                        <a href="#" className="text-[#2ba664] hover:underline">Privacy Policy</a>
-                      </label>
                     </div>
-                    {errors.agreeToTerms && <p className="text-sm text-red-600">{errors.agreeToTerms}</p>}
-                  </>
-                )}
+                  </div>
 
-                {step === 2 && (
-                  <>
-                    {/* Patient Specific Fields */}
-                    {formData.role === UserRole.PATIENT && (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="dateOfBirth" className="text-sm font-medium text-gray-700">Date of Birth *</Label>
-                            <div className="relative">
-                              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  {/* CNIC */}
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-gray-700">
+                      CNIC {formData.role === UserRole.PATIENT ? "(Patient)*" : "(Doctor)*"}
+                    </Label>
+                    <div className="relative">
+                      <Fingerprint className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+                      <Input
+                        type="text"
+                        placeholder="XXXXX-XXXXXXX-X"
+                        className={`pl-7 text-xs ${formData.role === UserRole.PATIENT && errors.cnicNumber ? "border-red-500" : ""} ${formData.role === UserRole.DOCTOR && errors.cnicDoctorNumber ? "border-red-500" : ""} border-gray-300`}
+                        value={formData.role === UserRole.PATIENT ? formData.cnicNumber || "" : formData.cnicDoctorNumber || ""}
+                        onChange={(e) => {
+                          if (formData.role === UserRole.PATIENT) {
+                            updateFormData("cnicNumber", e.target.value)
+                          } else {
+                            updateFormData("cnicDoctorNumber", e.target.value)
+                          }
+                        }}
+                      />
+                    </div>
+                    {(errors.cnicNumber || errors.cnicDoctorNumber) && (
+                      <p className="text-xs text-red-600">{errors.cnicNumber || errors.cnicDoctorNumber}</p>
+                    )}
+                  </div>
+
+                  {/* Terms */}
+                  <div className="flex items-start space-x-2">
+                    <Checkbox
+                      id="agreeToTerms"
+                      checked={formData.agreeToTerms}
+                      onCheckedChange={(checked) => updateFormData("agreeToTerms", checked as boolean)}
+                      className="h-3 w-3 mt-0.5"
+                    />
+                    <Label htmlFor="agreeToTerms" className="text-xs text-gray-600 leading-tight">
+                      I agree to the Terms of Service and Privacy Policy *
+                    </Label>
+                  </div>
+                  {errors.agreeToTerms && <p className="text-xs text-red-600">{errors.agreeToTerms}</p>}
+                </>
+              )}
+
+              {step === 2 && (
+                <>
+                  {/* Address Section */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-medium text-gray-700">Address Information</Label>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <Input
+                        placeholder="Street Address *"
+                        className={`text-xs ${errors.address ? "border-red-500" : "border-gray-300"}`}
+                        value={formData.address}
+                        onChange={(e) => updateFormData("address", e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        placeholder="City *"
+                        className={`text-xs ${errors.city ? "border-red-500" : "border-gray-300"}`}
+                        value={formData.city}
+                        onChange={(e) => updateFormData("city", e.target.value)}
+                      />
+                      <Input
+                        placeholder="State"
+                        className="text-xs border-gray-300"
+                        value={formData.state}
+                        onChange={(e) => updateFormData("state", e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        placeholder="Country *"
+                        className={`text-xs ${errors.country ? "border-red-500" : "border-gray-300"}`}
+                        value={formData.country}
+                        onChange={(e) => updateFormData("country", e.target.value)}
+                      />
+                      <Input
+                        placeholder="Postal Code"
+                        className="text-xs border-gray-300"
+                        value={formData.postalCode}
+                        onChange={(e) => updateFormData("postalCode", e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Role Specific Fields */}
+                  <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
+                    <CollapsibleTrigger asChild>
+                      <Button type="button" variant="ghost" className="w-full justify-between p-2 h-auto">
+                        <span className="text-xs font-medium text-gray-700">
+                          {formData.role === UserRole.PATIENT ? "Patient Information" : "Doctor Information"}
+                        </span>
+                        <ChevronDown className={`h-3 w-3 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-2 mt-2">
+                      {formData.role === UserRole.PATIENT && (
+                        <>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs font-medium text-gray-700">Date of Birth *</Label>
                               <Input
-                                id="dateOfBirth"
                                 type="date"
-                                className={`pl-10 ${errors.dateOfBirth ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
+                                className={`text-xs ${errors.dateOfBirth ? "border-red-500" : "border-gray-300"}`}
                                 value={formData.dateOfBirth || ""}
                                 onChange={(e) => updateFormData("dateOfBirth", e.target.value)}
                               />
                             </div>
-                            {errors.dateOfBirth && <p className="text-sm text-red-600">{errors.dateOfBirth}</p>}
+                            <div className="space-y-1">
+                              <Label className="text-xs font-medium text-gray-700">Gender *</Label>
+                              <Select value={formData.gender} onValueChange={(value) => updateFormData("gender", value as Gender)}>
+                                <SelectTrigger className={`text-xs ${errors.gender ? "border-red-500" : "border-gray-300"}`}>
+                                  <SelectValue placeholder="Select gender" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value={Gender.MALE}>Male</SelectItem>
+                                  <SelectItem value={Gender.FEMALE}>Female</SelectItem>
+                                  <SelectItem value={Gender.OTHER}>Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="gender" className="text-sm font-medium text-gray-700">Gender *</Label>
-                            <Select value={formData.gender} onValueChange={(value) => updateFormData("gender", value as Gender)}>
-                              <SelectTrigger className={`border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664] ${errors.gender ? "border-red-500" : ""}`}>
-                                <SelectValue placeholder="Select gender" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value={Gender.MALE}>Male</SelectItem>
-                                <SelectItem value={Gender.FEMALE}>Female</SelectItem>
-                                <SelectItem value={Gender.OTHER}>Other</SelectItem>
-                                <SelectItem value={Gender.PREFER_NOT_TO_SAY}>Prefer not to say</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {errors.gender && <p className="text-sm text-red-600">{errors.gender}</p>}
+                          
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs font-medium text-gray-700">Blood Group</Label>
+                              <Select value={formData.bloodGroup} onValueChange={(value) => updateFormData("bloodGroup", value)}>
+                                <SelectTrigger className="text-xs border-gray-300">
+                                  <SelectValue placeholder="Select blood group" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="A+">A+</SelectItem>
+                                  <SelectItem value="A-">A-</SelectItem>
+                                  <SelectItem value="B+">B+</SelectItem>
+                                  <SelectItem value="B-">B-</SelectItem>
+                                  <SelectItem value="AB+">AB+</SelectItem>
+                                  <SelectItem value="AB-">AB-</SelectItem>
+                                  <SelectItem value="O+">O+</SelectItem>
+                                  <SelectItem value="O-">O-</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs font-medium text-gray-700">Emergency Contact</Label>
+                              <Input
+                                placeholder="Emergency contact"
+                                className="text-xs border-gray-300"
+                                value={formData.emergencyContact || ""}
+                                onChange={(e) => updateFormData("emergencyContact", e.target.value)}
+                              />
+                            </div>
                           </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="bloodGroup" className="text-sm font-medium text-gray-700">Blood Group</Label>
-                          <Select value={formData.bloodGroup} onValueChange={(value) => updateFormData("bloodGroup", value)}>
-                            <SelectTrigger className="border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]">
-                              <SelectValue placeholder="Select blood group" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="A+">A+</SelectItem>
-                              <SelectItem value="A-">A-</SelectItem>
-                              <SelectItem value="B+">B+</SelectItem>
-                              <SelectItem value="B-">B-</SelectItem>
-                              <SelectItem value="AB+">AB+</SelectItem>
-                              <SelectItem value="AB-">AB-</SelectItem>
-                              <SelectItem value="O+">O+</SelectItem>
-                              <SelectItem value="O-">O-</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="emergencyContact" className="text-sm font-medium text-gray-700">Emergency Contact</Label>
-                          <div className="relative">
-                            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        </>
+                      )}
+                      
+                      {formData.role === UserRole.DOCTOR && (
+                        <>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-gray-700">Specialization *</Label>
                             <Input
-                              id="emergencyContact"
-                              type="tel"
-                              placeholder="+1 (555) 987-6543"
-                              className="pl-10 border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"
-                              value={formData.emergencyContact || ""}
-                              onChange={(e) => updateFormData("emergencyContact", e.target.value)}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Doctor Specific Fields */}
-                    {formData.role === UserRole.DOCTOR && (
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="specialization" className="text-sm font-medium text-gray-700">Specialization *</Label>
-                          <div className="relative">
-                            <Stethoscope className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input
-                              id="specialization"
-                              type="text"
-                              placeholder="Cardiology, General Practice, etc."
-                              className={`pl-10 ${errors.specialization ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
+                              placeholder="e.g., Cardiology"
+                              className={`text-xs ${errors.specialization ? "border-red-500" : "border-gray-300"}`}
                               value={formData.specialization || ""}
                               onChange={(e) => updateFormData("specialization", e.target.value)}
                             />
                           </div>
-                          {errors.specialization && <p className="text-sm text-red-600">{errors.specialization}</p>}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="experience" className="text-sm font-medium text-gray-700">Experience (years) *</Label>
-                            <div className="relative">
-                              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs font-medium text-gray-700">Experience (years) *</Label>
                               <Input
-                                id="experience"
                                 type="number"
-                                min="0"
                                 placeholder="5"
-                                className={`pl-10 ${errors.experience ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
+                                className={`text-xs ${errors.experience ? "border-red-500" : "border-gray-300"}`}
                                 value={formData.experience || ""}
-                                onChange={(e) => updateFormData("experience", parseInt(e.target.value))}
+                                onChange={(e) => updateFormData("experience", parseInt(e.target.value) || 0)}
                               />
                             </div>
-                            {errors.experience && <p className="text-sm text-red-600">{errors.experience}</p>}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="consultationFee" className="text-sm font-medium text-gray-700">Consultation Fee ($) *</Label>
-                            <div className="relative">
-                              <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <div className="space-y-1">
+                              <Label className="text-xs font-medium text-gray-700">Consultation Fee *</Label>
                               <Input
-                                id="consultationFee"
                                 type="number"
-                                min="0"
-                                step="0.01"
-                                placeholder="50"
-                                className={`pl-10 ${errors.consultationFee ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
+                                placeholder="100"
+                                className={`text-xs ${errors.consultationFee ? "border-red-500" : "border-gray-300"}`}
                                 value={formData.consultationFee || ""}
-                                onChange={(e) => updateFormData("consultationFee", parseFloat(e.target.value))}
+                                onChange={(e) => updateFormData("consultationFee", parseInt(e.target.value) || 0)}
                               />
                             </div>
-                            {errors.consultationFee && <p className="text-sm text-red-600">{errors.consultationFee}</p>}
                           </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="medicalLicense" className="text-sm font-medium text-gray-700">Medical License Number *</Label>
-                          <div className="relative">
-                            <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-gray-700">Medical License *</Label>
                             <Input
-                              id="medicalLicense"
-                              type="text"
-                              placeholder="MD12345"
-                              className={`pl-10 ${errors.medicalLicense ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
+                              placeholder="License number"
+                              className={`text-xs ${errors.medicalLicense ? "border-red-500" : "border-gray-300"}`}
                               value={formData.medicalLicense || ""}
                               onChange={(e) => updateFormData("medicalLicense", e.target.value)}
                             />
                           </div>
-                          {errors.medicalLicense && <p className="text-sm text-red-600">{errors.medicalLicense}</p>}
-                        </div>
-                      </div>
-                    )}
+                        </>
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                </>
+              )}
 
-                    {/* Address Fields */}
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="address" className="text-sm font-medium text-gray-700">Address *</Label>
-                        <div className="relative">
-                          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input
-                            id="address"
-                            type="text"
-                            placeholder="123 Main Street"
-                            className={`pl-10 ${errors.address ? "border-red-500" : "border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"}`}
-                            value={formData.address}
-                            onChange={(e) => updateFormData("address", e.target.value)}
-                          />
-                        </div>
-                        {errors.address && <p className="text-sm text-red-600">{errors.address}</p>}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="city" className="text-sm font-medium text-gray-700">City *</Label>
-                          <Input
-                            id="city"
-                            type="text"
-                            placeholder="New York"
-                            className={`border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664] ${errors.city ? "border-red-500" : ""}`}
-                            value={formData.city}
-                            onChange={(e) => updateFormData("city", e.target.value)}
-                          />
-                          {errors.city && <p className="text-sm text-red-600">{errors.city}</p>}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="state" className="text-sm font-medium text-gray-700">State</Label>
-                          <Input
-                            id="state"
-                            type="text"
-                            placeholder="NY"
-                            className="border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"
-                            value={formData.state}
-                            onChange={(e) => updateFormData("state", e.target.value)}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="country" className="text-sm font-medium text-gray-700">Country *</Label>
-                          <Input
-                            id="country"
-                            type="text"
-                            placeholder="United States"
-                            className={`border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664] ${errors.country ? "border-red-500" : ""}`}
-                            value={formData.country}
-                            onChange={(e) => updateFormData("country", e.target.value)}
-                          />
-                          {errors.country && <p className="text-sm text-red-600">{errors.country}</p>}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="postalCode" className="text-sm font-medium text-gray-700">Postal Code</Label>
-                          <Input
-                            id="postalCode"
-                            type="text"
-                            placeholder="10001"
-                            className="border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"
-                            value={formData.postalCode}
-                            onChange={(e) => updateFormData("postalCode", e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Navigation Buttons */}
-                <div className="flex space-x-4 pt-4">
-                  {step > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setStep(step - 1)}
-                      className="flex-1 border-[#2ba664] text-[#2ba664] hover:bg-[#2ba664] hover:text-white"
-                      disabled={isLoading}
-                    >
-                      Back
-                    </Button>
-                  )}
-                  <Button
-                    type="submit"
-                    className={`flex-1 bg-gradient-to-r from-[#2ba664] to-[#238a52] hover:from-[#238a52] hover:to-[#1f7a47] text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${step === 1 ? 'w-full' : ''}`}
+              {/* Navigation Buttons */}
+              <div className="flex gap-2 pt-2">
+                {step === 2 && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex-1 h-8 text-xs"
+                    onClick={() => setStep(1)}
                     disabled={isLoading}
                   >
-                    {isLoading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        {step === 1 ? 'Validating...' : 'Creating Account...'}
-                      </>
-                    ) : (
-                      step === 1 ? 'Continue' : 'Create Account'
-                    )}
+                    Back
                   </Button>
-                </div>
-              </form>
-            </CardContent>
-
-            <CardFooter className="flex flex-col space-y-4 pt-6 border-t border-gray-200">
-              <div className="text-center text-sm text-gray-600">
-                Already have an account?{" "}
-                <Link 
-                  href="/auth/signin" 
-                  className="text-[#2ba664] hover:text-[#238a52] font-medium hover:underline"
+                )}
+                <Button 
+                  type="submit" 
+                  className="flex-1 bg-gradient-to-r from-[#2ba664] to-[#238a52] hover:from-[#238a52] hover:to-[#1f7a47] text-white h-8 text-xs font-medium disabled:opacity-50"
+                  disabled={isLoading}
                 >
-                  Sign in
-                </Link>
+                  {isLoading ? "Processing..." : step === 1 ? "Next" : "Create Account"}
+                </Button>
               </div>
-            </CardFooter>
-          </Card>
+            </form>
+          </CardContent>
 
-          {/* NHR Information Card */}
-          {step === 1 && formData.role === UserRole.PATIENT && (
-            <Card className="border-[#2ba664]/20 bg-[#2ba664]/5">
-              <CardContent className="pt-6">
-                <h3 className="font-semibold text-[#2ba664] mb-3 flex items-center">
-                  <Fingerprint className="h-4 w-4 mr-2" />
-                  NHR Information
-                </h3>
-                <div className="space-y-2 text-sm text-gray-700">
-                  <p>
-                    Your CNIC will be used to generate a unique National Health Record (NHR) number that will be tied to your identity for all medical records.
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    The NHR number ensures your health records are securely linked to your national identity.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+          <CardFooter className="pt-3 border-t border-gray-200">
+            <div className="text-center text-xs text-gray-600 w-full">
+              Already have an account?{" "}
+              <Link 
+                href="/auth/signin" 
+                className="text-[#2ba664] hover:text-[#238a52] font-medium hover:underline"
+              >
+                Sign in
+              </Link>
+            </div>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   )

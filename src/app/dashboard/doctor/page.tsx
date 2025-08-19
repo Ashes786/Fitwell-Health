@@ -60,10 +60,8 @@ export default function DoctorDashboard() {
       return
     }
 
-    if (session.user?.role !== "DOCTOR") {
-      router.push("/dashboard")
-      return
-    }
+    // Remove the role-based redirect to prevent redirect loops
+    // Let users access their role-specific dashboard directly
 
     setIsLoading(false)
   }, [session, status, router])

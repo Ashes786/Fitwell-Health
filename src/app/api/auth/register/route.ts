@@ -79,12 +79,7 @@ export async function POST(request: Request) {
       password: hashedPassword,
       name: `${firstName} ${lastName}`,
       phone,
-      role,
-      address,
-      city,
-      state,
-      country,
-      postalCode
+      role
     }
 
     if (role === UserRole.PATIENT) {
@@ -95,7 +90,12 @@ export async function POST(request: Request) {
           bloodGroup,
           emergencyContact,
           cnicNumber,
-          nhrNumber: nhrNumber || null
+          nhrNumber: nhrNumber || null,
+          address,
+          city,
+          state,
+          country,
+          postalCode
         }
       }
     }
@@ -109,6 +109,10 @@ export async function POST(request: Request) {
           medicalLicense,
           cnicNumber: cnicDoctorNumber,
           city,
+          address,
+          state,
+          country,
+          postalCode,
           availabilitySchedule: JSON.stringify([
             { day: 'Monday', isAvailable: true, startTime: '09:00', endTime: '17:00' },
             { day: 'Tuesday', isAvailable: true, startTime: '09:00', endTime: '17:00' },
