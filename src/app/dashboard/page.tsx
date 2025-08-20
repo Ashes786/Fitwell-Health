@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useUserPermissions } from '@/hooks/use-user-permissions'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -52,8 +53,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-// Role-specific dashboard components
-function SuperAdminDashboard({ session }: { session: any }) {
+// Role-specific dashboard components with feature-based access control
+function SuperAdminDashboard({ session, permissions }: { session: any, permissions: any }) {
   const [analytics, setAnalytics] = useState({
     totalUsers: 1247,
     totalDoctors: 45,
@@ -164,77 +165,85 @@ function SuperAdminDashboard({ session }: { session: any }) {
         </Card>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Show only based on user's assigned features */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link href="/dashboard/super-admin/admins">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Users className="h-6 w-6 text-blue-600" />
+        {permissions.hasFeature('manage_admins') && (
+          <Link href="/dashboard/super-admin/admins">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <Users className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Manage Admins</h3>
+                    <p className="text-sm text-gray-500">{analytics.totalAdmins} admins</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Manage Admins</h3>
-                  <p className="text-sm text-gray-500">{analytics.totalAdmins} admins</p>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
+        
+        {permissions.hasFeature('approve_subscription_requests') && (
+          <Link href="/dashboard/super-admin/subscription-requests">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-yellow-100 rounded-full">
+                    <Clipboard className="h-6 w-6 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Subscription Requests</h3>
+                    <p className="text-sm text-gray-500">{analytics.pendingRequests} pending</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/super-admin/subscription-requests">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-yellow-100 rounded-full">
-                  <Clipboard className="h-6 w-6 text-yellow-600" />
+              </CardContent>
+            </Card>
+          </Link>
+        )}
+        
+        {permissions.hasFeature('view_global_analytics') && (
+          <Link href="/dashboard/super-admin/analytics">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <ChartBar className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Analytics</h3>
+                    <p className="text-sm text-gray-500">View reports</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Subscription Requests</h3>
-                  <p className="text-sm text-gray-500">{analytics.pendingRequests} pending</p>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
+        
+        {permissions.hasFeature('manage_system_status') && (
+          <Link href="/dashboard/super-admin/system-status">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-green-100 rounded-full">
+                    <Server className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">System Status</h3>
+                    <p className="text-sm text-gray-500">All systems operational</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/super-admin/analytics">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <ChartBar className="h-6 w-6 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Analytics</h3>
-                  <p className="text-sm text-gray-500">View reports</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/super-admin/system-status">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-green-100 rounded-full">
-                  <Server className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">System Status</h3>
-                  <p className="text-sm text-gray-500">All systems operational</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
       </div>
     </div>
   )
 }
 
-function AdminDashboard({ session }: { session: any }) {
+function AdminDashboard({ session, permissions }: { session: any, permissions: any }) {
   const [stats, setStats] = useState({
     totalUsers: 847,
     totalDoctors: 32,
@@ -317,61 +326,67 @@ function AdminDashboard({ session }: { session: any }) {
         </Card>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Show only based on user's assigned features */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Link href="/dashboard/admin/users">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Users className="h-6 w-6 text-blue-600" />
+        {permissions.hasPermission('manage_users') && (
+          <Link href="/dashboard/admin/users">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <Users className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Manage Users</h3>
+                    <p className="text-sm text-gray-500">View all users</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Manage Users</h3>
-                  <p className="text-sm text-gray-500">View all users</p>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
+        
+        {permissions.hasPermission('manage_doctors') && (
+          <Link href="/dashboard/admin/doctors">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-green-100 rounded-full">
+                    <Stethoscope className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Manage Doctors</h3>
+                    <p className="text-sm text-gray-500">Doctor management</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/admin/doctors">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-green-100 rounded-full">
-                  <Stethoscope className="h-6 w-6 text-green-600" />
+              </CardContent>
+            </Card>
+          </Link>
+        )}
+        
+        {permissions.hasPermission('view_analytics') && (
+          <Link href="/dashboard/admin/analytics">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <ChartBar className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Analytics</h3>
+                    <p className="text-sm text-gray-500">View reports</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Manage Doctors</h3>
-                  <p className="text-sm text-gray-500">Doctor management</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/admin/analytics">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <ChartBar className="h-6 w-6 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Analytics</h3>
-                  <p className="text-sm text-gray-500">View reports</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
       </div>
     </div>
   )
 }
 
-function DoctorDashboard({ session }: { session: any }) {
+function DoctorDashboard({ session, permissions }: { session: any, permissions: any }) {
   const [stats, setStats] = useState({
     todayAppointments: 8,
     totalPatients: 156,
@@ -453,77 +468,85 @@ function DoctorDashboard({ session }: { session: any }) {
         </Card>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Show only based on user's assigned features */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link href="/dashboard/doctor/appointments">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Calendar className="h-6 w-6 text-blue-600" />
+        {permissions.hasPermission('view_appointments') && (
+          <Link href="/dashboard/doctor/appointments">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <Calendar className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Appointments</h3>
+                    <p className="text-sm text-gray-500">Manage schedule</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Appointments</h3>
-                  <p className="text-sm text-gray-500">Manage schedule</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
-        <Link href="/dashboard/doctor/patients">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-green-100 rounded-full">
-                  <UserCheck className="h-6 w-6 text-green-600" />
+        {permissions.hasPermission('view_patient_records') && (
+          <Link href="/dashboard/doctor/patients">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-green-100 rounded-full">
+                    <UserCheck className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Patients</h3>
+                    <p className="text-sm text-gray-500">View patients</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Patients</h3>
-                  <p className="text-sm text-gray-500">View patients</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
-        <Link href="/dashboard/doctor/prescriptions">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <FileText className="h-6 w-6 text-purple-600" />
+        {permissions.hasPermission('create_prescriptions') && (
+          <Link href="/dashboard/doctor/prescriptions">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <FileText className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Prescriptions</h3>
+                    <p className="text-sm text-gray-500">Manage scripts</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Prescriptions</h3>
-                  <p className="text-sm text-gray-500">Manage scripts</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
-        <Link href="/dashboard/doctor/messages">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-yellow-100 rounded-full">
-                  <MessageSquare className="h-6 w-6 text-yellow-600" />
+        {permissions.hasPermission('chat_with_patient') && (
+          <Link href="/dashboard/doctor/messages">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-yellow-100 rounded-full">
+                    <MessageSquare className="h-6 w-6 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Messages</h3>
+                    <p className="text-sm text-gray-500">Patient chats</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Messages</h3>
-                  <p className="text-sm text-gray-500">Patient chats</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
       </div>
     </div>
   )
 }
 
-function PatientDashboard({ session }: { session: any }) {
+function PatientDashboard({ session, permissions }: { session: any, permissions: any }) {
   const [stats, setStats] = useState({
     upcomingAppointments: 2,
     totalAppointments: 24,
@@ -605,77 +628,85 @@ function PatientDashboard({ session }: { session: any }) {
         </Card>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Show only based on user's assigned features */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link href="/dashboard/patient/book-appointment">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Plus className="h-6 w-6 text-blue-600" />
+        {permissions.hasPermission('book_appointment') && (
+          <Link href="/dashboard/patient/book-appointment">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <Plus className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Book Appointment</h3>
+                    <p className="text-sm text-gray-500">Schedule visit</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Book Appointment</h3>
-                  <p className="text-sm text-gray-500">Schedule visit</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
-        <Link href="/dashboard/patient/appointments">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-green-100 rounded-full">
-                  <Calendar className="h-6 w-6 text-green-600" />
+        {permissions.hasPermission('view_own_appointments') && (
+          <Link href="/dashboard/patient/appointments">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-green-100 rounded-full">
+                    <Calendar className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">My Appointments</h3>
+                    <p className="text-sm text-gray-500">View history</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">My Appointments</h3>
-                  <p className="text-sm text-gray-500">View history</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
-        <Link href="/dashboard/patient/vitals">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <HeartPulse className="h-6 w-6 text-purple-600" />
+        {permissions.hasPermission('record_vitals') && (
+          <Link href="/dashboard/patient/vitals">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <HeartPulse className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Health Vitals</h3>
+                    <p className="text-sm text-gray-500">Track health</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Health Vitals</h3>
-                  <p className="text-sm text-gray-500">Track health</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
-        <Link href="/dashboard/patient/ai-reports">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-yellow-100 rounded-full">
-                  <FileText className="h-6 w-6 text-yellow-600" />
+        {permissions.hasPermission('view_ai_reports') && (
+          <Link href="/dashboard/patient/ai-reports">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-yellow-100 rounded-full">
+                    <FileText className="h-6 w-6 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">AI Reports</h3>
+                    <p className="text-sm text-gray-500">Health insights</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">AI Reports</h3>
-                  <p className="text-sm text-gray-500">Health insights</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
       </div>
     </div>
   )
 }
 
-function AttendantDashboard({ session }: { session: any }) {
+function AttendantDashboard({ session, permissions }: { session: any, permissions: any }) {
   const [stats, setStats] = useState({
     todayRegistrations: 12,
     totalPatients: 89,
@@ -757,61 +788,67 @@ function AttendantDashboard({ session }: { session: any }) {
         </Card>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Show only based on user's assigned features */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Link href="/dashboard/attendant/register-patient">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Plus className="h-6 w-6 text-blue-600" />
+        {permissions.hasPermission('register_patients') && (
+          <Link href="/dashboard/attendant/register-patient">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <Plus className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Register Patient</h3>
+                    <p className="text-sm text-gray-500">New registration</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Register Patient</h3>
-                  <p className="text-sm text-gray-500">New registration</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
-        <Link href="/dashboard/attendant/patients">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-green-100 rounded-full">
-                  <Users className="h-6 w-6 text-green-600" />
+        {permissions.hasPermission('manage_patients') && (
+          <Link href="/dashboard/attendant/patients">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-green-100 rounded-full">
+                    <Users className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Manage Patients</h3>
+                    <p className="text-sm text-gray-500">View all patients</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Manage Patients</h3>
-                  <p className="text-sm text-gray-500">View all patients</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
-        <Link href="/dashboard/attendant/appointments">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <Calendar className="h-6 w-6 text-purple-600" />
+        {permissions.hasPermission('view_appointments') && (
+          <Link href="/dashboard/attendant/appointments">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <Calendar className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Appointments</h3>
+                    <p className="text-sm text-gray-500">Schedule management</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Appointments</h3>
-                  <p className="text-sm text-gray-500">Schedule management</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
       </div>
     </div>
   )
 }
 
-function ControlRoomDashboard({ session }: { session: any }) {
+function ControlRoomDashboard({ session, permissions }: { session: any, permissions: any }) {
   const [stats, setStats] = useState({
     pendingAssignments: 8,
     totalAppointments: 45,
@@ -893,111 +930,194 @@ function ControlRoomDashboard({ session }: { session: any }) {
         </Card>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Show only based on user's assigned features */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Link href="/dashboard/control-room/doctor-assignment">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-red-100 rounded-full">
-                  <Clipboard className="h-6 w-6 text-red-600" />
+        {permissions.hasPermission('assign_doctors') && (
+          <Link href="/dashboard/control-room/doctor-assignment">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-red-100 rounded-full">
+                    <Clipboard className="h-6 w-6 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Doctor Assignment</h3>
+                    <p className="text-sm text-gray-500">Assign doctors</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Doctor Assignment</h3>
-                  <p className="text-sm text-gray-500">Assign doctors</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
-        <Link href="/dashboard/control-room/appointments">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Calendar className="h-6 w-6 text-blue-600" />
+        {permissions.hasPermission('monitor_appointments') && (
+          <Link href="/dashboard/control-room/appointments">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <Calendar className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Appointments</h3>
+                    <p className="text-sm text-gray-500">Monitor schedule</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Appointments</h3>
-                  <p className="text-sm text-gray-500">Monitor schedule</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
-        <Link href="/dashboard/control-room/escalations">
-          <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-yellow-100 rounded-full">
-                  <Activity className="h-6 w-6 text-yellow-600" />
+        {permissions.hasPermission('handle_escalations') && (
+          <Link href="/dashboard/control-room/escalations">
+            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-yellow-100 rounded-full">
+                    <Activity className="h-6 w-6 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Escalations</h3>
+                    <p className="text-sm text-gray-500">Handle issues</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Escalations</h3>
-                  <p className="text-sm text-gray-500">Handle issues</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
       </div>
     </div>
   )
 }
 
-// Navigation configuration for each role
-const getNavigationConfig = (role: string) => {
+// Navigation configuration for each role based on permissions
+const getNavigationConfig = (role: string, permissions: any) => {
   // Default to empty current path during SSR
   const currentPath = ''
   
   switch (role) {
     case 'SUPER_ADMIN':
-      return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
-        { name: 'Admins', href: '/dashboard/super-admin/admins', icon: Users, current: false },
-        { name: 'Analytics', href: '/dashboard/super-admin/analytics', icon: ChartBar, current: false },
-        { name: 'Settings', href: '/dashboard/super-admin/settings', icon: Settings, current: false },
+      const superAdminNav = [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false, permission: null },
       ]
+      
+      if (permissions.hasFeature('manage_admins')) {
+        superAdminNav.push({ name: 'Admins', href: '/dashboard/super-admin/admins', icon: Users, current: false, permission: 'manage_admins' })
+      }
+      
+      if (permissions.hasFeature('view_global_analytics')) {
+        superAdminNav.push({ name: 'Analytics', href: '/dashboard/super-admin/analytics', icon: ChartBar, current: false, permission: 'view_global_analytics' })
+      }
+      
+      superAdminNav.push({ name: 'Settings', href: '/dashboard/super-admin/settings', icon: Settings, current: false, permission: null })
+      
+      return superAdminNav
+      
     case 'ADMIN':
-      return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
-        { name: 'Users', href: '/dashboard/admin/users', icon: Users, current: false },
-        { name: 'Doctors', href: '/dashboard/admin/doctors', icon: Stethoscope, current: false },
-        { name: 'Analytics', href: '/dashboard/admin/analytics', icon: ChartBar, current: false },
-        { name: 'Settings', href: '/dashboard/admin/settings', icon: Settings, current: false },
+      const adminNav = [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false, permission: null },
       ]
+      
+      if (permissions.hasPermission('manage_users')) {
+        adminNav.push({ name: 'Users', href: '/dashboard/admin/users', icon: Users, current: false, permission: 'manage_users' })
+      }
+      
+      if (permissions.hasPermission('manage_doctors')) {
+        adminNav.push({ name: 'Doctors', href: '/dashboard/admin/doctors', icon: Stethoscope, current: false, permission: 'manage_doctors' })
+      }
+      
+      if (permissions.hasPermission('view_analytics')) {
+        adminNav.push({ name: 'Analytics', href: '/dashboard/admin/analytics', icon: ChartBar, current: false, permission: 'view_analytics' })
+      }
+      
+      adminNav.push({ name: 'Settings', href: '/dashboard/admin/settings', icon: Settings, current: false, permission: null })
+      
+      return adminNav
+      
     case 'DOCTOR':
-      return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
-        { name: 'Appointments', href: '/dashboard/doctor/appointments', icon: Calendar, current: false },
-        { name: 'Patients', href: '/dashboard/doctor/patients', icon: UserCheck, current: false },
-        { name: 'Prescriptions', href: '/dashboard/doctor/prescriptions', icon: FileText, current: false },
-        { name: 'Messages', href: '/dashboard/doctor/messages', icon: MessageSquare, current: false },
+      const doctorNav = [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false, permission: null },
       ]
+      
+      if (permissions.hasPermission('view_appointments')) {
+        doctorNav.push({ name: 'Appointments', href: '/dashboard/doctor/appointments', icon: Calendar, current: false, permission: 'view_appointments' })
+      }
+      
+      if (permissions.hasPermission('view_patient_records')) {
+        doctorNav.push({ name: 'Patients', href: '/dashboard/doctor/patients', icon: UserCheck, current: false, permission: 'view_patient_records' })
+      }
+      
+      if (permissions.hasPermission('create_prescriptions')) {
+        doctorNav.push({ name: 'Prescriptions', href: '/dashboard/doctor/prescriptions', icon: FileText, current: false, permission: 'create_prescriptions' })
+      }
+      
+      if (permissions.hasPermission('chat_with_patient')) {
+        doctorNav.push({ name: 'Messages', href: '/dashboard/doctor/messages', icon: MessageSquare, current: false, permission: 'chat_with_patient' })
+      }
+      
+      return doctorNav
+      
     case 'PATIENT':
-      return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
-        { name: 'Book Appointment', href: '/dashboard/patient/book-appointment', icon: Plus, current: false },
-        { name: 'My Appointments', href: '/dashboard/patient/appointments', icon: Calendar, current: false },
-        { name: 'Health Vitals', href: '/dashboard/patient/vitals', icon: HeartPulse, current: false },
-        { name: 'AI Reports', href: '/dashboard/patient/ai-reports', icon: FileText, current: false },
+      const patientNav = [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false, permission: null },
       ]
+      
+      if (permissions.hasPermission('book_appointment')) {
+        patientNav.push({ name: 'Book Appointment', href: '/dashboard/patient/book-appointment', icon: Plus, current: false, permission: 'book_appointment' })
+      }
+      
+      if (permissions.hasPermission('view_own_appointments')) {
+        patientNav.push({ name: 'My Appointments', href: '/dashboard/patient/appointments', icon: Calendar, current: false, permission: 'view_own_appointments' })
+      }
+      
+      if (permissions.hasPermission('record_vitals')) {
+        patientNav.push({ name: 'Health Vitals', href: '/dashboard/patient/vitals', icon: HeartPulse, current: false, permission: 'record_vitals' })
+      }
+      
+      if (permissions.hasPermission('view_ai_reports')) {
+        patientNav.push({ name: 'AI Reports', href: '/dashboard/patient/ai-reports', icon: FileText, current: false, permission: 'view_ai_reports' })
+      }
+      
+      return patientNav
+      
     case 'ATTENDANT':
-      return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
-        { name: 'Register Patient', href: '/dashboard/attendant/register-patient', icon: Plus, current: false },
-        { name: 'Patients', href: '/dashboard/attendant/patients', icon: Users, current: false },
-        { name: 'Appointments', href: '/dashboard/attendant/appointments', icon: Calendar, current: false },
+      const attendantNav = [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false, permission: null },
       ]
+      
+      if (permissions.hasPermission('register_patients')) {
+        attendantNav.push({ name: 'Register Patient', href: '/dashboard/attendant/register-patient', icon: Plus, current: false, permission: 'register_patients' })
+      }
+      
+      if (permissions.hasPermission('manage_patients')) {
+        attendantNav.push({ name: 'Patients', href: '/dashboard/attendant/patients', icon: Users, current: false, permission: 'manage_patients' })
+      }
+      
+      if (permissions.hasPermission('view_appointments')) {
+        attendantNav.push({ name: 'Appointments', href: '/dashboard/attendant/appointments', icon: Calendar, current: false, permission: 'view_appointments' })
+      }
+      
+      return attendantNav
+      
     case 'CONTROL_ROOM':
-      return [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false },
-        { name: 'Doctor Assignment', href: '/dashboard/control-room/doctor-assignment', icon: Clipboard, current: false },
-        { name: 'Appointments', href: '/dashboard/control-room/appointments', icon: Calendar, current: false },
-        { name: 'Escalations', href: '/dashboard/control-room/escalations', icon: Activity, current: false },
+      const controlRoomNav = [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: false, permission: null },
       ]
+      
+      if (permissions.hasPermission('assign_doctors')) {
+        controlRoomNav.push({ name: 'Doctor Assignment', href: '/dashboard/control-room/doctor-assignment', icon: Clipboard, current: false, permission: 'assign_doctors' })
+      }
+      
+      if (permissions.hasPermission('monitor_appointments')) {
+        controlRoomNav.push({ name: 'Appointments', href: '/dashboard/control-room/appointments', icon: Calendar, current: false, permission: 'monitor_appointments' })
+      }
+      
+      if (permissions.hasPermission('handle_escalations')) {
+        controlRoomNav.push({ name: 'Escalations', href: '/dashboard/control-room/escalations', icon: Activity, current: false, permission: 'handle_escalations' })
+      }
+      
+      return controlRoomNav
+      
     default:
       return []
   }
@@ -1006,6 +1126,7 @@ const getNavigationConfig = (role: string) => {
 export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { permissions, loading } = useUserPermissions()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [notifications, setNotifications] = useState([
     {
@@ -1026,15 +1147,15 @@ export default function Dashboard() {
     }
   ])
 
-  const [navigation, setNavigation] = useState(getNavigationConfig(session?.user?.role || ''))
+  const [navigation, setNavigation] = useState([])
   const [currentPath, setCurrentPath] = useState('')
 
-  // Update navigation when session changes
+  // Update navigation when session or permissions change
   useEffect(() => {
-    if (session?.user?.role) {
-      setNavigation(getNavigationConfig(session.user.role))
+    if (session?.user?.role && permissions) {
+      setNavigation(getNavigationConfig(session.user.role, permissions))
     }
-  }, [session])
+  }, [session, permissions])
 
   // Update current page based on pathname - only on client side
   useEffect(() => {
@@ -1055,7 +1176,7 @@ export default function Dashboard() {
     }
   }, [currentPath])
 
-  if (status === "loading") {
+  if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="flex items-center justify-center h-64">
@@ -1066,8 +1187,14 @@ export default function Dashboard() {
   }
 
   if (!session) {
-    router.push("/auth/signin")
-    return null
+    // Let middleware handle authentication redirects
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      </div>
+    )
   }
 
   const userRole = session.user?.role
@@ -1075,21 +1202,21 @@ export default function Dashboard() {
     ? session.user.name.split(' ').map(n => n[0]).join('').toUpperCase()
     : session?.user?.email?.[0]?.toUpperCase() || 'U'
 
-  // Render role-specific dashboard
+  // Render role-specific dashboard with permissions
   const renderDashboard = () => {
     switch (userRole) {
       case 'SUPER_ADMIN':
-        return <SuperAdminDashboard session={session} />
+        return <SuperAdminDashboard session={session} permissions={permissions} />
       case 'ADMIN':
-        return <AdminDashboard session={session} />
+        return <AdminDashboard session={session} permissions={permissions} />
       case 'DOCTOR':
-        return <DoctorDashboard session={session} />
+        return <DoctorDashboard session={session} permissions={permissions} />
       case 'PATIENT':
-        return <PatientDashboard session={session} />
+        return <PatientDashboard session={session} permissions={permissions} />
       case 'ATTENDANT':
-        return <AttendantDashboard session={session} />
+        return <AttendantDashboard session={session} permissions={permissions} />
       case 'CONTROL_ROOM':
-        return <ControlRoomDashboard session={session} />
+        return <ControlRoomDashboard session={session} permissions={permissions} />
       default:
         return <div>Invalid role</div>
     }

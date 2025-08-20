@@ -34,13 +34,8 @@ export default function Home() {
     
     try {
       if (session) {
-        // Redirect directly to the correct dashboard based on role
-        if (session.user?.role) {
-          const dashboardRoute = getDashboardRoute(session.user.role)
-          router.push(dashboardRoute)
-        } else {
-          router.push("/dashboard")
-        }
+        // Let middleware handle the redirect based on role
+        router.push("/dashboard")
       } else {
         router.push("/auth/signup")
       }
@@ -94,12 +89,8 @@ export default function Home() {
         <div className="flex items-center space-x-2">
           <Button 
             onClick={() => {
-              if (session.user?.role) {
-                const dashboardRoute = getDashboardRoute(session.user.role)
-                router.push(dashboardRoute)
-              } else {
-                router.push("/dashboard")
-              }
+              // Let middleware handle the redirect based on role
+              router.push("/dashboard")
             }} 
             className="bg-[#2ba664] hover:bg-[#238a52] text-white transition-colors duration-200 text-sm px-4 py-2"
             disabled={isNavigating}

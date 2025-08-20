@@ -118,6 +118,11 @@ export const authOptions: NextAuthOptions = {
       return session
     }
   },
+  // Configure JWT settings for middleware
+  jwt: {
+    secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
+    encryption: true,
+  },
   // Optimize session configuration
   useSecureCookies: process.env.NODE_ENV === 'production',
   cookies: {

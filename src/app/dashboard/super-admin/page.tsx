@@ -217,12 +217,14 @@ export default function SuperAdminDashboard() {
     if (status === "loading") return
 
     if (!session) {
-      router.push("/auth/signin")
+      // Let middleware handle authentication redirects
+      // This prevents redirect loops
       return
     }
 
     if (session.user?.role !== "SUPER_ADMIN") {
-      router.push("/dashboard")
+      // Don't redirect - let the middleware handle routing
+      // This prevents redirect loops
       return
     }
 
