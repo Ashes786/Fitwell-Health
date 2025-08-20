@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -52,44 +54,92 @@ interface Admin {
 }
 
 export default function AdminsPage() {
-  const { data: session, status } = useSession()
+  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "SUPER_ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: false
+  })
+  
   const router = useRouter()
   const [admins, setAdmins] = useState<Admin[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
-    if (status === "loading") return
+    if (isLoading) return
 
     if (!session) {
-      router.push("/auth/signin")
       return
     }
 
-    if (session.user?.role !== "SUPER_ADMIN") {
-      router.push("/dashboard")
-      return
+    const fetchAdmins = async () => {
+      try {
+        const response = await fetch('/api/super-admin/admins')
+        if (response.ok) {
+          const data = await response.json()
+          setAdmins(data)
+        } else {
+          toast.error('Failed to fetch admins')
+        }
+      } catch (error) {
+        console.error('Error fetching admins:', error)
+        toast.error('Failed to fetch admins')
+      } finally {
+        setLoading(false)
+      }
     }
 
     fetchAdmins()
-  }, [session, status])
+  }, [session, isLoading])
 
-  const fetchAdmins = async () => {
-    try {
-      const response = await fetch('/api/super-admin/admins')
-      if (response.ok) {
-        const data = await response.json()
-        setAdmins(data)
-      } else {
-        toast.error('Failed to load admins')
-      }
-    } catch (error) {
-      console.error('Error fetching admins:', error)
-      toast.error('Failed to load admins')
-    } finally {
-      setLoading(false)
-    }
+  // Show unauthorized message if user doesn't have SUPER_ADMIN role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="space-y-6 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Manage Admins</h1>
+              <p className="text-gray-600 mt-1">Manage system administrators and their permissions</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-8 w-20 mb-2" />
+                  <Skeleton className="h-6 w-16" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  const filteredAdmins = admins.filter(admin =>
+    admin.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    admin.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    admin.networkName.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const toggleAdminStatus = async (adminId: string, currentStatus: boolean) => {
     try {
@@ -103,13 +153,15 @@ export default function AdminsPage() {
 
       if (response.ok) {
         toast.success(`Admin ${!currentStatus ? 'activated' : 'deactivated'} successfully`)
-        fetchAdmins()
+        setAdmins(admins.map(admin => 
+          admin.id === adminId ? { ...admin, isActive: !currentStatus } : admin
+        ))
       } else {
         toast.error('Failed to update admin status')
       }
     } catch (error) {
       console.error('Error updating admin status:', error)
-      toast.error('An error occurred while updating admin status')
+      toast.error('Failed to update admin status')
     }
   }
 
@@ -125,35 +177,18 @@ export default function AdminsPage() {
 
       if (response.ok) {
         toast.success('Admin deleted successfully')
-        fetchAdmins()
+        setAdmins(admins.filter(admin => admin.id !== adminId))
       } else {
         toast.error('Failed to delete admin')
       }
     } catch (error) {
       console.error('Error deleting admin:', error)
-      toast.error('An error occurred while deleting admin')
+      toast.error('Failed to delete admin')
     }
   }
 
-  const filteredAdmins = admins.filter(admin =>
-    admin.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    admin.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    admin.networkName.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  if (status === "loading" || loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    )
-  }
-
-  if (!session) {
-    return null
-  }
-
   return (
+    <DashboardLayout userRole={UserRole.SUPERADMIN}>
     <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -353,5 +388,6 @@ export default function AdminsPage() {
         </CardContent>
       </Card>
     </div>
+    </DashboardLayout>
   )
 }

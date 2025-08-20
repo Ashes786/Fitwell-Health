@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { 
   ArrowLeft, 
   TrendingUp, 
@@ -22,6 +25,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns'
+import { UserRole } from "@prisma/client"
 
 interface AnalyticsData {
   totalUsers: number
@@ -44,7 +48,12 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
-  const { data: session, status } = useSession()
+  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "SUPER_ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: false
+  })
+  
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
@@ -52,81 +61,28 @@ export default function AnalyticsPage() {
   const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
-    if (status === "loading") return
+    if (isLoading) return
 
     if (!session) {
-      router.push("/auth/signin")
-      return
-    }
-
-    if (session.user?.role !== "SUPER_ADMIN") {
-      router.push("/dashboard")
       return
     }
 
     fetchAnalytics()
-  }, [session, status, selectedPeriod])
+  }, [session, isLoading, selectedPeriod])
 
   const fetchAnalytics = async () => {
-    if (refreshing) return
-    
+    setLoading(true)
     try {
-      const response = await fetch(`/api/super-admin/analytics?timeRange=${selectedPeriod}`)
+      const response = await fetch(`/api/super-admin/analytics?period=${selectedPeriod}`)
       if (response.ok) {
         const data = await response.json()
-        // Transform API data to match the expected format
-        setAnalytics({
-          totalUsers: data.users?.total || 0,
-          totalDoctors: data.users?.byRole?.find(r => r.role === 'Doctors')?.count || 0,
-          totalPatients: data.users?.byRole?.find(r => r.role === 'Patients')?.count || 0,
-          totalAdmins: data.users?.byRole?.find(r => r.role === 'Admins')?.count || 0,
-          totalAppointments: data.appointments?.total || 0,
-          totalRevenue: data.revenue?.total || 0,
-          monthlyGrowth: data.revenue?.growth || 0,
-          userGrowth: data.users?.growth || 0,
-          appointmentGrowth: data.appointments?.growth || 0,
-          revenueGrowth: data.revenue?.growth || 0,
-          systemUptime: data.system?.uptime || 0,
-          activeUsers: data.users?.active || 0,
-          recentActivity: data.recentActivity || []
-        })
+        setAnalytics(data)
       } else {
-        // Only use mock data if API fails, but make it minimal
-        setAnalytics({
-          totalUsers: 0,
-          totalDoctors: 0,
-          totalPatients: 0,
-          totalAdmins: 0,
-          totalAppointments: 0,
-          totalRevenue: 0,
-          monthlyGrowth: 0,
-          userGrowth: 0,
-          appointmentGrowth: 0,
-          revenueGrowth: 0,
-          systemUptime: 0,
-          activeUsers: 0,
-          recentActivity: []
-        })
+        toast.error('Failed to fetch analytics data')
       }
     } catch (error) {
       console.error('Error fetching analytics:', error)
-      toast.error('Failed to load analytics')
-      // Set minimal fallback data
-      setAnalytics({
-        totalUsers: 0,
-        totalDoctors: 0,
-        totalPatients: 0,
-        totalAdmins: 0,
-        totalAppointments: 0,
-        totalRevenue: 0,
-        monthlyGrowth: 0,
-        userGrowth: 0,
-        appointmentGrowth: 0,
-        revenueGrowth: 0,
-        systemUptime: 0,
-        activeUsers: 0,
-        recentActivity: []
-      })
+      toast.error('Failed to fetch analytics data')
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -135,40 +91,21 @@ export default function AnalyticsPage() {
 
   const exportReport = async () => {
     try {
-      if (typeof window === 'undefined') {
-        toast.error('Export not available on server')
-        return
+      const response = await fetch(`/api/super-admin/analytics/export?period=${selectedPeriod}`)
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `analytics-report-${selectedPeriod}-${new Date().toISOString().split('T')[0]}.csv`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        toast.success('Report exported successfully')
+      } else {
+        toast.error('Failed to export report')
       }
-
-      // Generate CSV report from analytics data
-      if (!analytics) {
-        toast.error('No data available to export')
-        return
-      }
-
-      const csvContent = [
-        ['Metric', 'Value', 'Growth'],
-        ['Total Users', analytics.totalUsers.toString(), `${analytics.userGrowth > 0 ? '+' : ''}${analytics.userGrowth}%`],
-        ['Total Doctors', analytics.totalDoctors.toString(), ''],
-        ['Total Patients', analytics.totalPatients.toString(), ''],
-        ['Total Admins', analytics.totalAdmins.toString(), ''],
-        ['Total Appointments', analytics.totalAppointments.toString(), `${analytics.appointmentGrowth > 0 ? '+' : ''}${analytics.appointmentGrowth}%`],
-        ['Total Revenue', `$${analytics.totalRevenue}`, `${analytics.revenueGrowth > 0 ? '+' : ''}${analytics.revenueGrowth}%`],
-        ['System Uptime', `${analytics.systemUptime}%`, ''],
-        ['Active Users', analytics.activeUsers.toString(), '']
-      ].map(row => row.join(',')).join('\n')
-
-      const blob = new Blob([csvContent], { type: 'text/csv' })
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `analytics-report-${selectedPeriod}-${new Date().toISOString().split('T')[0]}.csv`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-      
-      toast.success('Analytics report exported successfully')
     } catch (error) {
       console.error('Error exporting report:', error)
       toast.error('Failed to export report')
@@ -176,44 +113,63 @@ export default function AnalyticsPage() {
   }
 
   const getGrowthIcon = (growth: number) => {
-    return growth >= 0 ? (
-      <TrendingUp className="h-4 w-4 text-green-600" />
-    ) : (
-      <TrendingDown className="h-4 w-4 text-red-600" />
-    )
+    if (growth > 0) return <TrendingUp className="h-4 w-4 text-green-600" />
+    if (growth < 0) return <TrendingDown className="h-4 w-4 text-red-600" />
+    return null
   }
 
   const getGrowthColor = (growth: number) => {
-    return growth >= 0 ? 'text-green-600' : 'text-red-600'
+    if (growth > 0) return 'text-green-600'
+    if (growth < 0) return 'text-red-600'
+    return 'text-gray-600'
   }
 
-  if (status === "loading" || loading) {
+  // Show unauthorized message if user doesn't have SUPER_ADMIN role
+  if (isUnauthorized) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center mb-6">
-            <Button variant="ghost" onClick={() => router.back()} className="mr-4">
-              <ArrowLeft className="h-4 w-4" />
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
             </Button>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg border p-6">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     )
   }
 
-  if (!session) {
-    return null
+  // Show loading state
+  if (loading) {
+    return (
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="space-y-6 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Button variant="ghost" onClick={() => router.back()} className="mr-4">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+                <p className="text-gray-600 mt-1">Comprehensive system analytics and insights</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-8 w-20 mb-2" />
+                  <Skeleton className="h-6 w-16" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   // Ensure analytics data exists with default values
@@ -234,6 +190,7 @@ export default function AnalyticsPage() {
   }
 
   return (
+    <DashboardLayout userRole={UserRole.SUPERADMIN}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
@@ -502,5 +459,6 @@ export default function AnalyticsPage() {
         </Card>
       </div>
     </div>
+    </DashboardLayout>
   )
 }

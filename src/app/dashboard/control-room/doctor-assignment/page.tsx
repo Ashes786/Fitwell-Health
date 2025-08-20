@@ -76,138 +76,21 @@ export default function DoctorAssignment() {
   const [searchTerm, setSearchTerm] = useState("")
   const [assignmentNotes, setAssignmentNotes] = useState("")
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "CONTROL_ROOM",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
+  }, [isAuthorized])
 
-    if (session.user?.role !== "CONTROL_ROOM") {
-      router.push("/dashboard")
-      return
-    }
-
-    // Mock data - in real app, this would come from API
-    const mockDoctors: Doctor[] = [
-      {
-        id: "1",
-        name: "Dr. Sarah Johnson",
-        specialization: "General Practitioner",
-        status: "AVAILABLE",
-        currentLoad: 2,
-        maxLoad: 8,
-        experience: 8,
-        rating: 4.8,
-        consultationFee: 150,
-        lastActive: "2024-01-15T09:30:00Z"
-      },
-      {
-        id: "2",
-        name: "Dr. Michael Chen",
-        specialization: "General Practitioner",
-        status: "AVAILABLE",
-        currentLoad: 1,
-        maxLoad: 8,
-        experience: 12,
-        rating: 4.9,
-        consultationFee: 180,
-        lastActive: "2024-01-15T10:15:00Z"
-      },
-      {
-        id: "3",
-        name: "Dr. Emily Rodriguez",
-        specialization: "General Practitioner",
-        status: "BUSY",
-        currentLoad: 6,
-        maxLoad: 8,
-        experience: 6,
-        rating: 4.7,
-        consultationFee: 120,
-        lastActive: "2024-01-15T11:00:00Z"
-      },
-      {
-        id: "4",
-        name: "Dr. James Wilson",
-        specialization: "General Practitioner",
-        status: "AVAILABLE",
-        currentLoad: 3,
-        maxLoad: 8,
-        experience: 10,
-        rating: 4.6,
-        consultationFee: 160,
-        lastActive: "2024-01-15T08:45:00Z"
-      }
-    ]
-
-    const mockAppointments: Appointment[] = [
-      {
-        id: "1",
-        appointmentNumber: "APT-2024-001",
-        type: "GP_CONSULTATION",
-        status: "PENDING",
-        chiefComplaint: "Fever and headache for 2 days",
-        scheduledAt: "2024-01-15T10:00:00Z",
-        estimatedDuration: 15,
-        priority: "MEDIUM",
-        patient: {
-          id: "1",
-          name: "John Smith",
-          phone: "+1-555-0123",
-          age: 39,
-          gender: "MALE"
-        },
-        createdAt: "2024-01-15T09:00:00Z"
-      },
-      {
-        id: "2",
-        appointmentNumber: "APT-2024-002",
-        type: "GP_CONSULTATION",
-        status: "PENDING",
-        chiefComplaint: "Chest pain and shortness of breath",
-        scheduledAt: "2024-01-15T10:15:00Z",
-        estimatedDuration: 20,
-        priority: "HIGH",
-        patient: {
-          id: "2",
-          name: "Sarah Johnson",
-          phone: "+1-555-0125",
-          age: 34,
-          gender: "FEMALE"
-        },
-        createdAt: "2024-01-15T09:15:00Z"
-      },
-      {
-        id: "3",
-        appointmentNumber: "APT-2024-003",
-        type: "GP_CONSULTATION",
-        status: "ASSIGNED",
-        chiefComplaint: "Skin rash and itching",
-        scheduledAt: "2024-01-15T10:30:00Z",
-        estimatedDuration: 15,
-        priority: "LOW",
-        patient: {
-          id: "3",
-          name: "Mike Davis",
-          phone: "+1-555-0127",
-          age: 46,
-          gender: "MALE"
-        },
-        assignedDoctor: {
-          id: "1",
-          name: "Dr. Sarah Johnson"
-        },
-        createdAt: "2024-01-15T09:30:00Z"
-      }
-    ]
-
-    setDoctors(mockDoctors)
-    setAppointments(mockAppointments)
-    setIsLoading(false)
-  }, [session, status, router])
-
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.CONTROL_ROOM}>
         <div className="flex items-center justify-center h-64">
@@ -219,6 +102,23 @@ export default function DoctorAssignment() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have CONTROL_ROOM role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.CONTROLROOM}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const filteredDoctors = doctors.filter(doctor =>

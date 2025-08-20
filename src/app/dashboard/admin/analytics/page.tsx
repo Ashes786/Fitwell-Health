@@ -90,21 +90,19 @@ export default function AdminAnalytics() {
   const [isLoading, setIsLoading] = useState(true)
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
-
-    if (session.user?.role !== "ADMIN") {
-      router.push("/dashboard")
-      return
-    }
-
-    fetchAnalytics()
-  }, [session, status, router])
+  }, [isAuthorized])
 
   const fetchAnalytics = async () => {
     try {
@@ -222,7 +220,7 @@ export default function AdminAnalytics() {
     fetchAnalytics()
   }
 
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.ADMIN}>
         <div className="flex items-center justify-center h-64">

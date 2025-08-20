@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -40,6 +42,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserRole } from "@prisma/client"
 
 interface SubscriptionRequest {
   id: string
@@ -65,7 +68,12 @@ interface SubscriptionRequest {
 }
 
 export default function SubscriptionRequestsPage() {
-  const { data: session, status } = useSession()
+  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "SUPER_ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: false
+  })
+  
   const router = useRouter()
   const [requests, setRequests] = useState<SubscriptionRequest[]>([])
   const [loading, setLoading] = useState(true)
@@ -76,35 +84,61 @@ export default function SubscriptionRequestsPage() {
   const [processingId, setProcessingId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (status === "loading") return
+    if (isLoading) return
 
     if (!session) {
-      router.push("/auth/signin")
-      return
-    }
-
-    if (session.user?.role !== "SUPER_ADMIN") {
-      router.push("/dashboard")
       return
     }
 
     fetchRequests()
-  }, [session, status])
+  }, [session, isLoading])
 
   const fetchRequests = async () => {
+    setLoading(true)
     try {
       const response = await fetch('/api/super-admin/subscription-requests')
       if (response.ok) {
         const data = await response.json()
         setRequests(data)
       } else {
-        toast.error('Failed to load subscription requests')
+        toast.error('Failed to fetch subscription requests')
       }
     } catch (error) {
       console.error('Error fetching subscription requests:', error)
-      toast.error('Failed to load subscription requests')
+      toast.error('Failed to fetch subscription requests')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const pendingCount = requests.filter(r => r.status === 'PENDING').length
+  const approvedCount = requests.filter(r => r.status === 'APPROVED').length
+  const rejectedCount = requests.filter(r => r.status === 'REJECTED').length
+
+  const filteredRequests = requests.filter(request => {
+    const matchesSearch = searchTerm === '' || 
+      request.admin.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.admin.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.admin.networkName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.planName.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesStatus = statusFilter === 'all' || request.status === statusFilter
+
+    return matchesSearch && matchesStatus
+  })
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending</Badge>
+      case 'APPROVED':
+        return <Badge variant="default" className="bg-green-500">Approved</Badge>
+      case 'REJECTED':
+        return <Badge variant="destructive">Rejected</Badge>
+      case 'CANCELLED':
+        return <Badge variant="outline">Cancelled</Badge>
+      default:
+        return <Badge variant="secondary">{status}</Badge>
     }
   }
 
@@ -122,6 +156,7 @@ export default function SubscriptionRequestsPage() {
       if (response.ok) {
         toast.success(`Subscription request ${action}d successfully`)
         fetchRequests()
+        setRejectionReason('')
       } else {
         toast.error(`Failed to ${action} subscription request`)
       }
@@ -130,67 +165,59 @@ export default function SubscriptionRequestsPage() {
       toast.error('An error occurred while processing the request')
     } finally {
       setProcessingId(null)
-      setSelectedRequest(null)
-      setRejectionReason('')
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'APPROVED':
-        return <Badge variant="default" className="bg-green-500 text-white">Approved</Badge>
-      case 'REJECTED':
-        return <Badge variant="destructive">Rejected</Badge>
-      case 'CANCELLED':
-        return <Badge variant="outline">Cancelled</Badge>
-      case 'PENDING':
-        return <Badge variant="secondary">Pending</Badge>
-      default:
-        return <Badge variant="secondary">{status}</Badge>
-    }
-  }
-
-  const filteredRequests = requests.filter(request => {
-    const matchesSearch = 
-      request.admin.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.admin.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.admin.networkName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.planName.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesStatus = statusFilter === 'all' || request.status === statusFilter
-    
-    return matchesSearch && matchesStatus
-  })
-
-  const pendingCount = requests.filter(r => r.status === 'PENDING').length
-  const approvedCount = requests.filter(r => r.status === 'APPROVED').length
-  const rejectedCount = requests.filter(r => r.status === 'REJECTED').length
-
-  if (status === "loading" || loading) {
+  // Show unauthorized message if user doesn't have SUPER_ADMIN role
+  if (isUnauthorized) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center mb-6">
-            <Button variant="ghost" onClick={() => router.back()} className="mr-4">
-              <ArrowLeft className="h-4 w-4" />
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
             </Button>
-            <h1 className="text-3xl font-bold text-gray-900">Subscription Requests</h1>
-          </div>
-          <div className="grid gap-4">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     )
   }
 
-  if (!session) {
-    return null
+  // Show loading state
+  if (loading) {
+    return (
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="space-y-6 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Button variant="ghost" onClick={() => router.back()} className="mr-4">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Subscription Requests</h1>
+                <p className="text-gray-600 mt-1">Manage admin subscription and feature requests</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-8 w-20 mb-2" />
+                  <Skeleton className="h-6 w-16" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   return (
+    <DashboardLayout userRole={UserRole.SUPERADMIN}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
@@ -590,5 +617,6 @@ export default function SubscriptionRequestsPage() {
         </Dialog>
       </div>
     </div>
+    </DashboardLayout>
   )
 }

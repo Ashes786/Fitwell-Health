@@ -64,101 +64,21 @@ export default function DoctorPatients() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "DOCTOR",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
+  }, [isAuthorized])
 
-    if (session.user?.role !== "DOCTOR") {
-      router.push("/dashboard")
-      return
-    }
-
-    // Mock data - in real app, this would come from API
-    const mockPatients: Patient[] = [
-      {
-        id: "1",
-        name: "John Smith",
-        dateOfBirth: "1985-03-15",
-        gender: "MALE",
-        bloodGroup: "O+",
-        phone: "+1-555-0123",
-        email: "john.smith@email.com",
-        lastVisit: "2024-01-10",
-        nextAppointment: "2024-01-20",
-        chronicConditions: ["Hypertension", "Diabetes Type 2"],
-        status: "ACTIVE",
-        vitalSigns: {
-          bloodPressure: "120/80",
-          heartRate: 72,
-          temperature: 98.6,
-          lastUpdated: "2024-01-10"
-        }
-      },
-      {
-        id: "2",
-        name: "Sarah Johnson",
-        dateOfBirth: "1990-07-22",
-        gender: "FEMALE",
-        bloodGroup: "A+",
-        phone: "+1-555-0124",
-        email: "sarah.johnson@email.com",
-        lastVisit: "2024-01-08",
-        nextAppointment: "2024-01-15",
-        chronicConditions: ["Asthma"],
-        status: "ACTIVE",
-        vitalSigns: {
-          bloodPressure: "110/70",
-          heartRate: 68,
-          temperature: 98.4,
-          lastUpdated: "2024-01-08"
-        }
-      },
-      {
-        id: "3",
-        name: "Mike Davis",
-        dateOfBirth: "1978-11-30",
-        gender: "MALE",
-        bloodGroup: "B+",
-        phone: "+1-555-0125",
-        email: "mike.davis@email.com",
-        lastVisit: "2024-01-05",
-        chronicConditions: [],
-        status: "ACTIVE",
-        vitalSigns: {
-          bloodPressure: "130/85",
-          heartRate: 75,
-          temperature: 98.8,
-          lastUpdated: "2024-01-05"
-        }
-      },
-      {
-        id: "4",
-        name: "Emily Brown",
-        dateOfBirth: "1995-04-18",
-        gender: "FEMALE",
-        bloodGroup: "AB+",
-        phone: "+1-555-0126",
-        email: "emily.brown@email.com",
-        chronicConditions: ["Migraine"],
-        status: "NEW",
-        vitalSigns: {
-          bloodPressure: "115/75",
-          heartRate: 70,
-          temperature: 98.2,
-          lastUpdated: "2024-01-12"
-        }
-      }
-    ]
-
-    setPatients(mockPatients)
-    setIsLoading(false)
-  }, [session, status, router])
-
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.DOCTOR}>
         <div className="flex items-center justify-center h-64">
@@ -170,6 +90,23 @@ export default function DoctorPatients() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have DOCTOR role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.DOCTOR}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const getAge = (dateOfBirth: string) => {

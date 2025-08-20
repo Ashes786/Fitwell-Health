@@ -64,129 +64,21 @@ export default function AttendantPatients() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "ATTENDANT",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
+  }, [isAuthorized])
 
-    if (session.user?.role !== "ATTENDANT") {
-      router.push("/dashboard")
-      return
-    }
-
-    // Mock data - in real app, this would come from API
-    const mockPatients: Patient[] = [
-      {
-        id: "1",
-        name: "John Smith",
-        dateOfBirth: "1985-03-15",
-        gender: "MALE",
-        bloodGroup: "O+",
-        phone: "+1-555-0123",
-        email: "john.smith@email.com",
-        address: "123 Main St",
-        city: "New York",
-        state: "NY",
-        country: "USA",
-        postalCode: "10001",
-        emergencyContact: "+1-555-0124",
-        nhrNumber: "NHR-2024-001",
-        status: "ACTIVE",
-        lastVisit: "2024-01-10",
-        nextAppointment: "2024-01-20",
-        chronicConditions: ["Hypertension", "Diabetes Type 2"],
-        allergies: ["Penicillin"],
-        currentMedications: ["Lisinopril 10mg", "Metformin 500mg"],
-        registeredAt: "2023-06-15T10:00:00Z",
-        registeredBy: {
-          name: "Emily Brown"
-        }
-      },
-      {
-        id: "2",
-        name: "Sarah Johnson",
-        dateOfBirth: "1990-07-22",
-        gender: "FEMALE",
-        bloodGroup: "A+",
-        phone: "+1-555-0125",
-        email: "sarah.johnson@email.com",
-        address: "456 Oak Ave",
-        city: "New York",
-        state: "NY",
-        country: "USA",
-        postalCode: "10002",
-        emergencyContact: "+1-555-0126",
-        nhrNumber: "NHR-2024-002",
-        status: "ACTIVE",
-        lastVisit: "2024-01-08",
-        nextAppointment: "2024-01-15",
-        chronicConditions: ["Asthma"],
-        allergies: ["Dust mites", "Pollen"],
-        currentMedications: ["Albuterol Inhaler"],
-        registeredAt: "2023-08-20T14:30:00Z",
-        registeredBy: {
-          name: "Emily Brown"
-        }
-      },
-      {
-        id: "3",
-        name: "Mike Davis",
-        dateOfBirth: "1978-11-30",
-        gender: "MALE",
-        bloodGroup: "B+",
-        phone: "+1-555-0127",
-        email: "mike.davis@email.com",
-        address: "789 Pine Rd",
-        city: "New York",
-        state: "NY",
-        country: "USA",
-        postalCode: "10003",
-        emergencyContact: "+1-555-0128",
-        nhrNumber: "NHR-2024-003",
-        status: "ACTIVE",
-        lastVisit: "2024-01-05",
-        chronicConditions: [],
-        allergies: [],
-        currentMedications: [],
-        registeredAt: "2023-09-10T09:00:00Z",
-        registeredBy: {
-          name: "Emily Brown"
-        }
-      },
-      {
-        id: "4",
-        name: "Emily Brown",
-        dateOfBirth: "1995-04-18",
-        gender: "FEMALE",
-        bloodGroup: "AB+",
-        phone: "+1-555-0129",
-        email: "emily.brown@email.com",
-        address: "321 Elm St",
-        city: "New York",
-        state: "NY",
-        country: "USA",
-        postalCode: "10004",
-        emergencyContact: "+1-555-0130",
-        nhrNumber: "NHR-2024-004",
-        status: "NEW",
-        chronicConditions: ["Migraine"],
-        allergies: ["None known"],
-        currentMedications: ["Sumatriptan"],
-        registeredAt: "2024-01-12T16:45:00Z",
-        registeredBy: {
-          name: "Emily Brown"
-        }
-      }
-    ]
-
-    setPatients(mockPatients)
-    setIsLoading(false)
-  }, [session, status, router])
-
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.ATTENDANT}>
         <div className="flex items-center justify-center h-64">
@@ -198,6 +90,23 @@ export default function AttendantPatients() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have ATTENDANT role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.ATTENDANT}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const getAge = (dateOfBirth: string) => {

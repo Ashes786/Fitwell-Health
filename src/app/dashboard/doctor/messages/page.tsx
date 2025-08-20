@@ -76,116 +76,19 @@ export default function DoctorMessages() {
   const [newMessage, setNewMessage] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "DOCTOR",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
-
-    if (session.user?.role !== "DOCTOR") {
-      router.push("/dashboard")
-      return
-    }
-
-    // Mock data - in real app, this would come from API
-    const mockConversations: Conversation[] = [
-      {
-        id: "1",
-        patient: {
-          id: "1",
-          name: "John Smith",
-          age: 39,
-          gender: "MALE",
-          lastVisit: "2024-01-10"
-        },
-        lastMessage: {
-          id: "1",
-          sender: {
-            id: "1",
-            name: "John Smith",
-            role: "PATIENT"
-          },
-          recipient: {
-            id: "doctor-1",
-            name: "Dr. Sarah Johnson",
-            role: "DOCTOR"
-          },
-          content: "Thank you for the prescription. I'm feeling much better now.",
-          timestamp: "2024-01-12T14:30:00Z",
-          status: "READ",
-          type: "TEXT"
-        },
-        unreadCount: 0,
-        isOnline: true,
-        priority: "NORMAL"
-      },
-      {
-        id: "2",
-        patient: {
-          id: "2",
-          name: "Sarah Johnson",
-          age: 34,
-          gender: "FEMALE",
-          lastVisit: "2024-01-08"
-        },
-        lastMessage: {
-          id: "2",
-          sender: {
-            id: "2",
-            name: "Sarah Johnson",
-            role: "PATIENT"
-          },
-          recipient: {
-            id: "doctor-1",
-            name: "Dr. Sarah Johnson",
-            role: "DOCTOR"
-          },
-          content: "I'm having trouble with my asthma inhaler. Can you help?",
-          timestamp: "2024-01-13T09:15:00Z",
-          status: "DELIVERED",
-          type: "TEXT"
-        },
-        unreadCount: 1,
-        isOnline: false,
-        priority: "URGENT"
-      },
-      {
-        id: "3",
-        patient: {
-          id: "3",
-          name: "Mike Davis",
-          age: 46,
-          gender: "MALE",
-          lastVisit: "2024-01-05"
-        },
-        lastMessage: {
-          id: "3",
-          sender: {
-            id: "doctor-1",
-            name: "Dr. Sarah Johnson",
-            role: "DOCTOR"
-          },
-          recipient: {
-            id: "3",
-            name: "Mike Davis",
-            role: "PATIENT"
-          },
-          content: "Your test results look good. Continue with the current medication.",
-          timestamp: "2024-01-11T16:45:00Z",
-          status: "READ",
-          type: "TEXT"
-        },
-        unreadCount: 0,
-        isOnline: true,
-        priority: "NORMAL"
-      }
-    ]
-
-    setConversations(mockConversations)
-    setIsLoading(false)
-  }, [session, status, router])
+  }, [isAuthorized])
 
   useEffect(() => {
     if (selectedConversation) {
@@ -247,7 +150,7 @@ export default function DoctorMessages() {
     }
   }, [selectedConversation])
 
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.DOCTOR}>
         <div className="flex items-center justify-center h-64">
@@ -259,6 +162,23 @@ export default function DoctorMessages() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have DOCTOR role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.DOCTOR}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const filteredConversations = conversations.filter(conversation =>

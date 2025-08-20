@@ -63,120 +63,21 @@ export default function DoctorPrescriptions() {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "DOCTOR",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
+  }, [isAuthorized])
 
-    if (session.user?.role !== "DOCTOR") {
-      router.push("/dashboard")
-      return
-    }
-
-    // Mock data - in real app, this would come from API
-    const mockPrescriptions: Prescription[] = [
-      {
-        id: "1",
-        prescriptionNumber: "RX-2024-001",
-        patient: {
-          id: "1",
-          name: "John Smith",
-          age: 39,
-          gender: "MALE"
-        },
-        medications: [
-          {
-            id: "1",
-            name: "Lisinopril",
-            dosage: "10mg",
-            frequency: "Once daily",
-            duration: "30 days",
-            instructions: "Take with food",
-            quantity: 30,
-            refills: 2
-          },
-          {
-            id: "2",
-            name: "Metformin",
-            dosage: "500mg",
-            frequency: "Twice daily",
-            duration: "30 days",
-            instructions: "Take with meals",
-            quantity: 60,
-            refills: 3
-          }
-        ],
-        diagnosis: "Hypertension and Type 2 Diabetes",
-        notes: "Monitor blood pressure regularly. Follow up in 1 month.",
-        prescribedAt: "2024-01-10T10:00:00Z",
-        expiresAt: "2024-04-10T10:00:00Z",
-        status: "ACTIVE",
-        followUpDate: "2024-02-10"
-      },
-      {
-        id: "2",
-        prescriptionNumber: "RX-2024-002",
-        patient: {
-          id: "2",
-          name: "Sarah Johnson",
-          age: 34,
-          gender: "FEMALE"
-        },
-        medications: [
-          {
-            id: "3",
-            name: "Albuterol Inhaler",
-            dosage: "90mcg",
-            frequency: "As needed",
-            duration: "60 days",
-            instructions: "Use 1-2 puffs for asthma symptoms",
-            quantity: 1,
-            refills: 1
-          }
-        ],
-        diagnosis: "Asthma",
-        notes: "Use inhaler as needed for asthma symptoms. Avoid triggers.",
-        prescribedAt: "2024-01-08T14:30:00Z",
-        expiresAt: "2024-03-08T14:30:00Z",
-        status: "ACTIVE"
-      },
-      {
-        id: "3",
-        prescriptionNumber: "RX-2024-003",
-        patient: {
-          id: "3",
-          name: "Mike Davis",
-          age: 46,
-          gender: "MALE"
-        },
-        medications: [
-          {
-            id: "4",
-            name: "Amoxicillin",
-            dosage: "500mg",
-            frequency: "Three times daily",
-            duration: "7 days",
-            instructions: "Take until finished",
-            quantity: 21,
-            refills: 0
-          }
-        ],
-        diagnosis: "Bacterial Infection",
-        notes: "Complete full course of antibiotics.",
-        prescribedAt: "2024-01-05T09:00:00Z",
-        expiresAt: "2024-01-12T09:00:00Z",
-        status: "COMPLETED"
-      }
-    ]
-
-    setPrescriptions(mockPrescriptions)
-    setIsLoading(false)
-  }, [session, status, router])
-
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.DOCTOR}>
         <div className="flex items-center justify-center h-64">
@@ -188,6 +89,23 @@ export default function DoctorPrescriptions() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have DOCTOR role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.DOCTOR}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const filteredPrescriptions = prescriptions.filter(prescription =>

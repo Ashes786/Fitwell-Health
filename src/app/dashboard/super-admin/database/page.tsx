@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +24,7 @@ import {
   Table
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { UserRole } from "@prisma/client"
 
 interface DatabaseStats {
   totalSize: string
@@ -43,89 +46,40 @@ interface DatabaseStats {
 }
 
 export default function DatabasePage() {
-  const { data: session, status } = useSession()
+  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "SUPER_ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: false
+  })
+  
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [stats, setStats] = useState<DatabaseStats | null>(null)
 
   useEffect(() => {
-    if (status === "loading") return
+    if (isLoading) return
 
     if (!session) {
-      router.push("/auth/signin")
-      return
-    }
-
-    if (session.user?.role !== "SUPER_ADMIN") {
-      router.push("/dashboard")
       return
     }
 
     fetchDatabaseStats()
-  }, [session, status])
+  }, [session, isLoading])
 
   const fetchDatabaseStats = async () => {
+    setLoading(true)
     try {
-      const response = await fetch('/api/super-admin/database-stats')
+      const response = await fetch('/api/super-admin/database')
       if (response.ok) {
         const data = await response.json()
         setStats(data)
       } else {
-        // If API fails, fetch minimal data from other endpoints
-        const [adminsRes, requestsRes] = await Promise.allSettled([
-          fetch('/api/super-admin/admins'),
-          fetch('/api/super-admin/subscription-requests')
-        ])
-
-        const admins = adminsRes.status === 'fulfilled' && adminsRes.value.ok ? await adminsRes.value.json() : []
-        const requests = requestsRes.status === 'fulfilled' && requestsRes.value.ok ? await requestsRes.value.json() : []
-
-        // Calculate basic stats based on available data
-        const totalRows = admins.length + requests.length + 100 // Base system tables
-        const tableCount = 8 // Basic system tables
-        const totalSize = `${(totalRows * 1024 / 1024 / 1024).toFixed(1)} MB` // Rough estimate
-        
-        setStats({
-          totalSize,
-          tableCount,
-          totalRows,
-          indexes: 16,
-          lastBackup: new Date().toISOString(),
-          performance: {
-            queryTime: 25,
-            connections: 8,
-            cacheHit: 92.5
-          },
-          tables: [
-            { name: 'users', rows: admins.length, size: `${(admins.length * 0.5).toFixed(1)} KB`, lastModified: new Date().toISOString() },
-            { name: 'admins', rows: admins.length, size: `${(admins.length * 0.8).toFixed(1)} KB`, lastModified: new Date().toISOString() },
-            { name: 'subscription_requests', rows: requests.length, size: `${(requests.length * 1.2).toFixed(1)} KB`, lastModified: new Date().toISOString() },
-            { name: 'system_status', rows: 5, size: '2.1 KB', lastModified: new Date().toISOString() },
-            { name: 'audit_logs', rows: 150, size: '45.8 KB', lastModified: new Date().toISOString() },
-            { name: 'user_sessions', rows: 25, size: '8.3 KB', lastModified: new Date().toISOString() },
-            { name: 'security_events', rows: 89, size: '12.7 KB', lastModified: new Date().toISOString() },
-            { name: 'system_config', rows: 12, size: '3.5 KB', lastModified: new Date().toISOString() }
-          ]
-        })
+        toast.error('Failed to fetch database statistics')
       }
     } catch (error) {
       console.error('Error fetching database stats:', error)
-      toast.error('Failed to load database statistics')
-      // Set minimal fallback data
-      setStats({
-        totalSize: '0 MB',
-        tableCount: 0,
-        totalRows: 0,
-        indexes: 0,
-        lastBackup: new Date().toISOString(),
-        performance: {
-          queryTime: 0,
-          connections: 0,
-          cacheHit: 0
-        },
-        tables: []
-      })
+      toast.error('Failed to fetch database statistics')
     } finally {
       setLoading(false)
     }
@@ -135,136 +89,110 @@ export default function DatabasePage() {
     setRefreshing(true)
     await fetchDatabaseStats()
     setRefreshing(false)
-    toast.success('Database statistics refreshed')
   }
 
   const handleBackup = async () => {
     try {
-      if (typeof window === 'undefined') {
-        toast.error('Backup not available on server')
-        return
+      const response = await fetch('/api/super-admin/database/backup', {
+        method: 'POST'
+      })
+      if (response.ok) {
+        toast.success('Database backup initiated successfully')
+      } else {
+        toast.error('Failed to initiate database backup')
       }
-
-      // Simulate database backup process
-      toast.loading('Initiating database backup...')
-      
-      // Simulate backup delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Create backup file with current timestamp
-      const backupData = {
-        timestamp: new Date().toISOString(),
-        database: 'main',
-        tables: stats?.tables || [],
-        totalSize: stats?.totalSize || '0',
-        totalRows: stats?.totalRows || 0,
-        version: '1.0'
-      }
-      
-      const backupJson = JSON.stringify(backupData, null, 2)
-      const blob = new Blob([backupJson], { type: 'application/json' })
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `database-backup-${new Date().toISOString().split('T')[0]}.json`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-      
-      toast.success('Database backup completed successfully')
     } catch (error) {
-      console.error('Error creating backup:', error)
-      toast.error('Failed to create database backup')
+      console.error('Error initiating backup:', error)
+      toast.error('Failed to initiate database backup')
     }
   }
 
   const handleExport = async () => {
     try {
-      if (typeof window === 'undefined') {
-        toast.error('Export not available on server')
-        return
+      const response = await fetch('/api/super-admin/database/export')
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `database-export-${new Date().toISOString().split('T')[0]}.sql`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        toast.success('Database exported successfully')
+      } else {
+        toast.error('Failed to export database')
       }
-
-      // Generate CSV export of database tables
-      if (!stats?.tables) {
-        toast.error('No table data available to export')
-        return
-      }
-
-      const csvContent = [
-        ['Table Name', 'Rows', 'Size', 'Last Modified'],
-        ...stats.tables.map(table => [
-          table.name,
-          table.rows.toString(),
-          table.size,
-          new Date(table.lastModified).toLocaleDateString()
-        ])
-      ].map(row => row.join(',')).join('\n')
-
-      const blob = new Blob([csvContent], { type: 'text/csv' })
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `database-export-${new Date().toISOString().split('T')[0]}.csv`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-      
-      toast.success('Database export completed successfully')
     } catch (error) {
       console.error('Error exporting database:', error)
       toast.error('Failed to export database')
     }
   }
 
-  const getPerformanceColor = (value: number, type: 'query' | 'cache' | 'connections') => {
+  const getPerformanceColor = (value: number, type: 'query' | 'connections' | 'cache') => {
     switch (type) {
       case 'query':
         return value < 50 ? 'text-green-600' : value < 100 ? 'text-yellow-600' : 'text-red-600'
-      case 'cache':
-        return value > 90 ? 'text-green-600' : value > 80 ? 'text-yellow-600' : 'text-red-600'
       case 'connections':
         return value < 20 ? 'text-green-600' : value < 50 ? 'text-yellow-600' : 'text-red-600'
+      case 'cache':
+        return value > 90 ? 'text-green-600' : value > 80 ? 'text-yellow-600' : 'text-red-600'
       default:
         return 'text-gray-600'
     }
   }
 
-  if (status === "loading" || loading) {
+  // Show unauthorized message if user doesn't have SUPER_ADMIN role
+  if (isUnauthorized) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center mb-6">
-            <Button variant="ghost" onClick={() => router.back()} className="mr-4">
-              <ArrowLeft className="h-4 w-4" />
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
             </Button>
-            <h1 className="text-3xl font-bold text-gray-900">Database Management</h1>
-          </div>
-          <div className="grid gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg border border-gray-200 p-6">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
-                  <div className="space-y-3">
-                    <div className="h-4 bg-gray-200 rounded"></div>
-                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     )
   }
 
-  if (!session) {
-    return null
+  // Show loading state
+  if (loading) {
+    return (
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="space-y-6 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Button variant="ghost" onClick={() => router.back()} className="mr-4">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Database Management</h1>
+                <p className="text-gray-600 mt-1">Monitor and manage your database performance and statistics</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="h-8 w-20 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                  <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   return (
+    <DashboardLayout userRole={UserRole.SUPERADMIN}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
@@ -481,5 +409,6 @@ export default function DatabasePage() {
         </Card>
       </div>
     </div>
+    </DashboardLayout>
   )
 }

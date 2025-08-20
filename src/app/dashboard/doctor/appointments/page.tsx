@@ -47,99 +47,21 @@ export default function DoctorAppointments() {
   const [isLoading, setIsLoading] = useState(true)
   const [appointments, setAppointments] = useState<Appointment[]>([])
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "DOCTOR",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
+  }, [isAuthorized])
 
-    if (session.user?.role !== "DOCTOR") {
-      router.push("/dashboard")
-      return
-    }
-
-    // Mock data - in real app, this would come from API
-    const mockAppointments: Appointment[] = [
-      {
-        id: "1",
-        appointmentNumber: "APT-2024-001",
-        type: "VIDEO_CONSULTATION",
-        status: "CONFIRMED",
-        chiefComplaint: "Follow-up for blood pressure",
-        scheduledAt: "2024-01-15T10:00:00Z",
-        patient: {
-          name: "John Smith",
-          id: "1"
-        },
-        videoLink: "https://meet.jit.si/healthpay-001",
-        consultationFee: 150,
-        paymentStatus: "PAID"
-      },
-      {
-        id: "2",
-        appointmentNumber: "APT-2024-002",
-        type: "SPECIALIST_CONSULTATION",
-        status: "CONFIRMED",
-        chiefComplaint: "Skin rash consultation",
-        scheduledAt: "2024-01-15T11:30:00Z",
-        patient: {
-          name: "Sarah Johnson",
-          id: "2"
-        },
-        consultationFee: 200,
-        paymentStatus: "PAID"
-      },
-      {
-        id: "3",
-        appointmentNumber: "APT-2024-003",
-        type: "PHYSICAL_VISIT",
-        status: "IN_PROGRESS",
-        chiefComplaint: "General checkup",
-        scheduledAt: "2024-01-15T14:00:00Z",
-        patient: {
-          name: "Mike Davis",
-          id: "3"
-        },
-        consultationFee: 120,
-        paymentStatus: "PAID"
-      },
-      {
-        id: "4",
-        appointmentNumber: "APT-2024-004",
-        type: "PHONE_CONSULTATION",
-        status: "PENDING",
-        chiefComplaint: "Cold symptoms",
-        scheduledAt: "2024-01-16T09:00:00Z",
-        patient: {
-          name: "Emily Brown",
-          id: "4"
-        },
-        consultationFee: 75,
-        paymentStatus: "PENDING"
-      },
-      {
-        id: "5",
-        appointmentNumber: "APT-2024-005",
-        type: "VIDEO_CONSULTATION",
-        status: "COMPLETED",
-        chiefComplaint: "Diabetes follow-up",
-        scheduledAt: "2024-01-10T15:00:00Z",
-        patient: {
-          name: "Robert Wilson",
-          id: "5"
-        },
-        consultationFee: 150,
-        paymentStatus: "PAID"
-      }
-    ]
-
-    setAppointments(mockAppointments)
-    setIsLoading(false)
-  }, [session, status, router])
-
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.DOCTOR}>
         <div className="flex items-center justify-center h-64">
@@ -151,6 +73,23 @@ export default function DoctorAppointments() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have DOCTOR role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.DOCTOR}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const getStatusIcon = (status: string) => {

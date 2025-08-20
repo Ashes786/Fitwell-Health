@@ -61,76 +61,21 @@ export default function PatientVitals() {
     notes: ""
   })
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "PATIENT",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
+  }, [isAuthorized])
 
-    if (session.user?.role !== "PATIENT") {
-      router.push("/dashboard")
-      return
-    }
-
-    // Mock data - in real app, this would come from API
-    const mockVitals: Vital[] = [
-      {
-        id: "1",
-        type: "BLOOD_PRESSURE_SYSTOLIC",
-        value: 120,
-        unit: "mmHg",
-        notes: "Normal reading",
-        recordedAt: "2024-01-10T08:30:00Z"
-      },
-      {
-        id: "2",
-        type: "BLOOD_PRESSURE_DIASTOLIC",
-        value: 80,
-        unit: "mmHg",
-        notes: "Normal reading",
-        recordedAt: "2024-01-10T08:30:00Z"
-      },
-      {
-        id: "3",
-        type: "HEART_RATE",
-        value: 72,
-        unit: "bpm",
-        notes: "Resting heart rate",
-        recordedAt: "2024-01-10T08:30:00Z"
-      },
-      {
-        id: "4",
-        type: "TEMPERATURE",
-        value: 98.6,
-        unit: "°F",
-        notes: "Normal body temperature",
-        recordedAt: "2024-01-10T08:30:00Z"
-      },
-      {
-        id: "5",
-        type: "WEIGHT",
-        value: 70,
-        unit: "kg",
-        notes: "Morning weight",
-        recordedAt: "2024-01-10T08:00:00Z"
-      },
-      {
-        id: "6",
-        type: "BLOOD_SUGAR",
-        value: 95,
-        unit: "mg/dL",
-        notes: "Fasting blood sugar",
-        recordedAt: "2024-01-10T07:30:00Z"
-      }
-    ]
-
-    setVitals(mockVitals)
-    setIsLoading(false)
-  }, [session, status, router])
-
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.PATIENT}>
         <div className="flex items-center justify-center h-64">
@@ -142,6 +87,23 @@ export default function PatientVitals() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have PATIENT role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.PATIENT}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const getVitalTypeInfo = (type: string) => {

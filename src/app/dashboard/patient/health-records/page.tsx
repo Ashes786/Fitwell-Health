@@ -50,21 +50,19 @@ export default function PatientHealthRecords() {
   const [records, setRecords] = useState<HealthRecord[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "PATIENT",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
-
-    if (session.user?.role !== "PATIENT") {
-      router.push("/dashboard")
-      return
-    }
-
-    fetchHealthRecords()
-  }, [session, status, router])
+  }, [isAuthorized])
 
   const fetchHealthRecords = async () => {
     try {
@@ -193,7 +191,7 @@ export default function PatientHealthRecords() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.PATIENT}>
         <div className="flex items-center justify-center h-64">
@@ -205,6 +203,23 @@ export default function PatientHealthRecords() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have PATIENT role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.PATIENT}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const filteredRecords = records.filter(record =>

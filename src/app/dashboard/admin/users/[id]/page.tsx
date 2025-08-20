@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { 
   ArrowLeft, 
   User, 
@@ -94,31 +95,23 @@ interface UserActivity {
 }
 
 export default function UserDetailPage() {
-  const { data: session, status } = useSession()
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
   const router = useRouter()
   const searchParams = useSearchParams()
   const userId = searchParams.get('id')
-  const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<UserProfile | null>(null)
   const [activities, setActivities] = useState<UserActivity[]>([])
 
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
-    }
-
-    if (session.user?.role !== "ADMIN") {
-      router.push("/dashboard")
-      return
-    }
-
-    if (userId) {
+    if (isAuthorized && userId) {
       fetchUserDetails()
     }
-  }, [session, status, router, userId])
+  }, [isAuthorized, userId])
 
   const fetchUserDetails = async () => {
     try {
@@ -159,8 +152,6 @@ export default function UserDetailPage() {
       console.error('Error fetching user details:', error)
       toast.error('Failed to load user details')
       router.push('/dashboard/admin/users')
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -208,7 +199,7 @@ export default function UserDetailPage() {
     }
   }
 
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.ADMIN}>
         <div className="flex items-center justify-center h-64">
@@ -220,6 +211,23 @@ export default function UserDetailPage() {
 
   if (!session || !user) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have ADMIN role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.ADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const getRoleColor = (role: UserRole) => {

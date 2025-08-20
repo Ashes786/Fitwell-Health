@@ -7,6 +7,7 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { 
   Users, 
   Calendar, 
@@ -42,40 +43,40 @@ interface Appointment {
 }
 
 export default function AttendantDashboard() {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const { isUnauthorized, isLoading } = useRoleAuthorization({
+    requiredRole: UserRole.ATTENDANT,
+    showUnauthorizedMessage: false
+  })
 
-  useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      // Let middleware handle authentication redirects
-      // This prevents redirect loops
-      return
-    }
-
-    if (session.user?.role !== "ATTENDANT") {
-      // Don't redirect - let the middleware handle routing
-      // This prevents redirect loops
-      return
-    }
-
-    setIsLoading(false)
-  }, [session, status, router])
-
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.ATTENDANT}>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading...</p>
+          </div>
         </div>
       </DashboardLayout>
     )
   }
 
-  if (!session) {
-    return null
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.ATTENDANT}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   // Mock data for demonstration

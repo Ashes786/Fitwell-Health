@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { HeartPulse, ArrowLeft, Mail, CheckCircle } from "lucide-react"
+import { HeartPulse, ArrowLeft, Mail, CheckCircle, Shield, LockKeyhole, Clock } from "lucide-react"
 import Link from "next/link"
 
 export default function ForgotPassword() {
@@ -23,13 +23,24 @@ export default function ForgotPassword() {
     setError("")
 
     try {
-      // Simulate API call for password reset
-      // In a real application, this would send an email with a reset link
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      setIsSubmitted(true)
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setIsSubmitted(true)
+      } else {
+        setError(data.error || "Failed to send reset email. Please try again.")
+      }
     } catch (error) {
-      setError("Failed to send reset email. Please try again.")
+      console.error('Forgot password error:', error)
+      setError("Network error. Please check your connection and try again.")
     } finally {
       setIsLoading(false)
     }
@@ -37,46 +48,79 @@ export default function ForgotPassword() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-gray-50 to-white">
-        <div className="w-full max-w-md space-y-6">
-          {/* Logo and Branding */}
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="w-full max-w-lg space-y-6">
+          {/* Success Illustration */}
           <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-[#2ba664] rounded-xl flex items-center justify-center">
-                <HeartPulse className="h-10 w-10 text-white" />
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                <CheckCircle className="h-10 w-10 text-white" />
               </div>
             </div>
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">Fitwell</h1>
-              <p className="text-lg text-[#2ba664] font-semibold">H.E.A.L.T.H.</p>
+            <div className="mb-8">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">Check Your Email</h1>
+              <p className="text-lg text-gray-600">Password reset link sent successfully</p>
             </div>
           </div>
 
-          <Card className="border-gray-200 shadow-lg">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-[#2ba664]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="h-8 w-8 text-[#2ba664]" />
+          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <div className="text-center space-y-6">
+                <div className="space-y-4">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                    <Mail className="h-8 w-8 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Email Sent!</h3>
+                    <p className="text-gray-600 mb-4">
+                      We've sent a password reset link to <span className="font-semibold text-green-600">{email}</span>
+                    </p>
+                  </div>
                 </div>
-                <CardTitle className="text-xl text-gray-900 mb-2">Email Sent!</CardTitle>
-                <CardDescription className="text-gray-600 mb-6">
-                  We've sent a password reset link to <strong>{email}</strong>. 
-                  Please check your inbox and follow the instructions to reset your password.
-                </CardDescription>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <Clock className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-blue-900">Link expires in 15 minutes</p>
+                      <p className="text-xs text-blue-700">For your security, the reset link will expire shortly</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Shield className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-blue-900">Secure reset process</p>
+                      <p className="text-xs text-blue-700">Your password will be safely updated</p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-3">
                   <Button 
                     onClick={() => router.push("/auth/signin")}
-                    className="w-full bg-[#2ba664] hover:bg-[#238a52] text-white"
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium py-3 shadow-lg"
                   >
                     Return to Sign In
                   </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => setIsSubmitted(false)}
-                    className="w-full border-[#2ba664] text-[#2ba664] hover:bg-[#2ba664] hover:text-white"
+                    className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3"
                   >
                     Send to another email
                   </Button>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-sm text-gray-500">
+                    Didn't receive the email? Check your spam folder or 
+                    <button 
+                      onClick={() => setIsSubmitted(false)}
+                      className="text-green-600 hover:text-green-700 font-medium ml-1"
+                    >
+                      try again
+                    </button>
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -87,39 +131,48 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-gray-50 to-white">
-      <div className="w-full max-w-md space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="w-full max-w-lg space-y-6">
         {/* Logo and Branding */}
         <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-[#2ba664] rounded-xl flex items-center justify-center">
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
               <HeartPulse className="h-10 w-10 text-white" />
             </div>
           </div>
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Fitwell</h1>
-            <p className="text-lg text-[#2ba664] font-semibold">H.E.A.L.T.H.</p>
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Forgot Password?</h1>
+            <p className="text-lg text-gray-600">No worries, we'll help you recover it</p>
           </div>
         </div>
 
-        <Card className="border-gray-200 shadow-lg">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl text-gray-900">Forgot Password?</CardTitle>
-            <CardDescription className="text-gray-600">
-              Enter your email address and we'll send you a link to reset your password.
-            </CardDescription>
+        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+          <CardHeader className="space-y-4 text-center pb-6">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+              <LockKeyhole className="h-8 w-8 text-blue-600" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl font-bold text-gray-900">Reset Your Password</CardTitle>
+              <CardDescription className="text-gray-600 mt-2">
+                Enter your email address and we'll send you a secure link to reset your password
+              </CardDescription>
+            </div>
           </CardHeader>
+          
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6 px-8">
               {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                <Alert variant="destructive" className="border-red-200 bg-red-50">
+                  <AlertDescription className="text-red-700">{error}</AlertDescription>
                 </Alert>
               )}
+              
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  Email Address
+                </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <Input
                     id="email"
                     type="email"
@@ -127,31 +180,35 @@ export default function ForgotPassword() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="pl-10 border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664]"
+                    className="pl-12 pr-4 py-3 border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm rounded-lg"
                   />
                 </div>
+                <p className="text-xs text-gray-500">
+                  We'll send a password reset link to this email address
+                </p>
               </div>
             </CardContent>
-            <div className="px-6 pb-6 space-y-4">
+            
+            <div className="px-8 pb-8 space-y-4">
               <Button 
                 type="submit" 
-                className="w-full bg-[#2ba664] hover:bg-[#238a52] text-white" 
-                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium py-3 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading || !email}
               >
                 {isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Sending...
+                    Sending Reset Link...
                   </>
                 ) : (
-                  "Send Reset Link"
+                  "Send Password Reset Link"
                 )}
               </Button>
               
               <div className="text-center">
                 <Link 
                   href="/auth/signin" 
-                  className="inline-flex items-center text-[#2ba664] hover:text-[#238a52] hover:underline text-sm"
+                  className="inline-flex items-center text-green-600 hover:text-green-700 hover:underline text-sm font-medium"
                 >
                   <ArrowLeft className="h-4 w-4 mr-1" />
                   Back to Sign In
@@ -161,22 +218,17 @@ export default function ForgotPassword() {
           </form>
         </Card>
 
-        {/* Demo Accounts Info */}
-        <Card className="border-[#2ba664]/20 bg-[#2ba664]/5">
-          <CardContent className="pt-6">
-            <h3 className="font-semibold text-[#2ba664] mb-3">Demo Accounts</h3>
-            <div className="space-y-2 text-sm text-gray-700">
-              <div>
-                <span className="font-medium">Super Admin:</span> superadmin@fitwell.health / superadmin123
-              </div>
-              <div>
-                <span className="font-medium">Admin:</span> admin@fitwell.health / admin123
-              </div>
-              <div>
-                <span className="font-medium">Doctor:</span> sarah.johnson@fitwell.health / doctor123
-              </div>
-              <div>
-                <span className="font-medium">Patient:</span> john.doe@fitwell.health / patient123
+        {/* Security Note */}
+        <Card className="border-0 shadow-sm bg-blue-50/50">
+          <CardContent className="p-4">
+            <div className="flex items-start space-x-3">
+              <Shield className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-blue-900">Security Note</p>
+                <p className="text-xs text-blue-700 mt-1">
+                  For your protection, password reset links expire after 15 minutes and can only be used once. 
+                  Never share your reset link with anyone.
+                </p>
               </div>
             </div>
           </CardContent>

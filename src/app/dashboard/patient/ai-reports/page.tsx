@@ -53,62 +53,21 @@ export default function PatientAIReports() {
   const [reports, setReports] = useState<AIReport[]>([])
   const [vitalsData, setVitalsData] = useState<VitalsData | null>(null)
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "PATIENT",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
+  }, [isAuthorized])
 
-    if (session.user?.role !== "PATIENT") {
-      router.push("/dashboard")
-      return
-    }
-
-    // Mock data - in real app, this would come from API
-    const mockReports: AIReport[] = [
-      {
-        id: "1",
-        reportType: "GENERAL_HEALTH",
-        title: "General Health Assessment",
-        content: "Based on your recent vital signs and health data, your overall health status is good. Your blood pressure and heart rate are within normal ranges. Continue maintaining your current lifestyle habits.",
-        generatedAt: "2024-01-10T10:00:00Z",
-        isLatest: true
-      },
-      {
-        id: "2",
-        reportType: "NUTRITION",
-        title: "Nutrition Analysis",
-        content: "Your current diet shows good balance of macronutrients. Consider increasing your intake of leafy greens and reducing processed foods. Your vitamin D levels could be improved with more sunlight exposure.",
-        generatedAt: "2024-01-08T14:30:00Z",
-        isLatest: false
-      },
-      {
-        id: "3",
-        reportType: "MEDICATION_REMINDERS",
-        title: "Medication Adherence Report",
-        content: "Your medication adherence is excellent at 95%. Keep up the good work! Remember to take your blood pressure medication at the same time each day for optimal effectiveness.",
-        generatedAt: "2024-01-05T09:15:00Z",
-        isLatest: false
-      }
-    ]
-
-    const mockVitals: VitalsData = {
-      bloodPressure: { systolic: 120, diastolic: 80 },
-      heartRate: 72,
-      temperature: 98.6,
-      weight: 70,
-      bloodSugar: 95,
-      oxygenSaturation: 98
-    }
-
-    setReports(mockReports)
-    setVitalsData(mockVitals)
-    setIsLoading(false)
-  }, [session, status, router])
-
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.PATIENT}>
         <div className="flex items-center justify-center h-64">
@@ -120,6 +79,23 @@ export default function PatientAIReports() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have PATIENT role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.PATIENT}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const generateReport = async (reportType: string) => {

@@ -57,21 +57,19 @@ export default function DoctorSchedule() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "DOCTOR",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
-
-    if (session.user?.role !== "DOCTOR") {
-      router.push("/dashboard")
-      return
-    }
-
-    fetchScheduleData()
-  }, [session, status, router])
+  }, [isAuthorized])
 
   const fetchScheduleData = async () => {
     try {
@@ -216,7 +214,7 @@ export default function DoctorSchedule() {
     )
   }
 
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.DOCTOR}>
         <div className="flex items-center justify-center h-64">
@@ -228,6 +226,23 @@ export default function DoctorSchedule() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have DOCTOR role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.DOCTOR}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const totalAvailability = availability.filter(slot => slot.isAvailable).length

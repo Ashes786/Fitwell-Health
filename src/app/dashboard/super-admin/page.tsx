@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -107,17 +109,22 @@ interface Analytics {
 }
 
 export default function SuperAdminDashboard() {
-  const { data: session, status } = useSession()
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "SUPER_ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
   const router = useRouter()
   const [admins, setAdmins] = useState<Admin[]>([])
   const [subscriptionRequests, setSubscriptionRequests] = useState<SubscriptionRequest[]>([])
   const [systemStatus, setSystemStatus] = useState<SystemStatus[]>([])
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
-  const [loading, setLoading] = useState(true)
   const [checkingStatus, setCheckingStatus] = useState<string[]>([])
   const [selectedRequest, setSelectedRequest] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [lastFetchTime, setLastFetchTime] = useState<number>(0)
+  const [loading, setLoading] = useState<boolean>(false)
 
   const fetchDashboardData = async (forceRefresh = false) => {
     // Check if we should use cached data (within 30 seconds)
@@ -214,101 +221,73 @@ export default function SuperAdminDashboard() {
   }
 
   useEffect(() => {
-    if (status === "loading") return
+    if (isLoading) return
 
     if (!session) {
-      // Let middleware handle authentication redirects
-      // This prevents redirect loops
-      return
-    }
-
-    if (session.user?.role !== "SUPER_ADMIN") {
-      // Don't redirect - let the middleware handle routing
-      // This prevents redirect loops
       return
     }
 
     fetchDashboardData()
-    
-    // Reduce status check frequency from 30 seconds to 120 seconds
-    const statusInterval = setInterval(() => {
-      if (systemStatus.length > 0) {
-        systemStatus.forEach(status => {
-          checkSystemStatus(status.serviceName)
-        })
-      }
-    }, 120000) // 2 minutes instead of 30 seconds
+  }, [session, isLoading])
 
-    return () => clearInterval(statusInterval)
-  }, [session, status])
-
-  if (status === "loading" || loading) {
+  // Show unauthorized message if user doesn't have SUPER_ADMIN role
+  if (isUnauthorized) {
     return (
-      <div className="space-y-6 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-8 w-64 mb-2" />
-            <Skeleton className="h-4 w-96" />
+      <DashboardLayout userRole={UserRole.SUPER_ADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
           </div>
-          <div className="flex space-x-2">
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-40" />
-          </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Skeleton className="h-4 w-24 mb-2" />
-                    <Skeleton className="h-8 w-20 mb-2" />
-                    <Skeleton className="h-3 w-32" />
-                  </div>
-                  <Skeleton className="h-12 w-12 rounded-full" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {[1, 2].map((i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-6 w-40 mb-2" />
-                <Skeleton className="h-4 w-56" />
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      </DashboardLayout>
     )
   }
 
-  if (!session) {
-    return null
+  // Show loading state
+  if (loading) {
+    return (
+      <DashboardLayout userRole={UserRole.SUPER_ADMIN}>
+        <div className="space-y-6 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
+              <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your system today.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-8 w-20 mb-2" />
+                  <Skeleton className="h-6 w-16" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   // Error state with retry button
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <div className="text-center">
+      <DashboardLayout userRole={UserRole.SUPER_ADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Dashboard</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <Button onClick={() => fetchDashboardData(true)} className="flex items-center space-x-2">
             <RefreshCw className="h-4 w-4" />
             <span>Retry</span>
           </Button>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     )
   }
 
@@ -411,6 +390,7 @@ export default function SuperAdminDashboard() {
   const recentActivity = subscriptionRequests.slice(0, 5)
 
   return (
+    <DashboardLayout userRole={UserRole.SUPER_ADMIN}>
     <div className="space-y-6 p-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
@@ -681,5 +661,6 @@ export default function SuperAdminDashboard() {
         </CardContent>
       </Card>
     </div>
+    </DashboardLayout>
   )
 }

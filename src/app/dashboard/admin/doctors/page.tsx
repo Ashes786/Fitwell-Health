@@ -63,120 +63,21 @@ export default function AdminDoctors() {
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
+  }, [isAuthorized])
 
-    if (session.user?.role !== "ADMIN") {
-      router.push("/dashboard")
-      return
-    }
-
-    // Mock data - in real app, this would come from API
-    const mockDoctors: Doctor[] = [
-      {
-        id: "1",
-        userId: "1",
-        user: {
-          name: "Dr. Sarah Johnson",
-          email: "sarah.johnson@healthpay.com",
-          phone: "+1-555-0123",
-          isActive: true
-        },
-        licenseNumber: "MD-12345",
-        specialization: "General Practitioner",
-        experience: 8,
-        rating: 4.8,
-        consultationFee: 150,
-        isAvailable: true,
-        bio: "Experienced general practitioner with focus on preventive care and chronic disease management.",
-        city: "New York",
-        totalAppointments: 1250,
-        completedAppointments: 1180,
-        monthlyRevenue: 8500,
-        createdAt: "2023-06-15T10:00:00Z",
-        lastActive: "2024-01-12T14:30:00Z"
-      },
-      {
-        id: "2",
-        userId: "4",
-        user: {
-          name: "Dr. Michael Chen",
-          email: "michael.chen@healthpay.com",
-          phone: "+1-555-0126",
-          isActive: true
-        },
-        licenseNumber: "MD-67890",
-        specialization: "Cardiologist",
-        experience: 12,
-        rating: 4.9,
-        consultationFee: 250,
-        isAvailable: true,
-        bio: "Board-certified cardiologist specializing in interventional cardiology and heart disease prevention.",
-        city: "New York",
-        totalAppointments: 980,
-        completedAppointments: 920,
-        monthlyRevenue: 12500,
-        createdAt: "2023-07-05T11:00:00Z",
-        lastActive: "2024-01-09T13:20:00Z"
-      },
-      {
-        id: "3",
-        userId: "6",
-        user: {
-          name: "Dr. Emily Rodriguez",
-          email: "emily.rodriguez@healthpay.com",
-          phone: "+1-555-0128",
-          isActive: true
-        },
-        licenseNumber: "MD-54321",
-        specialization: "Pediatrician",
-        experience: 6,
-        rating: 4.7,
-        consultationFee: 120,
-        isAvailable: false,
-        bio: "Pediatrician dedicated to providing comprehensive care for children from infancy through adolescence.",
-        city: "New York",
-        totalAppointments: 750,
-        completedAppointments: 710,
-        monthlyRevenue: 6200,
-        createdAt: "2023-08-20T14:30:00Z",
-        lastActive: "2024-01-08T16:45:00Z"
-      },
-      {
-        id: "4",
-        userId: "8",
-        user: {
-          name: "Dr. James Wilson",
-          email: "james.wilson@healthpay.com",
-          phone: "+1-555-0130",
-          isActive: false
-        },
-        licenseNumber: "MD-98765",
-        specialization: "Dermatologist",
-        experience: 10,
-        rating: 4.6,
-        consultationFee: 180,
-        isAvailable: false,
-        bio: "Dermatologist specializing in medical and cosmetic dermatology with expertise in skin cancer treatment.",
-        city: "New York",
-        totalAppointments: 620,
-        completedAppointments: 590,
-        monthlyRevenue: 0,
-        createdAt: "2023-09-10T09:00:00Z",
-        lastActive: "2023-12-15T10:00:00Z"
-      }
-    ]
-
-    setDoctors(mockDoctors)
-    setIsLoading(false)
-  }, [session, status, router])
-
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.ADMIN}>
         <div className="flex items-center justify-center h-64">
@@ -188,6 +89,23 @@ export default function AdminDoctors() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have ADMIN role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.ADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const filteredDoctors = doctors.filter(doctor =>

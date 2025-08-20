@@ -65,22 +65,19 @@ export default function BookAppointment() {
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
   const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([])
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "PATIENT",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
-
-    if (session.user?.role !== "PATIENT") {
-      router.push("/dashboard")
-      return
-    }
-
-    // Fetch doctors from API
-    fetchDoctors()
-  }, [session, status, router])
+  }, [isAuthorized])
 
   useEffect(() => {
     // Filter doctors based on selected category and city
@@ -134,7 +131,7 @@ export default function BookAppointment() {
     }
   }
 
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.PATIENT}>
         <div className="flex items-center justify-center h-64">
@@ -146,6 +143,23 @@ export default function BookAppointment() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have PATIENT role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.PATIENT}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const appointmentTypes = [

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -33,6 +35,7 @@ import {
   Server
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { UserRole } from "@prisma/client"
 
 interface SecurityLog {
   id: string
@@ -52,7 +55,12 @@ interface SecurityMetric {
 }
 
 export default function SecurityPage() {
-  const { data: session, status } = useSession()
+  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "SUPER_ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: false
+  })
+  
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -70,145 +78,35 @@ export default function SecurityPage() {
   })
 
   useEffect(() => {
-    if (status === "loading") return
+    if (isLoading) return
 
     if (!session) {
-      router.push("/auth/signin")
-      return
-    }
-
-    if (session.user?.role !== "SUPER_ADMIN") {
-      router.push("/dashboard")
       return
     }
 
     fetchSecurityData()
-  }, [session, status])
+  }, [session, isLoading])
 
   const fetchSecurityData = async () => {
+    setLoading(true)
     try {
-      const response = await fetch('/api/super-admin/security-data')
-      if (response.ok) {
-        const data = await response.json()
-        setSecurityLogs(data.logs || [])
-        setMetrics(data.metrics || [])
-      } else {
-        // If API fails, generate security data based on real system activity
-        const [adminsRes, requestsRes] = await Promise.allSettled([
-          fetch('/api/super-admin/admins'),
-          fetch('/api/super-admin/subscription-requests')
-        ])
+      const [logsRes, metricsRes] = await Promise.all([
+        fetch('/api/super-admin/security/logs'),
+        fetch('/api/super-admin/security/metrics')
+      ])
 
-        const admins = adminsRes.status === 'fulfilled' && adminsRes.value.ok ? await adminsRes.value.json() : []
-        const requests = requestsRes.status === 'fulfilled' && requestsRes.value.ok ? await requestsRes.value.json() : []
+      if (logsRes.ok) {
+        const logsData = await logsRes.json()
+        setSecurityLogs(logsData)
+      }
 
-        // Generate security logs based on actual data
-        const logs: SecurityLog[] = []
-        const metrics: SecurityMetric[] = []
-
-        // Add logs based on admin activity
-        if (admins.length > 0) {
-          const activeAdmins = admins.filter((a: any) => a.isActive)
-          const inactiveAdmins = admins.filter((a: any) => !a.isActive)
-
-          logs.push({
-            id: 'admin-activity',
-            type: 'LOGIN',
-            user: activeAdmins[0]?.user?.name || 'admin@example.com',
-            description: 'Successful admin login',
-            timestamp: new Date().toISOString(),
-            ipAddress: '192.168.1.100',
-            severity: 'LOW'
-          })
-
-          if (inactiveAdmins.length > 0) {
-            logs.push({
-              id: 'inactive-admins',
-              type: 'SECURITY_ALERT',
-              user: 'system',
-              description: `${inactiveAdmins.length} inactive admin accounts detected`,
-              timestamp: new Date(Date.now() - 3600000).toISOString(),
-              ipAddress: '192.168.1.1',
-              severity: 'MEDIUM'
-            })
-          }
-        }
-
-        // Add logs based on subscription requests
-        if (requests.length > 0) {
-          const pendingRequests = requests.filter((r: any) => r.status === 'PENDING')
-          if (pendingRequests.length > 0) {
-            logs.push({
-              id: 'subscription-activity',
-              type: 'SECURITY_ALERT',
-              user: 'system',
-              description: `${pendingRequests.length} pending subscription requests require review`,
-              timestamp: new Date(Date.now() - 7200000).toISOString(),
-              ipAddress: '192.168.1.1',
-              severity: 'MEDIUM'
-            })
-          }
-        }
-
-        // Add system security logs
-        logs.push(
-          {
-            id: 'security-scan',
-            type: 'SECURITY_ALERT',
-            user: 'system',
-            description: 'Automated security scan completed - no threats detected',
-            timestamp: new Date(Date.now() - 10800000).toISOString(),
-            ipAddress: '127.0.0.1',
-            severity: 'LOW'
-          },
-          {
-            id: 'firewall-check',
-            type: 'SECURITY_ALERT',
-            user: 'system',
-            description: 'Firewall rules updated successfully',
-            timestamp: new Date(Date.now() - 14400000).toISOString(),
-            ipAddress: '127.0.0.1',
-            severity: 'LOW'
-          }
-        )
-
-        // Generate metrics based on actual data
-        metrics.push(
-          {
-            name: 'Failed Login Attempts',
-            value: Math.floor(Math.random() * 10) + 1, // Low random number
-            status: 'GOOD',
-            description: 'Normal login attempt patterns'
-          },
-          {
-            name: 'Active Sessions',
-            value: admins.filter((a: any) => a.isActive).length + 5, // Active admins + system sessions
-            status: 'GOOD',
-            description: 'Normal user activity'
-          },
-          {
-            name: 'Security Score',
-            value: 95,
-            status: 'GOOD',
-            description: 'Overall security posture is excellent'
-          },
-          {
-            name: 'Blocked IPs',
-            value: Math.floor(Math.random() * 3), // Low random number
-            status: 'GOOD',
-            description: 'Malicious IPs successfully blocked'
-          }
-        )
-
-        setSecurityLogs(logs)
-        setMetrics(metrics)
+      if (metricsRes.ok) {
+        const metricsData = await metricsRes.json()
+        setMetrics(metricsData)
       }
     } catch (error) {
       console.error('Error fetching security data:', error)
-      toast.error('Failed to load security data')
-      // Set minimal fallback data
-      setSecurityLogs([])
-      setMetrics([])
+      toast.error('Failed to fetch security data')
     } finally {
       setLoading(false)
     }
@@ -218,21 +116,23 @@ export default function SecurityPage() {
     setRefreshing(true)
     await fetchSecurityData()
     setRefreshing(false)
-    toast.success('Security data refreshed')
   }
 
   const handleSaveSettings = async () => {
     try {
-      // Simulate saving security settings
-      toast.loading('Saving security settings...')
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // In a real application, this would make an API call to save settings
-      console.log('Saving security settings:', settings)
-      
-      toast.success('Security settings saved successfully')
+      const response = await fetch('/api/super-admin/security/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings),
+      })
+
+      if (response.ok) {
+        toast.success('Security settings saved successfully')
+      } else {
+        toast.error('Failed to save security settings')
+      }
     } catch (error) {
       console.error('Error saving security settings:', error)
       toast.error('Failed to save security settings')
@@ -241,56 +141,24 @@ export default function SecurityPage() {
 
   const handleGenerateReport = async () => {
     try {
-      if (typeof window === 'undefined') {
-        toast.error('Report generation not available on server')
-        return
+      const response = await fetch('/api/super-admin/security/report')
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `security-report-${new Date().toISOString().split('T')[0]}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        toast.success('Security report generated successfully')
+      } else {
+        toast.error('Failed to generate security report')
       }
-
-      // Generate security report with logs and metrics
-      const reportData = {
-        timestamp: new Date().toISOString(),
-        generatedBy: session?.user?.email || 'super-admin',
-        summary: {
-          totalLogs: securityLogs.length,
-          criticalEvents: securityLogs.filter(log => log.severity === 'CRITICAL').length,
-          highSeverityEvents: securityLogs.filter(log => log.severity === 'HIGH').length,
-          securityScore: metrics.find(m => m.name === 'Security Score')?.value || 0
-        },
-        metrics: metrics,
-        recentLogs: securityLogs.slice(0, 20), // Include last 20 logs
-        settings: settings
-      }
-
-      const reportJson = JSON.stringify(reportData, null, 2)
-      const blob = new Blob([reportJson], { type: 'application/json' })
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `security-report-${new Date().toISOString().split('T')[0]}.json`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-      
-      toast.success('Security report generated successfully')
     } catch (error) {
       console.error('Error generating security report:', error)
       toast.error('Failed to generate security report')
-    }
-  }
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'LOW':
-        return 'bg-green-100 text-green-800'
-      case 'MEDIUM':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'HIGH':
-        return 'bg-orange-100 text-orange-800'
-      case 'CRITICAL':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
     }
   }
 
@@ -310,55 +178,87 @@ export default function SecurityPage() {
   const getLogIcon = (type: string) => {
     switch (type) {
       case 'LOGIN':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-green-600 mt-0.5" />
       case 'LOGOUT':
-        return <Clock className="h-4 w-4 text-gray-600" />
+        return <Clock className="h-4 w-4 text-blue-600 mt-0.5" />
       case 'FAILED_LOGIN':
-        return <AlertTriangle className="h-4 w-4 text-red-600" />
+        return <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
       case 'PASSWORD_CHANGE':
-        return <Key className="h-4 w-4 text-blue-600" />
+        return <Key className="h-4 w-4 text-yellow-600 mt-0.5" />
       case 'TWO_FACTOR_ENABLED':
-        return <Fingerprint className="h-4 w-4 text-purple-600" />
+        return <Shield className="h-4 w-4 text-purple-600 mt-0.5" />
       case 'SECURITY_ALERT':
-        return <AlertTriangle className="h-4 w-4 text-orange-600" />
+        return <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
       default:
-        return <Activity className="h-4 w-4 text-gray-600" />
+        return <Activity className="h-4 w-4 text-gray-600 mt-0.5" />
     }
   }
 
-  if (status === "loading" || loading) {
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'LOW':
+        return 'bg-green-100 text-green-800'
+      case 'MEDIUM':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'HIGH':
+        return 'bg-orange-100 text-orange-800'
+      case 'CRITICAL':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  // Show unauthorized message if user doesn't have SUPER_ADMIN role
+  if (isUnauthorized) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center mb-6">
-            <Button variant="ghost" onClick={() => router.back()} className="mr-4">
-              <ArrowLeft className="h-4 w-4" />
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
             </Button>
-            <h1 className="text-3xl font-bold text-gray-900">Security Center</h1>
-          </div>
-          <div className="grid gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg border border-gray-200 p-6">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
-                  <div className="space-y-3">
-                    <div className="h-4 bg-gray-200 rounded"></div>
-                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     )
   }
 
-  if (!session) {
-    return null
+  // Show loading state
+  if (loading) {
+    return (
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="space-y-6 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Button variant="ghost" onClick={() => router.back()} className="mr-4">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Security Center</h1>
+                <p className="text-gray-600 mt-1">Monitor and manage system security settings and logs</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="h-8 w-20 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                  <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   return (
+    <DashboardLayout userRole={UserRole.SUPERADMIN}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
@@ -561,5 +461,6 @@ export default function SecurityPage() {
         </div>
       </div>
     </div>
+    </DashboardLayout>
   )
 }

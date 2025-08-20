@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { 
   ArrowLeft, 
   Users, 
@@ -46,7 +48,7 @@ const availablePermissions: Permission[] = [
 ]
 
 export default function CreateAdminPage() {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
@@ -63,19 +65,10 @@ export default function CreateAdminPage() {
     postalCode: '',
   })
 
-  useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
-    }
-
-    if (session.user?.role !== "SUPER_ADMIN") {
-      router.push("/dashboard")
-      return
-    }
-  }, [session, status, router])
+  const { isUnauthorized, isLoading } = useRoleAuthorization({
+    requiredRole: UserRole.SUPER_ADMIN,
+    showUnauthorizedMessage: false
+  })
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -120,7 +113,7 @@ export default function CreateAdminPage() {
     }
   }
 
-  if (status === "loading") {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
@@ -130,6 +123,23 @@ export default function CreateAdminPage() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have SUPER_ADMIN role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.SUPER_ADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const groupedPermissions = availablePermissions.reduce((acc, permission) => {

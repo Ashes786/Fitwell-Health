@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -44,6 +46,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { NotificationDetailModal } from '@/components/ui/notification-detail-modal'
+import { UserRole } from "@prisma/client"
 
 interface SuperAdminNotification {
   id: string
@@ -63,7 +66,12 @@ interface SuperAdminNotification {
 }
 
 export default function SuperAdminNotificationsPage() {
-  const { data: session, status } = useSession()
+  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "SUPER_ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: false
+  })
+  
   const router = useRouter()
   const [notifications, setNotifications] = useState<SuperAdminNotification[]>([])
   const [loading, setLoading] = useState(true)
@@ -76,146 +84,30 @@ export default function SuperAdminNotificationsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
-    if (status === "loading") return
+    if (isLoading) return
 
     if (!session) {
-      router.push("/auth/signin")
-      return
-    }
-
-    if (session.user?.role !== "SUPER_ADMIN") {
-      router.push("/dashboard")
       return
     }
 
     fetchNotifications()
-  }, [session, status])
+  }, [session, isLoading])
 
   const fetchNotifications = async () => {
+    setLoading(true)
     try {
       const response = await fetch('/api/super-admin/notifications')
       if (response.ok) {
         const data = await response.json()
         setNotifications(data)
       } else {
-        // If API fails, generate some sample notifications based on real system activity
-        const sampleNotifications = await generateSampleNotifications()
-        setNotifications(sampleNotifications)
+        toast.error('Failed to fetch notifications')
       }
     } catch (error) {
       console.error('Error fetching notifications:', error)
-      toast.error('Failed to load notifications')
-      // Generate sample notifications as fallback
-      const sampleNotifications = await generateSampleNotifications()
-      setNotifications(sampleNotifications)
+      toast.error('Failed to fetch notifications')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const generateSampleNotifications = async (): Promise<SuperAdminNotification[]> => {
-    // Get real data from other APIs to generate meaningful notifications
-    try {
-      const [adminsRes, requestsRes] = await Promise.allSettled([
-        fetch('/api/super-admin/admins'),
-        fetch('/api/super-admin/subscription-requests')
-      ])
-
-      const admins = adminsRes.status === 'fulfilled' && adminsRes.value.ok ? await adminsRes.value.json() : []
-      const requests = requestsRes.status === 'fulfilled' && requestsRes.value.ok ? await requestsRes.value.json() : []
-
-      const notifications: SuperAdminNotification[] = []
-
-      // Generate notifications based on real data
-      if (requests && Array.isArray(requests)) {
-        const pendingRequests = requests.filter((r: any) => r.status === 'PENDING')
-        pendingRequests.slice(0, 3).forEach((request: any, index: number) => {
-          notifications.push({
-            id: `sub-req-${request.id}`,
-            type: 'SUBSCRIPTION_REQUEST',
-            title: 'New Subscription Request',
-            message: `${request.admin?.user?.name || 'Unknown admin'} requested ${request.planName} subscription`,
-            priority: 'MEDIUM',
-            status: 'UNREAD',
-            targetUser: request.admin?.user?.name,
-            targetRole: 'ADMIN',
-            createdAt: new Date(Date.now() - index * 300000).toISOString(),
-            actionUrl: '/dashboard/super-admin/subscription-requests',
-            metadata: { requestId: request.id, planName: request.planName }
-          })
-        })
-      }
-
-      if (admins && Array.isArray(admins)) {
-        const activeAdmins = admins.filter((a: any) => a.isActive)
-        const inactiveAdmins = admins.filter((a: any) => !a.isActive)
-        
-        if (inactiveAdmins.length > 0) {
-          notifications.push({
-            id: 'admin-inactive',
-            type: 'ADMIN_ACTION',
-            title: 'Inactive Admin Accounts',
-            message: `${inactiveAdmins.length} admin accounts are currently inactive`,
-            priority: 'MEDIUM',
-            status: 'UNREAD',
-            createdAt: new Date(Date.now() - 600000).toISOString(),
-            actionUrl: '/dashboard/super-admin/admins',
-            metadata: { inactiveCount: inactiveAdmins.length }
-          })
-        }
-
-        // Recent admin activity
-        notifications.push({
-          id: 'admin-activity',
-          type: 'ADMIN_ACTION',
-          title: 'Admin Activity Summary',
-          message: `${activeAdmins.length} active admins managing the system`,
-          priority: 'LOW',
-          status: 'UNREAD',
-          createdAt: new Date(Date.now() - 900000).toISOString(),
-          actionUrl: '/dashboard/super-admin/admins',
-          metadata: { activeCount: activeAdmins.length }
-        })
-      }
-
-      // System security notifications
-      notifications.push(
-        {
-          id: 'security-check',
-          type: 'SECURITY_ALERT',
-          title: 'Security Check Complete',
-          message: 'System security scan completed - all systems secure',
-          priority: 'LOW',
-          status: 'UNREAD',
-          createdAt: new Date(Date.now() - 1200000).toISOString(),
-          actionUrl: '/dashboard/super-admin/security'
-        },
-        {
-          id: 'backup-status',
-          type: 'BACKUP_COMPLETE',
-          title: 'Automated Backup Complete',
-          message: 'Database backup completed successfully',
-          priority: 'LOW',
-          status: 'UNREAD',
-          createdAt: new Date(Date.now() - 1800000).toISOString(),
-          actionUrl: '/dashboard/super-admin/database'
-        },
-        {
-          id: 'system-health',
-          type: 'SYSTEM_STATUS',
-          title: 'System Health Check',
-          message: 'All system services are running normally',
-          priority: 'LOW',
-          status: 'UNREAD',
-          createdAt: new Date(Date.now() - 2400000).toISOString(),
-          actionUrl: '/dashboard/super-admin/system-status'
-        }
-      )
-
-      return notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    } catch (error) {
-      console.error('Error generating sample notifications:', error)
-      return []
     }
   }
 
@@ -223,23 +115,97 @@ export default function SuperAdminNotificationsPage() {
     setRefreshing(true)
     await fetchNotifications()
     setRefreshing(false)
-    toast.success('Notifications refreshed successfully')
   }
 
-  const markAsRead = async (id: string) => {
+  const unreadCount = notifications.filter(n => n.status === 'UNREAD').length
+
+  const filteredNotifications = notifications.filter(notification => {
+    const matchesSearch = searchTerm === '' || 
+      notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      notification.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      notification.targetUser?.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesType = typeFilter === 'all' || notification.type === typeFilter
+    const matchesPriority = priorityFilter === 'all' || notification.priority === priorityFilter
+    const matchesStatus = statusFilter === 'all' || notification.status === statusFilter
+
+    return matchesSearch && matchesType && matchesPriority && matchesStatus
+  })
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'PASSWORD_CHANGE':
+        return <Key className="h-4 w-4 text-blue-600" />
+      case 'SECURITY_ALERT':
+        return <Shield className="h-4 w-4 text-red-600" />
+      case 'SUBSCRIPTION_REQUEST':
+        return <CreditCard className="h-4 w-4 text-green-600" />
+      case 'ADMIN_ACTION':
+        return <Users className="h-4 w-4 text-purple-600" />
+      case 'SYSTEM_STATUS':
+        return <Server className="h-4 w-4 text-gray-600" />
+      case 'LOGIN_ATTEMPT':
+        return <AlertTriangle className="h-4 w-4 text-yellow-600" />
+      case 'BACKUP_COMPLETE':
+        return <Database className="h-4 w-4 text-green-600" />
+      case 'DATABASE_ALERT':
+        return <Database className="h-4 w-4 text-red-600" />
+      default:
+        return <Bell className="h-4 w-4 text-gray-600" />
+    }
+  }
+
+  const getPriorityBadge = (priority: string) => {
+    switch (priority) {
+      case 'CRITICAL':
+        return <Badge variant="destructive">Critical</Badge>
+      case 'HIGH':
+        return <Badge variant="destructive" className="bg-orange-500">High</Badge>
+      case 'MEDIUM':
+        return <Badge variant="secondary">Medium</Badge>
+      case 'LOW':
+        return <Badge variant="outline">Low</Badge>
+      default:
+        return <Badge variant="secondary">{priority}</Badge>
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'UNREAD':
+        return <Badge variant="default" className="bg-blue-500">Unread</Badge>
+      case 'READ':
+        return <Badge variant="secondary">Read</Badge>
+      case 'ARCHIVED':
+        return <Badge variant="outline">Archived</Badge>
+      default:
+        return <Badge variant="secondary">{status}</Badge>
+    }
+  }
+
+  const handleViewNotification = (notification: SuperAdminNotification) => {
+    setSelectedNotification(notification)
+    setIsModalOpen(true)
+  }
+
+  const markAsRead = async (notificationId: string) => {
     try {
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification.id === id 
-            ? { ...notification, status: 'READ' as const, readAt: new Date().toISOString() }
-            : notification
-        )
-      )
-      
-      // Make API call to mark as read
-      await fetch(`/api/super-admin/notifications/${id}?action=read`, { method: 'PATCH' })
-      
-      toast.success('Notification marked as read')
+      const response = await fetch(`/api/super-admin/notifications/${notificationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'READ' }),
+      })
+
+      if (response.ok) {
+        setNotifications(notifications.map(n => 
+          n.id === notificationId ? { ...n, status: 'READ' as const } : n
+        ))
+        toast.success('Notification marked as read')
+      } else {
+        toast.error('Failed to mark notification as read')
+      }
     } catch (error) {
       console.error('Error marking notification as read:', error)
       toast.error('Failed to mark notification as read')
@@ -248,65 +214,88 @@ export default function SuperAdminNotificationsPage() {
 
   const markAllAsRead = async () => {
     try {
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification.status === 'UNREAD' 
-            ? { ...notification, status: 'READ' as const, readAt: new Date().toISOString() }
-            : notification
-        )
-      )
-      
-      // Make API call to mark all as read
-      await fetch('/api/super-admin/notifications/read-all', { method: 'PATCH' })
-      
-      toast.success('All notifications marked as read')
+      const response = await fetch('/api/super-admin/notifications/mark-all-read', {
+        method: 'POST',
+      })
+
+      if (response.ok) {
+        setNotifications(notifications.map(n => ({ ...n, status: 'READ' as const })))
+        toast.success('All notifications marked as read')
+      } else {
+        toast.error('Failed to mark all notifications as read')
+      }
     } catch (error) {
       console.error('Error marking all notifications as read:', error)
       toast.error('Failed to mark all notifications as read')
     }
   }
 
-  const deleteNotification = async (id: string) => {
+  const archiveNotification = async (notificationId: string) => {
     try {
-      setNotifications(prev => prev.filter(notification => notification.id !== id))
-      
-      // Make API call to delete notification
-      await fetch(`/api/super-admin/notifications/${id}`, { method: 'DELETE' })
-      
-      toast.success('Notification deleted')
-    } catch (error) {
-      console.error('Error deleting notification:', error)
-      toast.error('Failed to delete notification')
-    }
-  }
+      const response = await fetch(`/api/super-admin/notifications/${notificationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'ARCHIVED' }),
+      })
 
-  const archiveNotification = async (id: string) => {
-    try {
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification.id === id 
-            ? { ...notification, status: 'ARCHIVED' as const }
-            : notification
-        )
-      )
-      
-      // Make API call to archive notification
-      await fetch(`/api/super-admin/notifications/${id}?action=archive`, { method: 'PATCH' })
-      
-      toast.success('Notification archived')
+      if (response.ok) {
+        setNotifications(notifications.map(n => 
+          n.id === notificationId ? { ...n, status: 'ARCHIVED' as const } : n
+        ))
+        toast.success('Notification archived')
+      } else {
+        toast.error('Failed to archive notification')
+      }
     } catch (error) {
       console.error('Error archiving notification:', error)
       toast.error('Failed to archive notification')
     }
   }
 
-  const handleViewNotification = (notification: SuperAdminNotification) => {
-    setSelectedNotification(notification)
-    setIsModalOpen(true)
-    
-    // Mark as read when viewing
-    if (notification.status === 'UNREAD') {
-      markAsRead(notification.id)
+  const deleteNotification = async (notificationId: string) => {
+    if (!confirm('Are you sure you want to delete this notification?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/super-admin/notifications/${notificationId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        setNotifications(notifications.filter(n => n.id !== notificationId))
+        toast.success('Notification deleted')
+      } else {
+        toast.error('Failed to delete notification')
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error)
+      toast.error('Failed to delete notification')
+    }
+  }
+
+  const exportNotifications = async () => {
+    try {
+      const response = await fetch('/api/super-admin/notifications/export')
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `notifications-export-${new Date().toISOString().split('T')[0]}.csv`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        toast.success('Notifications exported successfully')
+      } else {
+        toast.error('Failed to export notifications')
+      }
+    } catch (error) {
+      console.error('Error exporting notifications:', error)
+      toast.error('Failed to export notifications')
     }
   }
 
@@ -315,122 +304,56 @@ export default function SuperAdminNotificationsPage() {
     setSelectedNotification(null)
   }
 
-  const exportNotifications = async () => {
-    try {
-      if (typeof window === 'undefined') {
-        toast.error('Export not available on server')
-        return
-      }
-
-      const filtered = filteredNotifications
-      const csvContent = [
-        ['Type', 'Title', 'Message', 'Priority', 'Status', 'Target User', 'Created At'],
-        ...filtered.map(n => [
-          n.type,
-          n.title,
-          n.message,
-          n.priority,
-          n.status,
-          n.targetUser || '',
-          new Date(n.createdAt).toLocaleString()
-        ])
-      ].map(row => row.join(',')).join('\n')
-
-      const blob = new Blob([csvContent], { type: 'text/csv' })
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `notifications-${new Date().toISOString().split('T')[0]}.csv`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-      
-      toast.success('Notifications exported successfully')
-    } catch (error) {
-      console.error('Error exporting notifications:', error)
-      toast.error('Failed to export notifications')
-    }
-  }
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'PASSWORD_CHANGE': return <Key className="h-4 w-4 text-blue-600" />
-      case 'SECURITY_ALERT': return <Shield className="h-4 w-4 text-red-600" />
-      case 'SUBSCRIPTION_REQUEST': return <CreditCard className="h-4 w-4 text-green-600" />
-      case 'ADMIN_ACTION': return <Users className="h-4 w-4 text-purple-600" />
-      case 'SYSTEM_STATUS': return <Server className="h-4 w-4 text-gray-600" />
-      case 'LOGIN_ATTEMPT': return <AlertTriangle className="h-4 w-4 text-yellow-600" />
-      case 'BACKUP_COMPLETE': return <Database className="h-4 w-4 text-indigo-600" />
-      case 'DATABASE_ALERT': return <Database className="h-4 w-4 text-orange-600" />
-      default: return <Bell className="h-4 w-4 text-gray-600" />
-    }
-  }
-
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case 'CRITICAL': return <Badge variant="destructive">Critical</Badge>
-      case 'HIGH': return <Badge className="bg-red-100 text-red-800">High</Badge>
-      case 'MEDIUM': return <Badge className="bg-yellow-100 text-yellow-800">Medium</Badge>
-      case 'LOW': return <Badge variant="outline">Low</Badge>
-      default: return <Badge variant="outline">{priority}</Badge>
-    }
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'UNREAD': return <Badge className="bg-blue-100 text-blue-800">Unread</Badge>
-      case 'READ': return <Badge variant="outline">Read</Badge>
-      case 'ARCHIVED': return <Badge className="bg-gray-100 text-gray-800">Archived</Badge>
-      default: return <Badge variant="outline">{status}</Badge>
-    }
-  }
-
-  const filteredNotifications = notifications.filter(notification => {
-    const matchesSearch = 
-      notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      notification.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      notification.targetUser?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesType = typeFilter === 'all' || notification.type === typeFilter
-    const matchesPriority = priorityFilter === 'all' || notification.priority === priorityFilter
-    const matchesStatus = statusFilter === 'all' || notification.status === statusFilter
-    
-    return matchesSearch && matchesType && matchesPriority && matchesStatus
-  })
-
-  const unreadCount = notifications.filter(n => n.status === 'UNREAD').length
-
-  if (status === "loading" || loading) {
+  // Show unauthorized message if user doesn't have SUPER_ADMIN role
+  if (isUnauthorized) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center mb-6">
-            <Button variant="ghost" onClick={() => router.back()} className="mr-4">
-              <ArrowLeft className="h-4 w-4" />
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
             </Button>
-            <h1 className="text-3xl font-bold text-gray-900">Super Admin Notifications</h1>
-          </div>
-          <div className="grid gap-4">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg border p-6">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     )
   }
 
-  if (!session) {
-    return null
+  // Show loading state
+  if (loading) {
+    return (
+      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+        <div className="space-y-6 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Button variant="ghost" onClick={() => router.back()} className="mr-4">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Super Admin Notifications</h1>
+                <p className="text-gray-600 mt-1">Monitor system-wide notifications, security alerts, and admin activities</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="h-8 w-20 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                  <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   return (
+    <DashboardLayout userRole={UserRole.SUPERADMIN}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
@@ -701,5 +624,6 @@ export default function SuperAdminNotificationsPage() {
         />
       )}
     </div>
+    </DashboardLayout>
   )
 }

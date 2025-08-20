@@ -64,152 +64,21 @@ export default function AttendantAppointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "ATTENDANT",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
+  const router = useRouter()
+
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      // Original fetch logic will be handled separately
     }
+  }, [isAuthorized])
 
-    if (session.user?.role !== "ATTENDANT") {
-      router.push("/dashboard")
-      return
-    }
-
-    // Mock data - in real app, this would come from API
-    const mockAppointments: Appointment[] = [
-      {
-        id: "1",
-        appointmentNumber: "APT-2024-001",
-        type: "GP_CONSULTATION",
-        status: "CONFIRMED",
-        chiefComplaint: "General checkup and blood pressure monitoring",
-        scheduledAt: "2024-01-15T10:00:00Z",
-        patient: {
-          id: "1",
-          name: "John Smith",
-          phone: "+1-555-0123",
-          nhrNumber: "NHR-2024-001"
-        },
-        doctor: {
-          id: "1",
-          name: "Dr. Sarah Johnson",
-          specialization: "General Practitioner"
-        },
-        consultationFee: 100,
-        paymentStatus: "PAID",
-        location: "Main Clinic - Room 101",
-        notes: "Regular checkup patient",
-        createdAt: "2024-01-10T09:00:00Z",
-        updatedAt: "2024-01-10T09:00:00Z"
-      },
-      {
-        id: "2",
-        appointmentNumber: "APT-2024-002",
-        type: "VIDEO_CONSULTATION",
-        status: "CONFIRMED",
-        chiefComplaint: "Follow-up for asthma management",
-        scheduledAt: "2024-01-15T11:30:00Z",
-        patient: {
-          id: "2",
-          name: "Sarah Johnson",
-          phone: "+1-555-0125",
-          nhrNumber: "NHR-2024-002"
-        },
-        doctor: {
-          id: "1",
-          name: "Dr. Sarah Johnson",
-          specialization: "General Practitioner"
-        },
-        consultationFee: 150,
-        paymentStatus: "PAID",
-        videoLink: "https://meet.jit.si/healthpay-002",
-        notes: "Video follow-up appointment",
-        createdAt: "2024-01-08T14:30:00Z",
-        updatedAt: "2024-01-08T14:30:00Z"
-      },
-      {
-        id: "3",
-        appointmentNumber: "APT-2024-003",
-        type: "SPECIALIST_CONSULTATION",
-        status: "PENDING",
-        chiefComplaint: "Cardiac consultation for chest pain",
-        scheduledAt: "2024-01-16T14:00:00Z",
-        patient: {
-          id: "3",
-          name: "Mike Davis",
-          phone: "+1-555-0127",
-          nhrNumber: "NHR-2024-003"
-        },
-        doctor: {
-          id: "2",
-          name: "Dr. Michael Chen",
-          specialization: "Cardiologist"
-        },
-        consultationFee: 250,
-        paymentStatus: "PENDING",
-        location: "Cardiology Department - Room 205",
-        notes: "Urgent cardiac consultation",
-        createdAt: "2024-01-12T16:45:00Z",
-        updatedAt: "2024-01-12T16:45:00Z"
-      },
-      {
-        id: "4",
-        appointmentNumber: "APT-2024-004",
-        type: "PHONE_CONSULTATION",
-        status: "COMPLETED",
-        chiefComplaint: "Prescription refill consultation",
-        scheduledAt: "2024-01-10T15:00:00Z",
-        patient: {
-          id: "4",
-          name: "Emily Brown",
-          phone: "+1-555-0129",
-          nhrNumber: "NHR-2024-004"
-        },
-        doctor: {
-          id: "1",
-          name: "Dr. Sarah Johnson",
-          specialization: "General Practitioner"
-        },
-        consultationFee: 75,
-        paymentStatus: "PAID",
-        notes: "Phone consultation completed successfully",
-        createdAt: "2024-01-09T10:00:00Z",
-        updatedAt: "2024-01-10T15:30:00Z"
-      },
-      {
-        id: "5",
-        appointmentNumber: "APT-2024-005",
-        type: "PHYSICAL_VISIT",
-        status: "CANCELLED",
-        chiefComplaint: "Skin rash consultation",
-        scheduledAt: "2024-01-12T09:00:00Z",
-        patient: {
-          id: "1",
-          name: "John Smith",
-          phone: "+1-555-0123",
-          nhrNumber: "NHR-2024-001"
-        },
-        doctor: {
-          id: "3",
-          name: "Dr. Emily Rodriguez",
-          specialization: "Dermatologist"
-        },
-        consultationFee: 180,
-        paymentStatus: "REFUNDED",
-        location: "Dermatology Clinic - Room 301",
-        notes: "Cancelled by patient",
-        createdAt: "2024-01-08T11:00:00Z",
-        updatedAt: "2024-01-11T14:20:00Z"
-      }
-    ]
-
-    setAppointments(mockAppointments)
-    setIsLoading(false)
-  }, [session, status, router])
-
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.ATTENDANT}>
         <div className="flex items-center justify-center h-64">
@@ -221,6 +90,23 @@ export default function AttendantAppointments() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have ATTENDANT role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.ATTENDANT}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const filteredAppointments = appointments.filter(appointment =>

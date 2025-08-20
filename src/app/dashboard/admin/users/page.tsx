@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { 
   Users, 
   Search, 
@@ -52,28 +53,22 @@ interface User {
 }
 
 export default function AdminUsers() {
-  const { data: session, status } = useSession()
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+    requiredRole: "ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
   const [users, setUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
   useEffect(() => {
-    if (status === "loading") return
-
-    if (!session) {
-      router.push("/auth/signin")
-      return
+    if (isAuthorized) {
+      fetchUsers()
     }
-
-    if (session.user?.role !== "ADMIN") {
-      router.push("/dashboard")
-      return
-    }
-
-    fetchUsers()
-  }, [session, status, router])
+  }, [isAuthorized])
 
   const fetchUsers = async () => {
     try {
@@ -107,12 +102,10 @@ export default function AdminUsers() {
     } catch (error) {
       console.error('Error fetching users:', error)
       toast.error('Failed to load users')
-    } finally {
-      setIsLoading(false)
     }
   }
 
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout userRole={UserRole.ADMIN}>
         <div className="flex items-center justify-center h-64">
@@ -124,6 +117,23 @@ export default function AdminUsers() {
 
   if (!session) {
     return null
+  }
+
+  // Show unauthorized message if user doesn't have ADMIN role
+  if (isUnauthorized) {
+    return (
+      <DashboardLayout userRole={UserRole.ADMIN}>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const filteredUsers = users.filter(user =>
