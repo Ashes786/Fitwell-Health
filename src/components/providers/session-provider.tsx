@@ -12,6 +12,8 @@ export function SessionProviderWrapper({ children }: SessionProviderProps) {
     <SessionProvider 
       session={null}
       basePath="/api/auth"
+      refetchOnWindowFocus={false}
+      refetchInterval={0}
     >
       {children}
     </SessionProvider>

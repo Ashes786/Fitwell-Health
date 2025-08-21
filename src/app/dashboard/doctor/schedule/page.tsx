@@ -57,7 +57,7 @@ export default function DoctorSchedule() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "DOCTOR",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -214,7 +214,7 @@ export default function DoctorSchedule() {
     )
   }
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <DashboardLayout userRole={UserRole.DOCTOR}>
         <div className="flex items-center justify-center h-64">
@@ -224,7 +224,7 @@ export default function DoctorSchedule() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 

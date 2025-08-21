@@ -40,7 +40,10 @@ import {
   Clock,
   BadgeCheck,
   BarChart3,
-  CreditCard
+  CreditCard,
+  Server,
+  Database,
+  Clipboard
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { hasPermission } from "@/lib/rbac"
@@ -79,6 +82,65 @@ export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
     const roleSpecificItems: Array<{ title: string; href: string; icon: any; permission: string }> = []
 
     switch (userRole) {
+      case "SUPER_ADMIN":
+        // Super admin gets access to all system management features
+        roleSpecificItems.push(
+          {
+            title: "Admins",
+            href: "/dashboard/super-admin/admins",
+            icon: Users,
+            permission: "manage_admins"
+          },
+          {
+            title: "Analytics",
+            href: "/dashboard/super-admin/analytics",
+            icon: BarChart3,
+            permission: "view_global_analytics"
+          },
+          {
+            title: "System Status",
+            href: "/dashboard/super-admin/system-status",
+            icon: Server,
+            permission: "manage_system_status"
+          },
+          {
+            title: "Features",
+            href: "/dashboard/super-admin/features",
+            icon: Settings,
+            permission: "manage_features"
+          },
+          {
+            title: "Database",
+            href: "/dashboard/super-admin/database",
+            icon: Database,
+            permission: "manage_database"
+          },
+          {
+            title: "Security",
+            href: "/dashboard/super-admin/security",
+            icon: Shield,
+            permission: "manage_security"
+          },
+          {
+            title: "Subscription Plans",
+            href: "/dashboard/super-admin/subscription-plans",
+            icon: Activity,
+            permission: "manage_subscriptions"
+          },
+          {
+            title: "Partners",
+            href: "/dashboard/super-admin/partners",
+            icon: Building2,
+            permission: "manage_partners"
+          },
+          {
+            title: "Subscription Requests",
+            href: "/dashboard/super-admin/subscription-requests",
+            icon: Clipboard,
+            permission: "approve_subscription_requests"
+          }
+        )
+        break
       case "PATIENT":
         roleSpecificItems.push(
           {
@@ -168,7 +230,7 @@ export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
         )
         break
       case "ADMIN":
-        // For admin, show only network-relevant features
+        // For admin, show only network-relevant features (removed subscription and partner management)
         roleSpecificItems.push(
           {
             title: "Patients",
@@ -183,22 +245,16 @@ export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
             permission: "manage_users"
           },
           {
+            title: "Doctors",
+            href: "/dashboard/admin/doctors",
+            icon: Stethoscope,
+            permission: "manage_doctors"
+          },
+          {
             title: "Analytics",
             href: "/dashboard/admin/analytics",
             icon: BarChart3,
             permission: "view_analytics"
-          },
-          {
-            title: "Partners",
-            href: "/dashboard/admin/partners",
-            icon: Building2,
-            permission: "manage_partners"
-          },
-          {
-            title: "Subscriptions",
-            href: "/dashboard/admin/subscription-plans",
-            icon: Activity,
-            permission: "manage_subscriptions"
           },
           {
             title: "Organizations",

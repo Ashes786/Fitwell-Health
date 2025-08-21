@@ -63,7 +63,7 @@ interface Patient {
 export default function AdminPatients() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isDataLoading, setIsDataLoading] = useState(true)
   const [patients, setPatients] = useState<Patient[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
@@ -82,14 +82,12 @@ export default function AdminPatients() {
     medicalHistory: ""
   })
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
   })
   
-  const router = useRouter()
-
   useEffect(() => {
     if (isAuthorized) {
       // Original fetch logic will be handled separately
@@ -133,7 +131,7 @@ export default function AdminPatients() {
       console.error('Error fetching patients:', error)
       toast.error('Failed to load patients')
     } finally {
-      setIsLoading(false)
+      setIsDataLoading(false)
     }
   }
 
@@ -198,7 +196,7 @@ export default function AdminPatients() {
     toast.success('Template download started')
   }
 
-  if (isLoading) {
+  if (isLoading || isDataLoading) {
     return (
       <DashboardLayout userRole={UserRole.ADMIN}>
         <div className="flex items-center justify-center h-64">

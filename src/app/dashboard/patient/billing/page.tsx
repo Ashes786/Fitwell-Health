@@ -68,7 +68,7 @@ export default function PatientBilling() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -234,7 +234,7 @@ export default function PatientBilling() {
     }).format(amount)
   }
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <DashboardLayout userRole={UserRole.PATIENT}>
         <div className="flex items-center justify-center h-64">
@@ -244,7 +244,7 @@ export default function PatientBilling() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 

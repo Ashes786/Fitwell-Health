@@ -41,20 +41,18 @@ interface AuditLog {
 export default function AdminAuditLogsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isDataLoading, setIsDataLoading] = useState(true)
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL")
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
   })
   
-  const router = useRouter()
-
   useEffect(() => {
     if (isAuthorized) {
       // Original fetch logic will be handled separately
@@ -160,7 +158,7 @@ export default function AdminAuditLogsPage() {
       console.error('Error fetching audit logs:', error)
       toast.error('Failed to load audit logs')
     } finally {
-      setIsLoading(false)
+      setIsDataLoading(false)
     }
   }
 
@@ -219,7 +217,7 @@ export default function AdminAuditLogsPage() {
 
   const categories = Array.from(new Set(auditLogs.map(log => log.category)))
 
-  if (isLoading) {
+  if (isLoading || isDataLoading) {
     return (
       <DashboardLayout userRole={UserRole.ADMIN}>
         <div className="flex items-center justify-center h-64">

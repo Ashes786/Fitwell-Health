@@ -49,7 +49,7 @@ export function useRoleAuthorization(options: UseRoleAuthorizationOptions = {}) 
   return {
     isAuthorized,
     isUnauthorized,
-    isLoading,
-    session
+    isLoading: isLoading,
+    authSession: session
   }
 }

@@ -20,7 +20,10 @@ import {
   Bell,
   User,
   LogOut,
-  ChartBar
+  ChartBar,
+  Activity,
+  Building2,
+  Clipboard
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -65,6 +68,9 @@ export default function SuperAdminLayout({
     { name: 'Dashboard', href: '/dashboard/super-admin', icon: LayoutDashboard, current: false },
     { name: 'Admins', href: '/dashboard/super-admin/admins', icon: Users, current: false },
     { name: 'Analytics', href: '/dashboard/super-admin/analytics', icon: ChartBar, current: false },
+    { name: 'Subscription Plans', href: '/dashboard/super-admin/subscription-plans', icon: Activity, current: false },
+    { name: 'Partners', href: '/dashboard/super-admin/partners', icon: Building2, current: false },
+    { name: 'Subscription Requests', href: '/dashboard/super-admin/subscription-requests', icon: Clipboard, current: false },
     { name: 'Notifications', href: '/dashboard/super-admin/notifications', icon: Bell, current: false },
     { name: 'Settings', href: '/dashboard/super-admin/settings', icon: Settings, current: false },
   ])
@@ -82,6 +88,14 @@ export default function SuperAdminLayout({
     }
   }, [])
 
+  useEffect(() => {
+    // Only redirect if we're not loading and session is available but invalid
+    if (status !== "loading" && session && session.user?.role !== "SUPER_ADMIN") {
+      router.push("/dashboard")
+    }
+  }, [session, status, router])
+
+  // Show loading state while session is being determined
   if (status === "loading") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -92,9 +106,27 @@ export default function SuperAdminLayout({
     )
   }
 
-  if (!session || session.user?.role !== "SUPER_ADMIN") {
-    router.push("/dashboard")
-    return null
+  // If session is loaded but user is not SUPER_ADMIN, redirect
+  if (session && session.user?.role !== "SUPER_ADMIN") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // If no session at all, redirect to signin
+  if (!session) {
+    router.push("/auth/signin")
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      </div>
+    )
   }
 
   const userInitials = session?.user?.name 

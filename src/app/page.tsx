@@ -34,8 +34,34 @@ export default function Home() {
     
     try {
       if (session) {
-        // Let middleware handle the redirect based on role
-        router.push("/dashboard")
+        // Redirect based on user role
+        const userRole = session.user.role
+        let redirectUrl = '/dashboard'
+        
+        switch (userRole) {
+          case 'SUPER_ADMIN':
+            redirectUrl = '/dashboard/super-admin'
+            break
+          case 'ADMIN':
+            redirectUrl = '/dashboard/admin'
+            break
+          case 'DOCTOR':
+            redirectUrl = '/dashboard/doctor'
+            break
+          case 'PATIENT':
+            redirectUrl = '/dashboard/patient'
+            break
+          case 'ATTENDANT':
+            redirectUrl = '/dashboard/attendant'
+            break
+          case 'CONTROL_ROOM':
+            redirectUrl = '/dashboard/control-room'
+            break
+          default:
+            redirectUrl = '/dashboard'
+        }
+        
+        router.push(redirectUrl)
       } else {
         router.push("/auth/signup")
       }
@@ -89,8 +115,34 @@ export default function Home() {
         <div className="flex items-center space-x-2">
           <Button 
             onClick={() => {
-              // Let middleware handle the redirect based on role
-              router.push("/dashboard")
+              // Redirect based on user role
+              const userRole = session.user.role
+              let redirectUrl = '/dashboard'
+              
+              switch (userRole) {
+                case 'SUPER_ADMIN':
+                  redirectUrl = '/dashboard/super-admin'
+                  break
+                case 'ADMIN':
+                  redirectUrl = '/dashboard/admin'
+                  break
+                case 'DOCTOR':
+                  redirectUrl = '/dashboard/doctor'
+                  break
+                case 'PATIENT':
+                  redirectUrl = '/dashboard/patient'
+                  break
+                case 'ATTENDANT':
+                  redirectUrl = '/dashboard/attendant'
+                  break
+                case 'CONTROL_ROOM':
+                  redirectUrl = '/dashboard/control-room'
+                  break
+                default:
+                  redirectUrl = '/dashboard'
+              }
+              
+              router.push(redirectUrl)
             }} 
             className="bg-[#2ba664] hover:bg-[#238a52] text-white transition-colors duration-200 text-sm px-4 py-2"
             disabled={isNavigating}

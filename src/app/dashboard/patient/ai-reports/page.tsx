@@ -53,7 +53,7 @@ export default function PatientAIReports() {
   const [reports, setReports] = useState<AIReport[]>([])
   const [vitalsData, setVitalsData] = useState<VitalsData | null>(null)
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -67,7 +67,7 @@ export default function PatientAIReports() {
     }
   }, [isAuthorized])
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <DashboardLayout userRole={UserRole.PATIENT}>
         <div className="flex items-center justify-center h-64">
@@ -77,7 +77,7 @@ export default function PatientAIReports() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 

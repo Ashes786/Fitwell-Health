@@ -77,7 +77,7 @@ interface UserAssignment {
 export default function AdminRoles() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isDataLoading, setIsDataLoading] = useState(true)
   const [roles, setRoles] = useState<Role[]>([])
   const [userAssignments, setUserAssignments] = useState<UserAssignment[]>([])
   const [permissions, setPermissions] = useState<Permission[]>([])
@@ -96,14 +96,12 @@ export default function AdminRoles() {
     expiresAt: ""
   })
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
   })
   
-  const router = useRouter()
-
   useEffect(() => {
     if (isAuthorized) {
       // Original fetch logic will be handled separately
@@ -321,7 +319,7 @@ export default function AdminRoles() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || isDataLoading) {
     return (
       <DashboardLayout userRole={UserRole.ADMIN}>
         <div className="flex items-center justify-center h-64">

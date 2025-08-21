@@ -60,25 +60,23 @@ interface Patient {
 export default function AttendantPatients() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isDataLoading, setIsDataLoading] = useState(true)
   const [patients, setPatients] = useState<Patient[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
     requiredRole: "ATTENDANT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
   })
   
-  const router = useRouter()
-
   useEffect(() => {
     if (isAuthorized) {
       // Original fetch logic will be handled separately
     }
   }, [isAuthorized])
 
-  if (isLoading) {
+  if (isLoading || isDataLoading) {
     return (
       <DashboardLayout userRole={UserRole.ATTENDANT}>
         <div className="flex items-center justify-center h-64">

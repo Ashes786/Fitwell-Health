@@ -44,20 +44,18 @@ interface Notification {
 export default function AdminNotificationsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isDataLoading, setIsDataLoading] = useState(true)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
   const [typeFilter, setTypeFilter] = useState<string>("ALL")
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
   })
   
-  const router = useRouter()
-
   useEffect(() => {
     if (isAuthorized) {
       // Original fetch logic will be handled separately
@@ -172,7 +170,7 @@ export default function AdminNotificationsPage() {
       console.error('Error fetching notifications:', error)
       toast.error('Failed to load notifications')
     } finally {
-      setIsLoading(false)
+      setIsDataLoading(false)
     }
   }
 
@@ -266,7 +264,7 @@ export default function AdminNotificationsPage() {
 
   const notificationTypes = Array.from(new Set(notifications.map(n => n.type)))
 
-  if (isLoading) {
+  if (isLoading || isDataLoading) {
     return (
       <DashboardLayout userRole={UserRole.ADMIN}>
         <div className="flex items-center justify-center h-64">

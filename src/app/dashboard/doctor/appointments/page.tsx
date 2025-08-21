@@ -47,13 +47,11 @@ export default function DoctorAppointments() {
   const [isLoading, setIsLoading] = useState(true)
   const [appointments, setAppointments] = useState<Appointment[]>([])
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "DOCTOR",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
   })
-  
-  const router = useRouter()
 
   useEffect(() => {
     if (isAuthorized) {
@@ -61,7 +59,7 @@ export default function DoctorAppointments() {
     }
   }, [isAuthorized])
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <DashboardLayout userRole={UserRole.DOCTOR}>
         <div className="flex items-center justify-center h-64">
@@ -71,7 +69,7 @@ export default function DoctorAppointments() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 

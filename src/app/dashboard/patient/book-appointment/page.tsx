@@ -65,7 +65,7 @@ export default function BookAppointment() {
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
   const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([])
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -131,7 +131,7 @@ export default function BookAppointment() {
     }
   }
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <DashboardLayout userRole={UserRole.PATIENT}>
         <div className="flex items-center justify-center h-64">
@@ -141,7 +141,7 @@ export default function BookAppointment() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
 import { useRoleAuthorization } from "@/hooks/use-role-authorization"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -162,7 +161,9 @@ export default function SuperAdminDashboard() {
       let hasErrors = false
 
       if (adminsRes.status === 'fulfilled' && adminsRes.value.ok) {
-        adminsData = await adminsRes.value.json()
+        const adminsResponse = await adminsRes.value.json()
+        // Handle both array and object responses
+        adminsData = Array.isArray(adminsResponse) ? adminsResponse : []
         setAdmins(adminsData)
       } else {
         console.warn('Failed to fetch admins data')
@@ -170,7 +171,15 @@ export default function SuperAdminDashboard() {
       }
 
       if (requestsRes.status === 'fulfilled' && requestsRes.value.ok) {
-        requestsData = await requestsRes.value.json()
+        const requestsResponse = await requestsRes.value.json()
+        // Handle the case where subscription requests return a message object instead of array
+        if (Array.isArray(requestsResponse)) {
+          requestsData = requestsResponse
+        } else if (requestsResponse && requestsResponse.subscriptionRequests) {
+          requestsData = requestsResponse.subscriptionRequests
+        } else {
+          requestsData = []
+        }
         setSubscriptionRequests(requestsData)
       } else {
         console.warn('Failed to fetch subscription requests data')
@@ -178,7 +187,9 @@ export default function SuperAdminDashboard() {
       }
 
       if (statusRes.status === 'fulfilled' && statusRes.value.ok) {
-        statusData = await statusRes.value.json()
+        const statusResponse = await statusRes.value.json()
+        // Handle both array and object responses
+        statusData = Array.isArray(statusResponse) ? statusResponse : []
         setSystemStatus(statusData)
       } else {
         console.warn('Failed to fetch system status data')
@@ -230,66 +241,59 @@ export default function SuperAdminDashboard() {
     fetchDashboardData()
   }, [session, isLoading])
 
+  // Add a retry mechanism for failed loads
+  useEffect(() => {
+    if (error && !loading) {
+      const timer = setTimeout(() => {
+        // Auto-retry after 5 seconds if there's an error
+        fetchDashboardData(true)
+      }, 5000)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [error, loading])
+
   // Show unauthorized message if user doesn't have SUPER_ADMIN role
   if (isUnauthorized) {
     return (
-      <DashboardLayout userRole={UserRole.SUPER_ADMIN}>
-        <div className="flex flex-col items-center justify-center h-64 space-y-4">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
-            <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
-            <Button onClick={() => router.push('/dashboard')} variant="outline">
-              Back to Dashboard
-            </Button>
-          </div>
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+          <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+          <Button onClick={() => router.push('/dashboard')} variant="outline">
+            Back to Dashboard
+          </Button>
         </div>
-      </DashboardLayout>
+      </div>
     )
   }
 
   // Show loading state
-  if (loading) {
+  if (loading && !analytics) {
     return (
-      <DashboardLayout userRole={UserRole.SUPER_ADMIN}>
-        <div className="space-y-6 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-              <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your system today.</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i}>
-                <CardContent className="p-6">
-                  <Skeleton className="h-8 w-20 mb-2" />
-                  <Skeleton className="h-6 w-16" />
-                </CardContent>
-              </Card>
-            ))}
+      <div className="space-y-6 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
+            <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your system today.</p>
           </div>
         </div>
-      </DashboardLayout>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-8 w-20 mb-2" />
+                <Skeleton className="h-6 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     )
   }
 
-  // Error state with retry button
-  if (error) {
-    return (
-      <DashboardLayout userRole={UserRole.SUPER_ADMIN}>
-        <div className="flex flex-col items-center justify-center h-64 space-y-4">
-          <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Dashboard</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <Button onClick={() => fetchDashboardData(true)} className="flex items-center space-x-2">
-            <RefreshCw className="h-4 w-4" />
-            <span>Retry</span>
-          </Button>
-          </div>
-        </div>
-      </DashboardLayout>
-    )
-  }
+  // Show error state but still allow dashboard to function with partial data
+  const showErrorBanner = error && !loading
 
   const handleSubscriptionRequest = async (requestId: string, action: 'approve' | 'reject', reason?: string) => {
     setSelectedRequest(requestId)
@@ -389,9 +393,39 @@ export default function SuperAdminDashboard() {
   const pendingRequests = subscriptionRequests.filter(req => req.status === 'PENDING').slice(0, 5)
   const recentActivity = subscriptionRequests.slice(0, 5)
 
+  // Provide default values for analytics to prevent undefined errors
+  const safeAnalytics = analytics || {
+    totalRevenue: 0,
+    monthlyGrowth: 0,
+    activeSubscriptions: 0,
+    totalAdmins: 0,
+    systemUptime: 0,
+    pendingRequests: 0
+  }
+
   return (
-    <DashboardLayout userRole={UserRole.SUPER_ADMIN}>
     <div className="space-y-6 p-6">
+      {/* Error Banner */}
+      {showErrorBanner && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
+              <p className="text-sm text-yellow-800">{error}</p>
+            </div>
+            <Button 
+              onClick={() => fetchDashboardData(true)} 
+              variant="outline" 
+              size="sm"
+              className="text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+            >
+              <RefreshCw className="h-4 w-4 mr-1" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -434,8 +468,8 @@ export default function SuperAdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">${analytics?.totalRevenue?.toLocaleString() || '0'}</p>
-                <p className="text-sm text-green-600">+{analytics?.monthlyGrowth || 0}% from last month</p>
+                <p className="text-2xl font-bold text-gray-900">${safeAnalytics.totalRevenue.toLocaleString()}</p>
+                <p className="text-sm text-green-600">+{safeAnalytics.monthlyGrowth}% from last month</p>
               </div>
               <div className="p-3 bg-green-100 rounded-full">
                 <DollarSign className="h-6 w-6 text-green-600" />
@@ -449,7 +483,7 @@ export default function SuperAdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Subscriptions</p>
-                <p className="text-2xl font-bold text-gray-900">{analytics?.activeSubscriptions || 0}</p>
+                <p className="text-2xl font-bold text-gray-900">{safeAnalytics.activeSubscriptions}</p>
                 <p className="text-sm text-blue-600">+12% from last month</p>
               </div>
               <div className="p-3 bg-blue-100 rounded-full">
@@ -464,8 +498,8 @@ export default function SuperAdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Admins</p>
-                <p className="text-2xl font-bold text-gray-900">{analytics?.totalAdmins || 0}</p>
-                <p className="text-sm text-green-600">+{(analytics?.totalAdmins || 0) > 0 ? '8' : '0'}% from last month</p>
+                <p className="text-2xl font-bold text-gray-900">{safeAnalytics.totalAdmins}</p>
+                <p className="text-sm text-green-600">+{safeAnalytics.totalAdmins > 0 ? '8' : '0'}% from last month</p>
               </div>
               <div className="p-3 bg-purple-100 rounded-full">
                 <Users className="h-6 w-6 text-purple-600" />
@@ -479,7 +513,7 @@ export default function SuperAdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">System Uptime</p>
-                <p className="text-2xl font-bold text-gray-900">{analytics?.systemUptime?.toFixed(1) || 0}%</p>
+                <p className="text-2xl font-bold text-gray-900">{safeAnalytics.systemUptime.toFixed(1)}%</p>
                 <p className="text-sm text-green-600">Excellent performance</p>
               </div>
               <div className="p-3 bg-green-100 rounded-full">
@@ -661,6 +695,5 @@ export default function SuperAdminDashboard() {
         </CardContent>
       </Card>
     </div>
-    </DashboardLayout>
   )
 }

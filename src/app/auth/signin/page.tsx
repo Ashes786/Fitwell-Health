@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { signIn } from "next-auth/react"
+import { useState, useEffect } from "react"
+import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,6 +33,40 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
+  const { data: session, status } = useSession()
+
+  // Handle redirection when session is available
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.role) {
+      const userRole = session.user.role
+      let redirectUrl = '/dashboard'
+      
+      switch (userRole) {
+        case 'SUPER_ADMIN':
+          redirectUrl = '/dashboard/super-admin'
+          break
+        case 'ADMIN':
+          redirectUrl = '/dashboard/admin'
+          break
+        case 'DOCTOR':
+          redirectUrl = '/dashboard/doctor'
+          break
+        case 'PATIENT':
+          redirectUrl = '/dashboard/patient'
+          break
+        case 'ATTENDANT':
+          redirectUrl = '/dashboard/attendant'
+          break
+        case 'CONTROL_ROOM':
+          redirectUrl = '/dashboard/control-room'
+          break
+        default:
+          redirectUrl = '/dashboard'
+      }
+      
+      router.push(redirectUrl)
+    }
+  }, [session, status, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,17 +83,29 @@ export default function SignIn() {
       if (result?.error) {
         setError("Invalid credentials")
         setIsLoading(false)
-      } else {
-        // Redirect to main dashboard - it will handle role-based rendering
-        setTimeout(() => {
-          router.push("/dashboard")
-        }, 500)
       }
+      // Don't set isLoading to false here - let the useEffect handle redirection
+      // The redirection will be handled by the useEffect hook when session is updated
     } catch (error) {
       setError("An error occurred. Please try again.")
       setIsLoading(false)
     }
   }
+
+  // Reset loading state if session check fails after timeout
+  useEffect(() => {
+    let timeout: NodeJS.Timeout
+    
+    if (isLoading) {
+      timeout = setTimeout(() => {
+        setIsLoading(false)
+      }, 10000) // 10 second timeout
+    }
+    
+    return () => {
+      if (timeout) clearTimeout(timeout)
+    }
+  }, [isLoading])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">

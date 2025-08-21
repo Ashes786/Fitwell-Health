@@ -76,13 +76,11 @@ export default function DoctorAssignment() {
   const [searchTerm, setSearchTerm] = useState("")
   const [assignmentNotes, setAssignmentNotes] = useState("")
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "CONTROL_ROOM",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
   })
-  
-  const router = useRouter()
 
   useEffect(() => {
     if (isAuthorized) {
@@ -90,7 +88,7 @@ export default function DoctorAssignment() {
     }
   }, [isAuthorized])
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <DashboardLayout userRole={UserRole.CONTROL_ROOM}>
         <div className="flex items-center justify-center h-64">
@@ -100,7 +98,7 @@ export default function DoctorAssignment() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 

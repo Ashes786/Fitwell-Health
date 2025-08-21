@@ -64,13 +64,11 @@ export default function DoctorPatients() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
 
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "DOCTOR",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
   })
-  
-  const router = useRouter()
 
   useEffect(() => {
     if (isAuthorized) {
@@ -78,7 +76,7 @@ export default function DoctorPatients() {
     }
   }, [isAuthorized])
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <DashboardLayout userRole={UserRole.DOCTOR}>
         <div className="flex items-center justify-center h-64">
@@ -88,7 +86,7 @@ export default function DoctorPatients() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 
