@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { UserRole } from "@prisma/client"
 
 // Force dynamic rendering
@@ -61,10 +60,6 @@ export default function PatientLayout({
     )
   }
 
-  // Use the DashboardLayout with header and sidebar
-  return (
-    <DashboardLayout userRole={UserRole.PATIENT}>
-      {children}
-    </DashboardLayout>
-  )
+  // Return children directly since the patient page has its own layout
+  return <>{children}</>
 }
