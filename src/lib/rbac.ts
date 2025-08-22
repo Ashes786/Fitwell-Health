@@ -15,7 +15,18 @@ export const rolePermissions: RolePermissions = {
     "record_vitals",
     "view_health_card",
     "chat_with_doctor",
-    "view_ai_reports"
+    "view_ai_reports",
+    "upload_health_records",
+    "book_services",
+    "book_lab_tests",
+    "order_medicines",
+    "book_emergency_services",
+    "view_card_benefits",
+    "view_card_transactions",
+    "view_partners",
+    "search_partners",
+    "view_nearby_partners",
+    "view_partner_reviews"
   ],
   DOCTOR: [
     "view_own_profile",
@@ -34,7 +45,10 @@ export const rolePermissions: RolePermissions = {
     "manage_patients",
     "book_appointments",
     "view_patient_records",
-    "view_appointments"
+    "view_appointments",
+    "manage_schedule",
+    "manage_billing",
+    "manage_payments"
   ],
   CONTROL_ROOM: [
     "view_own_profile",

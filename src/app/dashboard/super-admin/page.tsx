@@ -134,6 +134,7 @@ export default function SuperAdminDashboard() {
 
     setLoading(true)
     setError(null)
+    console.log('Fetching dashboard data...')
     try {
       // Add timeout to fetch requests
       const timeoutPromise = new Promise((_, reject) => {
@@ -155,6 +156,8 @@ export default function SuperAdminDashboard() {
         ]) as Promise<Response>
       ])
 
+      console.log('API responses:', { adminsRes, requestsRes, statusRes })
+
       let adminsData: Admin[] = []
       let requestsData: SubscriptionRequest[] = []
       let statusData: SystemStatus[] = []
@@ -162,6 +165,7 @@ export default function SuperAdminDashboard() {
 
       if (adminsRes.status === 'fulfilled' && adminsRes.value.ok) {
         const adminsResponse = await adminsRes.value.json()
+        console.log('Admins data:', adminsResponse)
         // Handle both array and object responses
         adminsData = Array.isArray(adminsResponse) ? adminsResponse : []
         setAdmins(adminsData)
@@ -172,6 +176,7 @@ export default function SuperAdminDashboard() {
 
       if (requestsRes.status === 'fulfilled' && requestsRes.value.ok) {
         const requestsResponse = await requestsRes.value.json()
+        console.log('Requests data:', requestsResponse)
         // Handle the case where subscription requests return a message object instead of array
         if (Array.isArray(requestsResponse)) {
           requestsData = requestsResponse
@@ -188,6 +193,7 @@ export default function SuperAdminDashboard() {
 
       if (statusRes.status === 'fulfilled' && statusRes.value.ok) {
         const statusResponse = await statusRes.value.json()
+        console.log('Status data:', statusResponse)
         // Handle both array and object responses
         statusData = Array.isArray(statusResponse) ? statusResponse : []
         setSystemStatus(statusData)
@@ -235,9 +241,11 @@ export default function SuperAdminDashboard() {
     if (isLoading) return
 
     if (!session) {
+      console.log('No session found')
       return
     }
 
+    console.log('Session found:', session)
     fetchDashboardData()
   }, [session, isLoading])
 

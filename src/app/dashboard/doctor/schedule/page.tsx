@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -50,13 +49,6 @@ interface Appointment {
 }
 
 export default function DoctorSchedule() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
-  const [availability, setAvailability] = useState<AvailabilitySlot[]>([])
-  const [appointments, setAppointments] = useState<Appointment[]>([])
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
-
   const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "DOCTOR",
     redirectTo: "/auth/signin",
@@ -64,6 +56,10 @@ export default function DoctorSchedule() {
   })
   
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+  const [availability, setAvailability] = useState<AvailabilitySlot[]>([])
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
 
   useEffect(() => {
     if (isAuthorized) {
@@ -216,11 +212,11 @@ export default function DoctorSchedule() {
 
   if (authLoading) {
     return (
-      <DashboardLayout userRole={UserRole.DOCTOR}>
+      
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -231,7 +227,7 @@ export default function DoctorSchedule() {
   // Show unauthorized message if user doesn't have DOCTOR role
   if (isUnauthorized) {
     return (
-      <DashboardLayout userRole={UserRole.DOCTOR}>
+      
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
@@ -241,7 +237,7 @@ export default function DoctorSchedule() {
             </Button>
           </div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -361,7 +357,7 @@ export default function DoctorSchedule() {
   )
 
   return (
-    <DashboardLayout userRole={UserRole.DOCTOR}>
+    
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -502,6 +498,6 @@ export default function DoctorSchedule() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    
   )
 }

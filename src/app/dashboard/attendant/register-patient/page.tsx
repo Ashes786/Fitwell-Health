@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -83,11 +82,11 @@ export default function RegisterPatient() {
 
   if (isLoading || isDataLoading) {
     return (
-      <DashboardLayout userRole={UserRole.ATTENDANT}>
+      
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -98,7 +97,7 @@ export default function RegisterPatient() {
   // Show unauthorized message if user doesn't have ATTENDANT role
   if (isUnauthorized) {
     return (
-      <DashboardLayout userRole={UserRole.ATTENDANT}>
+      
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
@@ -108,7 +107,7 @@ export default function RegisterPatient() {
             </Button>
           </div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -188,7 +187,7 @@ export default function RegisterPatient() {
 
   if (success) {
     return (
-      <DashboardLayout userRole={UserRole.ATTENDANT}>
+      
         <div className="space-y-6">
           <div className="flex items-center space-x-2">
             <Button 
@@ -233,12 +232,12 @@ export default function RegisterPatient() {
             </CardContent>
           </Card>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
   return (
-    <DashboardLayout userRole={UserRole.ATTENDANT}>
+    
       <div className="space-y-6">
         <div className="flex items-center space-x-2">
           <Button 
@@ -628,6 +627,6 @@ export default function RegisterPatient() {
           </div>
         </form>
       </div>
-    </DashboardLayout>
+    
   )
 }

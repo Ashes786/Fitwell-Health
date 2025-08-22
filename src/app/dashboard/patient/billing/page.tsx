@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -61,13 +60,6 @@ interface Invoice {
 }
 
 export default function PatientBilling() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
-  const [payments, setPayments] = useState<Payment[]>([])
-  const [invoices, setInvoices] = useState<Invoice[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-
   const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
@@ -75,6 +67,10 @@ export default function PatientBilling() {
   })
   
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+  const [payments, setPayments] = useState<Payment[]>([])
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
     if (isAuthorized) {
@@ -236,11 +232,11 @@ export default function PatientBilling() {
 
   if (authLoading) {
     return (
-      <DashboardLayout userRole={UserRole.PATIENT}>
+      
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -251,7 +247,7 @@ export default function PatientBilling() {
   // Show unauthorized message if user doesn't have PATIENT role
   if (isUnauthorized) {
     return (
-      <DashboardLayout userRole={UserRole.PATIENT}>
+      
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
@@ -261,7 +257,7 @@ export default function PatientBilling() {
             </Button>
           </div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -428,7 +424,7 @@ export default function PatientBilling() {
   )
 
   return (
-    <DashboardLayout userRole={UserRole.PATIENT}>
+    
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -582,6 +578,6 @@ export default function PatientBilling() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    
   )
 }

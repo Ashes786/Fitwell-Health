@@ -10,7 +10,6 @@ interface SessionProviderProps {
 export function SessionProviderWrapper({ children }: SessionProviderProps) {
   return (
     <SessionProvider 
-      session={null}
       basePath="/api/auth"
       refetchOnWindowFocus={false}
       refetchInterval={0}

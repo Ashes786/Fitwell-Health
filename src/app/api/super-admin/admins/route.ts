@@ -8,9 +8,12 @@ import { NotificationHelpers } from '@/lib/notification-helpers'
 
 export async function GET() {
   try {
+    console.log('GET /api/super-admin/admins called')
     const session = await getServerSession(authOptions)
+    console.log('Session:', session)
     
     if (!session?.user?.role || session.user.role !== 'SUPER_ADMIN') {
+      console.log('Unauthorized access attempt:', session)
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 
@@ -38,6 +41,7 @@ export async function GET() {
       take: 25 // Reduced limit for better performance
     })
 
+    console.log('Admins found:', admins.length)
     return NextResponse.json(admins)
   } catch (error) {
     console.error('Error fetching admins:', error)

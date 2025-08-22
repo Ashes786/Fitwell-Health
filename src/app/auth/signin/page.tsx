@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { signIn, useSession } from "next-auth/react"
+import { signIn, useSession, getCsrfToken } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,12 +28,26 @@ import Link from "next/link"
 export default function SignIn() {
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
+  const [csrfToken, setCsrfToken] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
   const { data: session, status } = useSession()
+
+  // Get CSRF token on component mount
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const token = await getCsrfToken()
+        setCsrfToken(token || "")
+      } catch (error) {
+        console.error("Failed to fetch CSRF token:", error)
+      }
+    }
+    fetchCsrfToken()
+  }, [])
 
   // Handle redirection when session is available
   useEffect(() => {
@@ -75,8 +89,9 @@ export default function SignIn() {
 
     try {
       const result = await signIn("credentials", {
-        email: identifier,
+        identifier, // This will be matched against email, phone, etc. in the auth logic
         password,
+        csrfToken,
         redirect: false,
       })
 

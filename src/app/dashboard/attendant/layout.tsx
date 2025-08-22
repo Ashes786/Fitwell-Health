@@ -9,7 +9,7 @@ import { UserRole } from "@prisma/client"
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
-export default function SuperAdminLayout({
+export default function AttendantLayout({
   children,
 }: {
   children: React.ReactNode
@@ -20,7 +20,7 @@ export default function SuperAdminLayout({
   useEffect(() => {
     // Only redirect if we're not loading and session is available but invalid
     if (status !== "loading") {
-      if (session && session.user?.role !== "SUPER_ADMIN") {
+      if (session && session.user?.role !== "ATTENDANT") {
         router.push("/dashboard")
       } else if (!session) {
         router.push("/auth/signin")
@@ -39,8 +39,8 @@ export default function SuperAdminLayout({
     )
   }
 
-  // If session is loaded but user is not SUPER_ADMIN, redirect
-  if (session && session.user?.role !== "SUPER_ADMIN") {
+  // If session is loaded but user is not ATTENDANT, redirect
+  if (session && session.user?.role !== "ATTENDANT") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="flex items-center justify-center h-64">
@@ -63,7 +63,7 @@ export default function SuperAdminLayout({
 
   // Use the DashboardLayout with header and sidebar
   return (
-    <DashboardLayout userRole={UserRole.SUPER_ADMIN}>
+    <DashboardLayout userRole={UserRole.ATTENDANT}>
       {children}
     </DashboardLayout>
   )

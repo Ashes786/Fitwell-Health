@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
 import { useRoleAuthorization } from "@/hooks/use-role-authorization"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -95,7 +94,7 @@ export default function AdminsPage() {
   // Show unauthorized message if user doesn't have SUPER_ADMIN role
   if (isUnauthorized) {
     return (
-      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+      
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
@@ -105,14 +104,14 @@ export default function AdminsPage() {
             </Button>
           </div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
   // Show loading state
   if (loading) {
     return (
-      <DashboardLayout userRole={UserRole.SUPERADMIN}>
+      
         <div className="space-y-6 p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -131,7 +130,7 @@ export default function AdminsPage() {
             ))}
           </div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -188,7 +187,7 @@ export default function AdminsPage() {
   }
 
   return (
-    <DashboardLayout userRole={UserRole.SUPERADMIN}>
+    
     <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -388,6 +387,6 @@ export default function AdminsPage() {
         </CardContent>
       </Card>
     </div>
-    </DashboardLayout>
+    
   )
 }

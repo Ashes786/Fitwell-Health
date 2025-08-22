@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -69,7 +68,12 @@ interface Partner {
 }
 
 export default function AdminPartners() {
-  const { data: session, status } = useSession()
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
+    requiredRole: "ADMIN",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [partners, setPartners] = useState<Partner[]>([])
@@ -98,14 +102,6 @@ export default function AdminPartners() {
     },
     partnershipLevel: 'BASIC' as 'BASIC' | 'PREMIUM' | 'ELITE'
   })
-
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
-    requiredRole: "ADMIN",
-    redirectTo: "/auth/signin",
-    showUnauthorizedMessage: true
-  })
-  
-  const router = useRouter()
 
   useEffect(() => {
     if (isAuthorized) {
@@ -253,11 +249,11 @@ export default function AdminPartners() {
 
   if (isLoading) {
     return (
-      <DashboardLayout userRole={UserRole.ADMIN}>
+      
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -268,7 +264,7 @@ export default function AdminPartners() {
   // Show unauthorized message if user doesn't have ADMIN role
   if (isUnauthorized) {
     return (
-      <DashboardLayout userRole={UserRole.ADMIN}>
+      
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
@@ -278,7 +274,7 @@ export default function AdminPartners() {
             </Button>
           </div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -419,7 +415,7 @@ export default function AdminPartners() {
   }
 
   return (
-    <DashboardLayout userRole={UserRole.ADMIN}>
+    
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -752,6 +748,6 @@ export default function AdminPartners() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    
   )
 }

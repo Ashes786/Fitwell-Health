@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -308,11 +307,11 @@ export default function AdminHospitalTreatments() {
 
   if (isLoading || isDataLoading) {
     return (
-      <DashboardLayout userRole={UserRole.ADMIN}>
+      
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -323,7 +322,7 @@ export default function AdminHospitalTreatments() {
   // Show unauthorized message if user doesn't have ADMIN role
   if (isUnauthorized) {
     return (
-      <DashboardLayout userRole={UserRole.ADMIN}>
+      
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
@@ -333,7 +332,7 @@ export default function AdminHospitalTreatments() {
             </Button>
           </div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -465,7 +464,7 @@ export default function AdminHospitalTreatments() {
   }
 
   return (
-    <DashboardLayout userRole={UserRole.ADMIN}>
+    
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -728,6 +727,6 @@ export default function AdminHospitalTreatments() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    
   )
 }

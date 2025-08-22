@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -46,13 +45,6 @@ interface VitalsData {
 }
 
 export default function PatientAIReports() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [reports, setReports] = useState<AIReport[]>([])
-  const [vitalsData, setVitalsData] = useState<VitalsData | null>(null)
-
   const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
@@ -60,6 +52,10 @@ export default function PatientAIReports() {
   })
   
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [reports, setReports] = useState<AIReport[]>([])
+  const [vitalsData, setVitalsData] = useState<VitalsData | null>(null)
 
   useEffect(() => {
     if (isAuthorized) {
@@ -69,11 +65,11 @@ export default function PatientAIReports() {
 
   if (authLoading) {
     return (
-      <DashboardLayout userRole={UserRole.PATIENT}>
+      
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -84,7 +80,7 @@ export default function PatientAIReports() {
   // Show unauthorized message if user doesn't have PATIENT role
   if (isUnauthorized) {
     return (
-      <DashboardLayout userRole={UserRole.PATIENT}>
+      
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
@@ -94,7 +90,7 @@ export default function PatientAIReports() {
             </Button>
           </div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -249,7 +245,7 @@ export default function PatientAIReports() {
   }
 
   return (
-    <DashboardLayout userRole={UserRole.PATIENT}>
+    
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -478,6 +474,6 @@ export default function PatientAIReports() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    
   )
 }

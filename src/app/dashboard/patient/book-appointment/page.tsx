@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -46,7 +45,12 @@ interface TimeSlot {
 }
 
 export default function BookAppointment() {
-  const { data: session, status } = useSession()
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
+    requiredRole: "PATIENT",
+    redirectTo: "/auth/signin",
+    showUnauthorizedMessage: true
+  })
+  
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [doctors, setDoctors] = useState<Doctor[]>([])
@@ -64,14 +68,6 @@ export default function BookAppointment() {
   const [isBooking, setIsBooking] = useState(false)
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
   const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([])
-
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
-    requiredRole: "PATIENT",
-    redirectTo: "/auth/signin",
-    showUnauthorizedMessage: true
-  })
-  
-  const router = useRouter()
 
   useEffect(() => {
     if (isAuthorized) {
@@ -133,11 +129,11 @@ export default function BookAppointment() {
 
   if (authLoading) {
     return (
-      <DashboardLayout userRole={UserRole.PATIENT}>
+      
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -148,7 +144,7 @@ export default function BookAppointment() {
   // Show unauthorized message if user doesn't have PATIENT role
   if (isUnauthorized) {
     return (
-      <DashboardLayout userRole={UserRole.PATIENT}>
+      
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
@@ -158,7 +154,7 @@ export default function BookAppointment() {
             </Button>
           </div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -646,7 +642,7 @@ export default function BookAppointment() {
   )
 
   return (
-    <DashboardLayout userRole={UserRole.PATIENT}>
+    
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
           <Button 
@@ -685,6 +681,6 @@ export default function BookAppointment() {
         {selectedStep === 5 && <Step5DetailsPayment />}
         {selectedStep === 6 && <Step6Confirmation />}
       </div>
-    </DashboardLayout>
+    
   )
 }

@@ -21,12 +21,12 @@ export const authOptions: NextAuthOptions = {
       id: "credentials",
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        identifier: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log("Authorize function called with credentials:", credentials?.email)
-        if (!credentials?.email || !credentials?.password) {
+        console.log("Authorize function called with credentials:", credentials?.identifier)
+        if (!credentials?.identifier || !credentials?.password) {
           console.log("Missing credentials")
           return null
         }
@@ -36,8 +36,8 @@ export const authOptions: NextAuthOptions = {
           const user = await db.user.findFirst({
             where: {
               OR: [
-                { email: credentials.email },
-                { phone: credentials.email },
+                { email: credentials.identifier },
+                { phone: credentials.identifier },
                 // Add other identifier fields if needed
               ]
             },

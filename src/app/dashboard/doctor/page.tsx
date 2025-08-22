@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -58,20 +57,20 @@ export default function DoctorDashboard() {
 
   if (isLoading) {
     return (
-      <DashboardLayout userRole={UserRole.DOCTOR}>
+      
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
             <p className="mt-2 text-gray-600">Loading...</p>
           </div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
   if (isUnauthorized) {
     return (
-      <DashboardLayout userRole={UserRole.DOCTOR}>
+      
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
@@ -81,7 +80,7 @@ export default function DoctorDashboard() {
             </Button>
           </div>
         </div>
-      </DashboardLayout>
+      
     )
   }
 
@@ -160,7 +159,7 @@ export default function DoctorDashboard() {
   }
 
   return (
-    <DashboardLayout userRole={UserRole.DOCTOR}>
+    
       <div className="flex h-screen bg-white">
         {/* Sidebar Menu */}
         <div className="w-64 bg-gray-50 border-r border-gray-200 p-6 overflow-y-auto">
@@ -798,6 +797,6 @@ export default function DoctorDashboard() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    
   )
 }
