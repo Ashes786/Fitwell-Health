@@ -1041,7 +1041,10 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-gray-600">No session found. Please sign in.</p>
+          </div>
         </div>
       </div>
     )
@@ -1065,7 +1068,7 @@ export default function Dashboard() {
       case 'CONTROL_ROOM':
         return <ControlRoomDashboard session={session} permissions={permissions} />
       default:
-        return <div>Invalid role</div>
+        return <div>Invalid role: {userRole}</div>
     }
   }
 

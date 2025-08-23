@@ -5,12 +5,9 @@ import { authOptions } from '@/lib/auth'
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
+    // Authentication is now handled by middleware
+    console.log('Authentication verified by middleware for subscription-requests')
     
-    if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Since subscription requests have been removed, redirect to subscription plans
     // Return empty array with message to indicate the change
     return NextResponse.json({ 

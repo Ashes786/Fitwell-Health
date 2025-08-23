@@ -12,14 +12,39 @@ export async function middleware(request: NextRequest) {
   // Define auth routes that should redirect authenticated users
   const authRoutes = ['/auth/signin', '/auth/signup']
   
+  // Define public API routes
+  const publicApiRoutes = ['/api/auth', '/api/seed', '/api/health', '/api/test-login', '/api/check-users', '/api/test-auth']
+  
   // Check if the current path is a public route
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+  
+  // Check if the current path is a public API route
+  const isPublicApiRoute = publicApiRoutes.some(route => pathname.startsWith(route))
   
   // Check if the current path is an auth route
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
 
+  // Check if the current path is an API route
+  const isApiRoute = pathname.startsWith('/api/')
+
+  // Handle API route authentication
+  if (isApiRoute && !isPublicApiRoute) {
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    // Check role-based access for protected API routes
+    if (pathname.startsWith('/api/super-admin') && token.role !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
+    
+    if (pathname.startsWith('/api/admin') && token.role !== 'ADMIN' && token.role !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
+  }
+
   // If user is not authenticated and trying to access a protected route
-  if (!token && !isPublicRoute) {
+  if (!token && !isPublicRoute && !isPublicApiRoute) {
     const url = new URL('/auth/signin', request.url)
     url.searchParams.set('callbackUrl', pathname)
     return NextResponse.redirect(url)
@@ -113,7 +138,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all paths except static files and API routes
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    // Match all paths except static files
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }

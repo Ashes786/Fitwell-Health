@@ -37,7 +37,8 @@ import {
   Pill,
   Activity,
   User,
-  Award
+  Award,
+  DollarSign
 } from "lucide-react"
 import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { UserRole } from "@prisma/client"

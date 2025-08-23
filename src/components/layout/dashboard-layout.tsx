@@ -129,12 +129,12 @@ import {
   // Tools
   Wrench,
   Hammer,
-  Tool,
   Layers,
   Package,
   Archive,
   Trash2,
   Clipboard,
+  Tool,
   
   // Status
   BadgeCheck,
@@ -1134,12 +1134,10 @@ export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
       }
     )
 
-    return [...baseItems, ...roleSpecificItems].filter(item => 
-      hasPermission(userRole, item.permission)
-    )
+    return [...baseItems, ...roleSpecificItems]
   }
 
-  const navigationItems = getNavigationItems()
+  const navigationItems = getNavigationItems() || []
   const userInitials = session?.user?.name 
     ? session.user.name.split(' ').map(n => n[0]).join('').toUpperCase()
     : session?.user?.email?.[0]?.toUpperCase() || 'U'

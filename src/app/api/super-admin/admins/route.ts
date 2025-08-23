@@ -6,17 +6,13 @@ import { UserRole } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { NotificationHelpers } from '@/lib/notification-helpers'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     console.log('GET /api/super-admin/admins called')
-    const session = await getServerSession(authOptions)
-    console.log('Session:', session)
     
-    if (!session?.user?.role || session.user.role !== 'SUPER_ADMIN') {
-      console.log('Unauthorized access attempt:', session)
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
-
+    // Authentication is now handled by middleware
+    console.log('Authentication verified by middleware')
+    
     // Optimized query with minimal includes and better selection
     const admins = await db.admin.findMany({
       select: {

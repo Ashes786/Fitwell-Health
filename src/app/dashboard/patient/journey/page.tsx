@@ -29,7 +29,7 @@ import {
   Award,
   Target,
   Route,
-  Timeline
+  History
 } from "lucide-react"
 import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { UserRole } from "@prisma/client"
@@ -369,7 +369,7 @@ export default function PatientJourney() {
                 <p className="text-xs text-gray-400 mt-2">In your journey</p>
               </div>
               <div className="p-3 bg-blue-100 rounded-lg">
-                <Timeline className="h-5 w-5 text-blue-600" />
+                <History className="h-5 w-5 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -431,7 +431,7 @@ export default function PatientJourney() {
       <Tabs defaultValue="timeline" className="space-y-4">
         <TabsList className="bg-gray-100">
           <TabsTrigger value="timeline" className="data-[state=active]:bg-white">
-            <Timeline className="mr-2 h-4 w-4" />
+            <History className="mr-2 h-4 w-4" />
             Timeline
           </TabsTrigger>
           <TabsTrigger value="goals" className="data-[state=active]:bg-white">
@@ -448,7 +448,7 @@ export default function PatientJourney() {
           <Card className="border-gray-200">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
-                <Timeline className="mr-2 h-5 w-5 text-blue-600" />
+                <History className="mr-2 h-5 w-5 text-blue-600" />
                 Health Journey Timeline
               </CardTitle>
               <CardDescription>Your healthcare journey events and activities</CardDescription>

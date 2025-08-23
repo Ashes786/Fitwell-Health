@@ -32,7 +32,7 @@ import {
   Bell,
   RefreshCw,
   ShoppingCart,
-  Pharmacy
+  Building
 } from "lucide-react"
 import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { UserRole } from "@prisma/client"
