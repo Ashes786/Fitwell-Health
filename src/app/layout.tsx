@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionProviderWrapper } from "@/components/providers/session-provider";
+import { ErrorBoundary } from "@/components/error-boundary";
+import "@/lib/chunk-error-handler";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,8 +47,10 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <SessionProviderWrapper>
-          {children}
-          <Toaster />
+          <ErrorBoundary>
+            {children}
+            <Toaster />
+          </ErrorBoundary>
         </SessionProviderWrapper>
       </body>
     </html>

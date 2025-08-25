@@ -15,7 +15,7 @@ const getBaseUrl = () => {
 }
 
 export const authOptions: NextAuthOptions = {
-  debug: true, // Enable debug mode
+  debug: process.env.DEBUG_ENABLED === 'true', // Use environment variable for debug mode
   providers: [
     CredentialsProvider({
       id: "credentials",
@@ -53,20 +53,26 @@ export const authOptions: NextAuthOptions = {
           })
 
           if (!user || !user.isActive) {
+            console.log("User not found or inactive")
             return null
           }
 
           // Verify password
+          console.log("Verifying password...")
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password
           )
 
+          console.log("Password validation result:", isPasswordValid)
+
           if (!isPasswordValid) {
+            console.log("Invalid password")
             return null
           }
 
           // Return user object for successful authentication
+          console.log("Authentication successful, returning user object")
           return {
             id: user.id,
             email: user.email,

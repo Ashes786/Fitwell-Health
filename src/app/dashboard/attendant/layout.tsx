@@ -9,6 +9,19 @@ import { UserRole } from "@prisma/client"
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
+// Helper function to get role-specific redirect URL
+function getRoleRedirectUrl(userRole: string): string {
+  const roleMap: Record<string, string> = {
+    'SUPER_ADMIN': '/dashboard/super-admin',
+    'ADMIN': '/dashboard/admin',
+    'DOCTOR': '/dashboard/doctor',
+    'PATIENT': '/dashboard/patient',
+    'ATTENDANT': '/dashboard/attendant',
+    'CONTROL_ROOM': '/dashboard/control-room'
+  }
+  return roleMap[userRole] || '/dashboard'
+}
+
 export default function AttendantLayout({
   children,
 }: {
@@ -21,7 +34,8 @@ export default function AttendantLayout({
     // Only redirect if we're not loading and session is available but invalid
     if (status !== "loading") {
       if (session && session.user?.role !== "ATTENDANT") {
-        router.push("/dashboard")
+        const redirectUrl = getRoleRedirectUrl(session.user?.role)
+        router.push(redirectUrl)
       } else if (!session) {
         router.push("/auth/signin")
       }

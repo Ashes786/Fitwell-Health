@@ -20,6 +20,7 @@ import {
   Filter
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
+import { useRealTimeAppointments } from "@/hooks/useWebSocket"
 
 interface Appointment {
   id: string
@@ -46,15 +47,43 @@ export default function PatientAppointments() {
   
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
+  const { appointments: realTimeAppointments, isConnected } = useRealTimeAppointments()
   const [appointments, setAppointments] = useState<Appointment[]>([])
 
   useEffect(() => {
     if (isAuthorized) {
-      // Original fetch logic will be handled separately
+      fetchAppointments()
     }
   }, [isAuthorized])
 
-  if (authLoading) {
+  // Update appointments when real-time updates come in
+  useEffect(() => {
+    if (realTimeAppointments.length > 0) {
+      setAppointments(realTimeAppointments)
+    }
+  }, [realTimeAppointments])
+
+  const fetchAppointments = async () => {
+    try {
+      setIsLoading(true)
+      
+      const response = await fetch('/api/patient/appointments')
+      if (!response.ok) {
+        throw new Error('Failed to fetch appointments')
+      }
+      
+      const data = await response.json()
+      setAppointments(data)
+    } catch (error) {
+      console.error('Error fetching appointments:', error)
+      // Set empty array on error
+      setAppointments([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (authLoading || isLoading) {
     return (
       
         <div className="flex items-center justify-center h-64">
@@ -253,7 +282,15 @@ export default function PatientAppointments() {
                 <Calendar className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl lg:text-4xl font-bold gradient-health bg-clip-text text-transparent">Appointments</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-3xl lg:text-4xl font-bold gradient-health bg-clip-text text-transparent">Appointments</h1>
+                  {isConnected && (
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm text-green-600">Live</span>
+                    </div>
+                  )}
+                </div>
                 <p className="text-health-dark mt-2 text-lg">
                   Manage your upcoming and past appointments
                 </p>

@@ -7,12 +7,12 @@ async function main() {
   console.log('Seeding database...')
 
   // Create a Super Admin user
-  const superAdminPassword = await bcrypt.hash('superadmin123', 12)
+  const superAdminPassword = await bcrypt.hash('password123', 12)
   const superAdmin = await prisma.user.upsert({
-    where: { email: 'superadmin@healthpay.com' },
+    where: { email: 'superadmin@healthcare.com' },
     update: {},
     create: {
-      email: 'superadmin@healthpay.com',
+      email: 'superadmin@healthcare.com',
       password: superAdminPassword,
       name: 'Super Admin',
       role: 'SUPER_ADMIN',
@@ -30,12 +30,12 @@ async function main() {
   })
 
   // Create an Admin user
-  const adminPassword = await bcrypt.hash('admin123', 12)
+  const adminPassword = await bcrypt.hash('password123', 12)
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@healthpay.com' },
+    where: { email: 'admin@healthcare.com' },
     update: {},
     create: {
-      email: 'admin@healthpay.com',
+      email: 'admin@healthcare.com',
       password: adminPassword,
       name: 'Network Admin',
       role: 'ADMIN',
@@ -57,12 +57,12 @@ async function main() {
   })
 
   // Create a Doctor user
-  const doctorPassword = await bcrypt.hash('doctor123', 12)
+  const doctorPassword = await bcrypt.hash('password123', 12)
   const doctor = await prisma.user.upsert({
-    where: { email: 'doctor@healthpay.com' },
+    where: { email: 'doctor@healthcare.com' },
     update: {},
     create: {
-      email: 'doctor@healthpay.com',
+      email: 'doctor@healthcare.com',
       password: doctorPassword,
       name: 'Dr. Sarah Johnson',
       role: 'DOCTOR',
@@ -87,12 +87,12 @@ async function main() {
   })
 
   // Create a Patient user
-  const patientPassword = await bcrypt.hash('patient123', 12)
+  const patientPassword = await bcrypt.hash('password123', 12)
   const patient = await prisma.user.upsert({
-    where: { email: 'patient@healthpay.com' },
+    where: { email: 'patient@healthcare.com' },
     update: {},
     create: {
-      email: 'patient@healthpay.com',
+      email: 'patient@healthcare.com',
       password: patientPassword,
       name: 'John Doe',
       role: 'PATIENT',
@@ -115,12 +115,12 @@ async function main() {
   })
 
   // Create an Attendant user
-  const attendantPassword = await bcrypt.hash('attendant123', 12)
+  const attendantPassword = await bcrypt.hash('password123', 12)
   const attendant = await prisma.user.upsert({
-    where: { email: 'attendant@healthpay.com' },
+    where: { email: 'attendant@healthcare.com' },
     update: {},
     create: {
-      email: 'attendant@healthpay.com',
+      email: 'attendant@healthcare.com',
       password: attendantPassword,
       name: 'Alice Smith',
       role: 'ATTENDANT',
@@ -140,12 +140,12 @@ async function main() {
   })
 
   // Create a Control Room user
-  const controlRoomPassword = await bcrypt.hash('control123', 12)
+  const controlRoomPassword = await bcrypt.hash('password123', 12)
   const controlRoom = await prisma.user.upsert({
-    where: { email: 'control@healthpay.com' },
+    where: { email: 'controlroom@healthcare.com' },
     update: {},
     create: {
-      email: 'control@healthpay.com',
+      email: 'controlroom@healthcare.com',
       password: controlRoomPassword,
       name: 'Control Room Operator',
       role: 'CONTROL_ROOM',
@@ -165,12 +165,12 @@ async function main() {
 
   console.log('Database seeded successfully!')
   console.log('Test users created:')
-  console.log('Super Admin: superadmin@healthpay.com / superadmin123')
-  console.log('Admin: admin@healthpay.com / admin123')
-  console.log('Doctor: doctor@healthpay.com / doctor123')
-  console.log('Patient: patient@healthpay.com / patient123')
-  console.log('Attendant: attendant@healthpay.com / attendant123')
-  console.log('Control Room: control@healthpay.com / control123')
+  console.log('Super Admin: superadmin@healthcare.com / password123')
+  console.log('Admin: admin@healthcare.com / password123')
+  console.log('Doctor: doctor@healthcare.com / password123')
+  console.log('Patient: patient@healthcare.com / password123')
+  console.log('Attendant: attendant@healthcare.com / password123')
+  console.log('Control Room: controlroom@healthcare.com / password123')
 }
 
 main()

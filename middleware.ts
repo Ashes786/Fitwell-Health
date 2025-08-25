@@ -2,6 +2,19 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
+// Helper function to get role-specific redirect URL
+function getRoleRedirectUrl(userRole: string): string {
+  const roleMap: Record<string, string> = {
+    'SUPER_ADMIN': '/dashboard/super-admin',
+    'ADMIN': '/dashboard/admin',
+    'DOCTOR': '/dashboard/doctor',
+    'PATIENT': '/dashboard/patient',
+    'ATTENDANT': '/dashboard/attendant',
+    'CONTROL_ROOM': '/dashboard/control-room'
+  }
+  return roleMap[userRole] || '/dashboard'
+}
+
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request })
   const { pathname } = request.nextUrl
@@ -52,66 +65,13 @@ export async function middleware(request: NextRequest) {
 
   // If user is authenticated and trying to access auth routes
   if (token && isAuthRoute) {
-    // Redirect to role-specific dashboard
-    const userRole = token.role as string
-    let redirectUrl = '/dashboard'
-    
-    // Map roles to their specific dashboard pages
-    switch (userRole) {
-      case 'SUPER_ADMIN':
-        redirectUrl = '/dashboard/super-admin'
-        break
-      case 'ADMIN':
-        redirectUrl = '/dashboard/admin'
-        break
-      case 'DOCTOR':
-        redirectUrl = '/dashboard/doctor'
-        break
-      case 'PATIENT':
-        redirectUrl = '/dashboard/patient'
-        break
-      case 'ATTENDANT':
-        redirectUrl = '/dashboard/attendant'
-        break
-      case 'CONTROL_ROOM':
-        redirectUrl = '/dashboard/control-room'
-        break
-      default:
-        redirectUrl = '/dashboard'
-    }
-    
+    const redirectUrl = getRoleRedirectUrl(token.role as string)
     return NextResponse.redirect(new URL(redirectUrl, request.url))
   }
 
   // If user is authenticated and accessing root path, redirect to role-specific dashboard
   if (token && pathname === '/') {
-    const userRole = token.role as string
-    let redirectUrl = '/dashboard'
-    
-    // Map roles to their specific dashboard pages
-    switch (userRole) {
-      case 'SUPER_ADMIN':
-        redirectUrl = '/dashboard/super-admin'
-        break
-      case 'ADMIN':
-        redirectUrl = '/dashboard/admin'
-        break
-      case 'DOCTOR':
-        redirectUrl = '/dashboard/doctor'
-        break
-      case 'PATIENT':
-        redirectUrl = '/dashboard/patient'
-        break
-      case 'ATTENDANT':
-        redirectUrl = '/dashboard/attendant'
-        break
-      case 'CONTROL_ROOM':
-        redirectUrl = '/dashboard/control-room'
-        break
-      default:
-        redirectUrl = '/dashboard'
-    }
-    
+    const redirectUrl = getRoleRedirectUrl(token.role as string)
     return NextResponse.redirect(new URL(redirectUrl, request.url))
   }
 

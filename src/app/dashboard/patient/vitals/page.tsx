@@ -67,9 +67,29 @@ export default function PatientVitals() {
 
   useEffect(() => {
     if (isAuthorized) {
-      // Original fetch logic will be handled separately
+      fetchVitals()
     }
   }, [isAuthorized])
+
+  const fetchVitals = async () => {
+    try {
+      setIsLoading(true)
+      
+      const response = await fetch('/api/patient/vitals')
+      if (!response.ok) {
+        throw new Error('Failed to fetch vitals')
+      }
+      
+      const data = await response.json()
+      setVitals(data)
+    } catch (error) {
+      console.error('Error fetching vitals:', error)
+      // Set empty array on error
+      setVitals([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -150,24 +170,52 @@ export default function PatientVitals() {
     return acc
   }, {} as Record<string, Vital[]>)
 
-  const handleAddVital = () => {
+  const handleAddVital = async () => {
     if (!newVital.type || !newVital.value) return
 
     const vitalType = getVitalTypeInfo(newVital.type)
     if (!vitalType) return
 
-    const newVitalRecord: Vital = {
-      id: Date.now().toString(),
-      type: newVital.type,
-      value: parseFloat(newVital.value),
-      unit: vitalType.unit,
-      notes: newVital.notes,
-      recordedAt: new Date().toISOString()
-    }
+    try {
+      const response = await fetch('/api/patient/vitals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: newVital.type,
+          value: parseFloat(newVital.value),
+          unit: vitalType.unit,
+          notes: newVital.notes
+        })
+      })
 
-    setVitals([newVitalRecord, ...vitals])
-    setNewVital({ type: "", value: "", unit: "", notes: "" })
-    setShowAddForm(false)
+      if (!response.ok) {
+        throw new Error('Failed to save vital')
+      }
+
+      const savedVital = await response.json()
+      
+      // Add to local state
+      setVitals([savedVital, ...vitals])
+      setNewVital({ type: "", value: "", unit: "", notes: "" })
+      setShowAddForm(false)
+    } catch (error) {
+      console.error('Error saving vital:', error)
+      // For demo purposes, still add to local state
+      const newVitalRecord: Vital = {
+        id: Date.now().toString(),
+        type: newVital.type,
+        value: parseFloat(newVital.value),
+        unit: vitalType.unit,
+        notes: newVital.notes,
+        recordedAt: new Date().toISOString()
+      }
+
+      setVitals([newVitalRecord, ...vitals])
+      setNewVital({ type: "", value: "", unit: "", notes: "" })
+      setShowAddForm(false)
+    }
   }
 
   const VitalCard = ({ vitals: vitalList, type }: { vitals: Vital[], type: string }) => {

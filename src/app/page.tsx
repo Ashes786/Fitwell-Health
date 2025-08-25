@@ -21,6 +21,19 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 
+// Helper function to get role-specific redirect URL
+function getRoleRedirectUrl(userRole: string): string {
+  const roleMap: Record<string, string> = {
+    'SUPER_ADMIN': '/dashboard/super-admin',
+    'ADMIN': '/dashboard/admin',
+    'DOCTOR': '/dashboard/doctor',
+    'PATIENT': '/dashboard/patient',
+    'ATTENDANT': '/dashboard/attendant',
+    'CONTROL_ROOM': '/dashboard/control-room'
+  }
+  return roleMap[userRole] || '/dashboard'
+}
+
 export default function Home() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -34,33 +47,7 @@ export default function Home() {
     
     try {
       if (session) {
-        // Redirect based on user role
-        const userRole = session.user.role
-        let redirectUrl = '/dashboard'
-        
-        switch (userRole) {
-          case 'SUPER_ADMIN':
-            redirectUrl = '/dashboard/super-admin'
-            break
-          case 'ADMIN':
-            redirectUrl = '/dashboard/admin'
-            break
-          case 'DOCTOR':
-            redirectUrl = '/dashboard/doctor'
-            break
-          case 'PATIENT':
-            redirectUrl = '/dashboard/patient'
-            break
-          case 'ATTENDANT':
-            redirectUrl = '/dashboard/attendant'
-            break
-          case 'CONTROL_ROOM':
-            redirectUrl = '/dashboard/control-room'
-            break
-          default:
-            redirectUrl = '/dashboard'
-        }
-        
+        const redirectUrl = getRoleRedirectUrl(session.user.role)
         router.push(redirectUrl)
       } else {
         router.push("/auth/signup")
@@ -115,36 +102,10 @@ export default function Home() {
         <div className="flex items-center space-x-2">
           <Button 
             onClick={() => {
-              // Redirect based on user role
-              const userRole = session.user.role
-              let redirectUrl = '/dashboard'
-              
-              switch (userRole) {
-                case 'SUPER_ADMIN':
-                  redirectUrl = '/dashboard/super-admin'
-                  break
-                case 'ADMIN':
-                  redirectUrl = '/dashboard/admin'
-                  break
-                case 'DOCTOR':
-                  redirectUrl = '/dashboard/doctor'
-                  break
-                case 'PATIENT':
-                  redirectUrl = '/dashboard/patient'
-                  break
-                case 'ATTENDANT':
-                  redirectUrl = '/dashboard/attendant'
-                  break
-                case 'CONTROL_ROOM':
-                  redirectUrl = '/dashboard/control-room'
-                  break
-                default:
-                  redirectUrl = '/dashboard'
-              }
-              
+              const redirectUrl = getRoleRedirectUrl(session.user.role)
               router.push(redirectUrl)
             }} 
-            className="bg-[#2ba664] hover:bg-[#238a52] text-white transition-colors duration-200 text-sm px-4 py-2"
+            className="bg-health-primary hover:bg-health-dark text-white transition-colors duration-200 text-sm px-4 py-2"
             disabled={isNavigating}
           >
             {isNavigating ? "Loading..." : "Go to Dashboard"}
@@ -152,7 +113,7 @@ export default function Home() {
           <Button 
             onClick={handleSignOut} 
             variant="outline" 
-            className="border-[#2ba664] text-[#2ba664] hover:bg-[#2ba664] hover:text-white transition-colors duration-200 text-sm px-4 py-2"
+            className="border-health-primary text-health-primary hover:bg-health-primary hover:text-white transition-colors duration-200 text-sm px-4 py-2"
             disabled={isNavigating}
           >
             {isNavigating ? "Loading..." : "Log Out"}
@@ -165,7 +126,7 @@ export default function Home() {
       <div className="flex items-center space-x-2">
         <Button 
           onClick={() => router.push("/auth/signup")} 
-          className="bg-[#2ba664] hover:bg-[#238a52] text-white transition-colors duration-200 text-sm px-4 py-2"
+          className="bg-health-primary hover:bg-health-dark text-white transition-colors duration-200 text-sm px-4 py-2"
           disabled={isNavigating}
         >
           {isNavigating ? "Loading..." : "Sign Up"}
@@ -173,7 +134,7 @@ export default function Home() {
         <Button 
           onClick={() => router.push("/auth/signin")} 
           variant="outline" 
-          className="border-[#2ba664] text-[#2ba664] hover:bg-[#2ba664] hover:text-white transition-colors duration-200 text-sm px-4 py-2"
+          className="border-health-primary text-health-primary hover:bg-health-primary hover:text-white transition-colors duration-200 text-sm px-4 py-2"
           disabled={isNavigating}
         >
           {isNavigating ? "Loading..." : "Sign In"}
@@ -189,12 +150,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#2ba664] rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-health-primary rounded-lg flex items-center justify-center">
                 <HeartPulse className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
                 <span className="text-lg sm:text-xl font-bold text-gray-900">Fitwell</span>
-                <span className="text-base sm:text-lg font-semibold text-[#2ba664] ml-1">H.E.A.L.T.H.</span>
+                <span className="text-base sm:text-lg font-semibold text-health-primary ml-1">H.E.A.L.T.H.</span>
               </div>
             </div>
             {renderAuthButtons()}
@@ -207,8 +168,8 @@ export default function Home() {
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 25% 25%, #2ba664 2px, transparent 2px),
-                             radial-gradient(circle at 75% 75%, #2ba664 1px, transparent 1px)`,
+            backgroundImage: `radial-gradient(circle at 25% 25%, var(--health-primary) 2px, transparent 2px),
+                             radial-gradient(circle at 75% 75%, var(--health-primary) 1px, transparent 1px)`,
             backgroundSize: '50px 50px'
           }}></div>
         </div>
@@ -217,9 +178,9 @@ export default function Home() {
           <div className="text-center max-w-5xl mx-auto">
             {/* Badge */}
             <div className="mb-6 sm:mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-[#2ba664]/20 rounded-full">
-                <div className="w-2 h-2 bg-[#2ba664] rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-[#2ba664]">Comprehensive Healthcare Platform</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-health-primary/20 rounded-full">
+                <div className="w-2 h-2 bg-health-primary rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-health-primary">Comprehensive Healthcare Platform</span>
               </div>
             </div>
             
@@ -227,7 +188,7 @@ export default function Home() {
             <div className="mb-8 sm:mb-12">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight tracking-tight">
                 <span className="block">Welcome to</span>
-                <span className="block bg-gradient-to-r from-[#2ba664] to-[#238a52] bg-clip-text text-transparent mt-2">
+                <span className="block bg-gradient-to-r from-health-primary to-health-dark bg-clip-text text-transparent mt-2">
                   Fitwell H.E.A.L.T.H.
                 </span>
               </h1>
@@ -239,9 +200,9 @@ export default function Home() {
             {/* Description */}
             <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-10 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-4 font-medium">
               Experience the future of healthcare with our integrated platform featuring 
-              <span className="text-[#2ba664] font-semibold"> telemedicine</span>, 
-              <span className="text-[#2ba664] font-semibold"> electronic health records</span>, and 
-              <span className="text-[#2ba664] font-semibold"> AI-powered wellness solutions</span>.
+              <span className="text-health-primary font-semibold"> telemedicine</span>, 
+              <span className="text-health-primary font-semibold"> electronic health records</span>, and 
+              <span className="text-health-primary font-semibold"> AI-powered wellness solutions</span>.
             </p>
             
             {/* CTA Buttons */}
@@ -249,7 +210,7 @@ export default function Home() {
               <Button 
                 size="lg" 
                 onClick={handleGetStarted}
-                className="bg-[#2ba664] hover:bg-[#238a52] text-white px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md"
+                className="bg-health-primary hover:bg-health-dark text-white px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md"
                 disabled={isNavigating}
               >
                 {isNavigating ? (
@@ -267,7 +228,7 @@ export default function Home() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-2 border-[#2ba664] text-[#2ba664] hover:bg-[#2ba664] hover:text-white px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg bg-white/80 backdrop-blur-sm"
+                className="border-2 border-health-primary text-health-primary hover:bg-health-primary hover:text-white px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg bg-white/80 backdrop-blur-sm"
               >
                 <span>Watch Demo</span>
               </Button>
@@ -276,15 +237,15 @@ export default function Home() {
             {/* Trust Indicators */}
             <div className="mt-12 sm:mt-16 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 text-sm text-gray-500">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-[#2ba664]" />
+                <Shield className="h-4 w-4 text-health-primary" />
                 <span>HIPAA Compliant</span>
               </div>
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-[#2ba664]" />
+                <Users className="h-4 w-4 text-health-primary" />
                 <span>10,000+ Users</span>
               </div>
               <div className="flex items-center gap-2">
-                <HeartPulse className="h-4 w-4 text-[#2ba664]" />
+                <HeartPulse className="h-4 w-4 text-health-primary" />
                 <span>24/7 Support</span>
               </div>
             </div>
@@ -312,10 +273,10 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 px-4">
-            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-[#2ba664]">
+            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-health-primary">
               <CardHeader>
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#2ba664]/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <Video className="h-6 w-6 sm:h-8 sm:w-8 text-[#2ba664]" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-health-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Video className="h-6 w-6 sm:h-8 sm:w-8 text-health-primary" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl">Video Consultations</CardTitle>
                 <CardDescription className="text-gray-600 text-sm sm:text-base">
@@ -324,10 +285,10 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-[#2ba664]">
+            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-health-primary">
               <CardHeader>
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#2ba664]/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-[#2ba664]" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-health-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-health-primary" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl">Easy Booking</CardTitle>
                 <CardDescription className="text-gray-600 text-sm sm:text-base">
@@ -336,10 +297,10 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-[#2ba664]">
+            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-health-primary">
               <CardHeader>
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#2ba664]/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-[#2ba664]" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-health-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-health-primary" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl">Electronic Records</CardTitle>
                 <CardDescription className="text-gray-600 text-sm sm:text-base">
@@ -348,10 +309,10 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-[#2ba664]">
+            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-health-primary">
               <CardHeader>
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#2ba664]/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <HeartPulse className="h-6 w-6 sm:h-8 sm:w-8 text-[#2ba664]" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-health-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <HeartPulse className="h-6 w-6 sm:h-8 sm:w-8 text-health-primary" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl">Health Monitoring</CardTitle>
                 <CardDescription className="text-gray-600 text-sm sm:text-base">
@@ -360,10 +321,10 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-[#2ba664]">
+            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-health-primary">
               <CardHeader>
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#2ba664]/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-[#2ba664]" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-health-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-health-primary" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl">Health Card</CardTitle>
                 <CardDescription className="text-gray-600 text-sm sm:text-base">
@@ -372,10 +333,10 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-[#2ba664]">
+            <Card className="text-center border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-health-primary">
               <CardHeader>
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#2ba664]/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <Users className="h-6 w-6 sm:h-8 sm:w-8 text-[#2ba664]" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-health-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Users className="h-6 w-6 sm:h-8 sm:w-8 text-health-primary" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl">Multi-Role Support</CardTitle>
                 <CardDescription className="text-gray-600 text-sm sm:text-base">
@@ -400,11 +361,11 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 px-4">
-            <Card className="border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-[#2ba664]">
+            <Card className="border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-health-primary">
               <CardHeader>
                 <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#2ba664]/10 rounded-lg flex items-center justify-center">
-                    <Users className="h-5 w-5 sm:h-6 sm:w-6 text-[#2ba664]" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-health-primary/10 rounded-lg flex items-center justify-center">
+                    <Users className="h-5 w-5 sm:h-6 sm:w-6 text-health-primary" />
                   </div>
                   <CardTitle className="text-base sm:text-lg">For Patients</CardTitle>
                 </div>
@@ -416,30 +377,30 @@ export default function Home() {
               <CardContent>
                 <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600">
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Easy appointment scheduling
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Video and phone consultations
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Electronic health records
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Digital health card with discounts
                   </li>
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-[#2ba664]">
+            <Card className="border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-health-primary">
               <CardHeader>
                 <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#2ba664]/10 rounded-lg flex items-center justify-center">
-                    <Stethoscope className="h-5 w-5 sm:h-6 sm:w-6 text-[#2ba664]" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-health-primary/10 rounded-lg flex items-center justify-center">
+                    <Stethoscope className="h-5 w-5 sm:h-6 sm:w-6 text-health-primary" />
                   </div>
                   <CardTitle className="text-base sm:text-lg">For Doctors</CardTitle>
                 </div>
@@ -451,30 +412,30 @@ export default function Home() {
               <CardContent>
                 <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600">
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Appointment management
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Patient record access
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Prescription management
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Earnings tracking
                   </li>
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-[#2ba664]">
+            <Card className="border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-health-primary">
               <CardHeader>
                 <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#2ba664]/10 rounded-lg flex items-center justify-center">
-                    <FlaskConical className="h-5 w-5 sm:h-6 sm:w-6 text-[#2ba664]" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-health-primary/10 rounded-lg flex items-center justify-center">
+                    <FlaskConical className="h-5 w-5 sm:h-6 sm:w-6 text-health-primary" />
                   </div>
                   <CardTitle className="text-base sm:text-lg">For Labs</CardTitle>
                 </div>
@@ -486,30 +447,30 @@ export default function Home() {
               <CardContent>
                 <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600">
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Test order management
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Digital result reporting
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Partner integration
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Health card discounts
                   </li>
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-[#2ba664]">
+            <Card className="border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-health-primary">
               <CardHeader>
                 <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#2ba664]/10 rounded-lg flex items-center justify-center">
-                    <Pill className="h-5 w-5 sm:h-6 sm:w-6 text-[#2ba664]" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-health-primary/10 rounded-lg flex items-center justify-center">
+                    <Pill className="h-5 w-5 sm:h-6 sm:w-6 text-health-primary" />
                   </div>
                   <CardTitle className="text-base sm:text-lg">For Pharmacies</CardTitle>
                 </div>
@@ -521,19 +482,19 @@ export default function Home() {
               <CardContent>
                 <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600">
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Prescription processing
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Inventory management
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Patient medication tracking
                   </li>
                   <li className="flex items-center gap-1 sm:gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#2ba664]" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-health-primary" />
                     Health card integration
                   </li>
                 </ul>
@@ -544,7 +505,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-[#2ba664]">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-health-primary">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
             Ready to Transform Healthcare?
@@ -556,12 +517,12 @@ export default function Home() {
             size="lg" 
             variant="secondary" 
             onClick={handleGetStarted}
-            className="bg-white text-[#2ba664] hover:bg-gray-100 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="bg-white text-health-primary hover:bg-gray-100 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             disabled={isNavigating}
           >
             {isNavigating ? (
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-[#2ba664] border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-health-primary border-t-transparent rounded-full animate-spin"></div>
                 <span className="text-sm sm:text-base">Loading...</span>
               </div>
             ) : (
@@ -579,12 +540,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 sm:space-x-3 mb-4 md:mb-0">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#2ba664] rounded-lg flex items-center justify-center">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-health-primary rounded-lg flex items-center justify-center">
                 <HeartPulse className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-semibold">Fitwell</span>
-                <span className="text-sm sm:text-base font-medium text-[#2ba664] ml-1">H.E.A.L.T.H.</span>
+                <span className="text-sm sm:text-base font-medium text-health-primary ml-1">H.E.A.L.T.H.</span>
               </div>
             </div>
             <div className="text-center md:text-right">

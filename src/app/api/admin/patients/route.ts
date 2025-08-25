@@ -1,143 +1,104 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import bcrypt from 'bcryptjs'
+import { authenticateRequest, createAuthenticatedGETHandler, createAuthenticatedPOSTHandler } from '@/lib/api-auth'
+import { getPaginationParams, buildSearchWhereClause, buildStatusWhereClause, createPaginatedResponse } from '@/lib/pagination'
+import { UserRole } from '@prisma/client'
 
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session || session.user?.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+const getHandler = async (request: NextRequest, auth: any) => {
+  const pagination = getPaginationParams(request)
 
-    const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
-    const search = searchParams.get('search') || ''
-    const status = searchParams.get('status') || 'all'
-
-    const skip = (page - 1) * limit
-
-    // Build where clause
-    const where: any = {}
-    
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { phone: { contains: search, mode: 'insensitive' } }
-      ]
-    }
-
-    if (status !== 'all') {
-      where.isActive = status === 'active'
-    }
-
-    const [patients, total] = await Promise.all([
-      db.user.findMany({
-        where: {
-          ...where,
-          role: 'PATIENT'
-        },
-        include: {
-          patient: true,
-          userSubscriptions: {
-            include: {
-              subscriptionPlan: true
-            }
-          }
-        },
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' }
-      }),
-      db.user.count({
-        where: {
-          ...where,
-          role: 'PATIENT'
-        }
-      })
-    ])
-
-    return NextResponse.json({
-      patients,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    })
-  } catch (error) {
-    console.error('Error fetching patients:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  // Build where clause
+  const where: any = {
+    role: 'PATIENT'
   }
-}
+  
+  if (pagination.search) {
+    Object.assign(where, buildSearchWhereClause(pagination.search, ['name', 'email', 'phone']))
+  }
 
-export async function POST(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session || session.user?.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  if (pagination.status !== 'all') {
+    Object.assign(where, buildStatusWhereClause(pagination.status))
+  }
 
-    const body = await request.json()
-    const {
-      name,
-      email,
-      phone,
-      dateOfBirth,
-      gender,
-      bloodGroup,
-      address,
-      city,
-      emergencyContact,
-      password
-    } = body
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password || 'patient123', 12)
-
-    // Check if user already exists
-    const existingUser = await db.user.findUnique({
-      where: { email }
-    })
-
-    if (existingUser) {
-      return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 })
-    }
-
-    // Create user
-    const user = await db.user.create({
-      data: {
-        name,
-        email,
-        phone,
-        password: hashedPassword,
-        role: 'PATIENT',
-        isActive: true,
-        patient: {
-          create: {
-            dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-            gender,
-            bloodGroup,
-            address,
-            city,
-            emergencyContact
+  return createPaginatedResponse(
+    db.user.findMany({
+      where,
+      include: {
+        patient: true,
+        userSubscriptions: {
+          include: {
+            subscriptionPlan: true
           }
         }
       },
-      include: {
-        patient: true
-      }
-    })
-
-    return NextResponse.json({ user, message: 'Patient created successfully' })
-  } catch (error) {
-    console.error('Error creating patient:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+      skip: pagination.skip,
+      take: pagination.limit,
+      orderBy: { createdAt: 'desc' }
+    }),
+    db.user.count({
+      where
+    }),
+    pagination
+  )
 }
+
+const postHandler = async (request: NextRequest, auth: any) => {
+  const body = await request.json()
+  const {
+    name,
+    email,
+    phone,
+    dateOfBirth,
+    gender,
+    bloodGroup,
+    address,
+    city,
+    emergencyContact,
+    password
+  } = body
+
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password || 'patient123', 12)
+
+  // Check if user already exists
+  const existingUser = await db.user.findUnique({
+    where: { email }
+  })
+
+  if (existingUser) {
+    const { NextResponse } = await import('next/server')
+    return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 })
+  }
+
+  // Create user
+  const user = await db.user.create({
+    data: {
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      role: 'PATIENT',
+      isActive: true,
+      patient: {
+        create: {
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+          gender,
+          bloodGroup,
+          address,
+          city,
+          emergencyContact
+        }
+      }
+    },
+    include: {
+      patient: true
+    }
+  })
+
+  const { NextResponse } = await import('next/server')
+  return NextResponse.json({ user, message: 'Patient created successfully' })
+}
+
+export const GET = createAuthenticatedGETHandler(getHandler, [UserRole.ADMIN])
+export const POST = createAuthenticatedPOSTHandler(postHandler, [UserRole.ADMIN])
