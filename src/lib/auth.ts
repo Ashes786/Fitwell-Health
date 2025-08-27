@@ -4,82 +4,64 @@ import { db } from "./db"
 import bcrypt from "bcryptjs"
 import { UserRole } from "@prisma/client"
 
-// Get the base URL from environment or fallback
-const getBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    // Browser should use relative URL
-    return ''
-  }
-  // Server should use the environment variable
-  return process.env.NEXTAUTH_URL || 'http://localhost:3000'
-}
-
 export const authOptions: NextAuthOptions = {
-  debug: process.env.DEBUG_ENABLED === 'true', // Use environment variable for debug mode
+  debug: true,
   providers: [
     CredentialsProvider({
-      id: "credentials",
       name: "credentials",
       credentials: {
-        identifier: { label: "Email", type: "text" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log("Authorize function called with credentials:", credentials?.identifier)
-        if (!credentials?.identifier || !credentials?.password) {
+        console.log("=== NEXTAUTH AUTHORIZE FUNCTION CALLED ===")
+        console.log("Credentials received:", credentials)
+        
+        if (!credentials?.email || !credentials?.password) {
           console.log("Missing credentials")
           return null
         }
 
         try {
-          // Find user by email, phone, or other identifiers
+          console.log("Looking for user:", credentials.email)
           const user = await db.user.findFirst({
             where: {
               OR: [
-                { email: credentials.identifier },
-                { phone: credentials.identifier },
-                // Add other identifier fields if needed
+                { email: credentials.email },
+                { phone: credentials.email }
               ]
-            },
-            select: {
-              id: true,
-              email: true,
-              password: true,
-              name: true,
-              role: true,
-              isActive: true,
-              avatar: true
             }
           })
 
+          console.log("User found:", user ? "YES" : "NO")
+          
           if (!user || !user.isActive) {
             console.log("User not found or inactive")
             return null
           }
 
-          // Verify password
           console.log("Verifying password...")
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password
           )
 
-          console.log("Password validation result:", isPasswordValid)
+          console.log("Password valid:", isPasswordValid)
 
           if (!isPasswordValid) {
             console.log("Invalid password")
             return null
           }
 
-          // Return user object for successful authentication
-          console.log("Authentication successful, returning user object")
-          return {
+          console.log("Authentication successful for user:", user.email)
+          const result = {
             id: user.id,
             email: user.email,
             name: user.name,
             role: user.role,
-            image: user.avatar,
           }
+          console.log("Returning user object:", result)
+          return result
         } catch (error) {
           console.error('Authentication error:', error)
           return null
@@ -88,11 +70,12 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   session: {
-    strategy: "jwt"
+    strategy: "jwt" as const,
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        console.log("JWT callback - adding user to token")
         token.role = user.role
         token.id = user.id
         token.email = user.email
@@ -101,34 +84,16 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token) {
+        console.log("Session callback - adding token to session")
         session.user.id = token.id as string
         session.user.role = token.role as string
+        session.user.email = token.email as string
       }
       return session
     }
   },
-  // Configure JWT settings for middleware
-  jwt: {
-    secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
-  },
-  // Optimize session configuration
-  useSecureCookies: process.env.NODE_ENV === 'production',
   pages: {
-    signIn: "/auth/signin",
-    signOut: "/auth/signout",
+    signIn: "/auth/signin"
   },
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
-  
-  // Custom error handling
-  logger: {
-    error(code, metadata) {
-      console.error("NextAuth Error:", code, metadata)
-    },
-    warn(code) {
-      console.warn("NextAuth Warning:", code)
-    },
-    debug(code, metadata) {
-      console.debug("NextAuth Debug:", code, metadata)
-    }
-  }
 }

@@ -6,9 +6,9 @@ export async function POST(request: Request) {
   try {
     const { email, password } = await request.json()
     
-    console.log("Test auth endpoint called with:", { email, password: "***" })
+    console.log("Manual sign-in attempt for:", email)
     
-    // Find user by email
+    // Find user by email or phone
     const user = await db.user.findFirst({
       where: {
         OR: [
@@ -26,21 +26,18 @@ export async function POST(request: Request) {
       }
     })
 
-    console.log("User found:", user ? "Yes" : "No")
-    
     if (!user || !user.isActive) {
       return NextResponse.json({ error: 'User not found or inactive' }, { status: 404 })
     }
 
     // Verify password
-    console.log("Verifying password...")
     const isPasswordValid = await bcrypt.compare(password, user.password)
-    console.log("Password validation result:", isPasswordValid)
 
     if (!isPasswordValid) {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
     }
 
+    // Return user data for successful authentication
     return NextResponse.json({
       success: true,
       user: {
@@ -51,7 +48,7 @@ export async function POST(request: Request) {
       }
     })
   } catch (error) {
-    console.error('Test auth error:', error)
+    console.error('Manual sign-in error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
