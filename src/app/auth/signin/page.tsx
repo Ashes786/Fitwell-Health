@@ -26,7 +26,7 @@ import {
 import Link from "next/link"
 
 export default function SignIn() {
-  const [email, setEmail] = useState("")
+  const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
   const [csrfToken, setCsrfToken] = useState("")
   const [error, setError] = useState("")
@@ -89,7 +89,7 @@ export default function SignIn() {
 
     try {
       const result = await signIn("credentials", {
-        email, // This will be matched against email, phone, etc. in the auth logic
+        identifier, // This will be matched against email, phone, etc. in the auth logic
         password,
         csrfToken,
         redirect: false,
@@ -211,17 +211,17 @@ export default function SignIn() {
                 )}
                 
                 <div className="space-y-1">
-                  <Label htmlFor="email" className="text-xs font-medium text-gray-700">
+                  <Label htmlFor="identifier" className="text-xs font-medium text-gray-700">
                     Email, Phone, NHR, or CNIC
                   </Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
                     <Input
-                      id="email"
+                      id="identifier"
                       type="text"
                       placeholder="Enter your email, phone, NHR, or CNIC"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
                       required
                       className="pl-8 text-sm border-gray-300 focus:border-[#2ba664] focus:ring-[#2ba664] h-9"
                     />

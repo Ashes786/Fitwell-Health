@@ -1,57 +1,21 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import bcrypt from 'bcryptjs'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
-export async function POST(request: Request) {
+export async function GET() {
   try {
-    const { email, password } = await request.json()
+    const session = await getServerSession(authOptions)
     
-    console.log("Test auth endpoint called with:", { email, password: "***" })
-    
-    // Find user by email
-    const user = await db.user.findFirst({
-      where: {
-        OR: [
-          { email: email },
-          { phone: email },
-        ]
-      },
-      select: {
-        id: true,
-        email: true,
-        password: true,
-        name: true,
-        role: true,
-        isActive: true,
-      }
-    })
-
-    console.log("User found:", user ? "Yes" : "No")
-    
-    if (!user || !user.isActive) {
-      return NextResponse.json({ error: 'User not found or inactive' }, { status: 404 })
-    }
-
-    // Verify password
-    console.log("Verifying password...")
-    const isPasswordValid = await bcrypt.compare(password, user.password)
-    console.log("Password validation result:", isPasswordValid)
-
-    if (!isPasswordValid) {
-      return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
-    }
-
     return NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      }
+      message: 'Auth test endpoint',
+      session: session,
+      timestamp: new Date().toISOString()
     })
   } catch (error) {
-    console.error('Test auth error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Auth test error:', error)
+    return NextResponse.json({
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
