@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession, signIn, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,6 +19,8 @@ import {
   Pill
 } from "lucide-react"
 import Link from "next/link"
+import { useCustomSession } from "@/hooks/use-custom-session"
+import { useCustomSignOut } from "@/hooks/use-custom-signout"
 
 // Helper function to get role-specific redirect URL
 function getRoleRedirectUrl(userRole: string): string {
@@ -35,7 +36,8 @@ function getRoleRedirectUrl(userRole: string): string {
 }
 
 export default function Home() {
-  const { data: session, status } = useSession()
+  const { user, loading } = useCustomSession()
+  const { signOut } = useCustomSignOut()
   const router = useRouter()
   const [isNavigating, setIsNavigating] = useState(false)
 
@@ -46,8 +48,8 @@ export default function Home() {
     setIsNavigating(true)
     
     try {
-      if (session) {
-        const redirectUrl = getRoleRedirectUrl(session.user.role)
+      if (user && user.role) {
+        const redirectUrl = getRoleRedirectUrl(user.role)
         router.push(redirectUrl)
       } else {
         router.push("/auth/signup")
@@ -79,7 +81,7 @@ export default function Home() {
     setIsNavigating(true)
     
     try {
-      await signOut({ callbackUrl: '/' })
+      await signOut()
     } catch (error) {
       console.error('Sign out error:', error)
       setIsNavigating(false)
@@ -88,7 +90,7 @@ export default function Home() {
 
   // Optimize header rendering - reduce loading states
   const renderAuthButtons = () => {
-    if (status === "loading") {
+    if (loading) {
       return (
         <div className="flex items-center space-x-2">
           <div className="w-16 h-8 bg-gray-200 rounded animate-pulse"></div>
@@ -97,12 +99,12 @@ export default function Home() {
       )
     }
 
-    if (session) {
+    if (user && user.role) {
       return (
         <div className="flex items-center space-x-2">
           <Button 
             onClick={() => {
-              const redirectUrl = getRoleRedirectUrl(session.user.role)
+              const redirectUrl = getRoleRedirectUrl(user.role)
               router.push(redirectUrl)
             }} 
             className="bg-health-primary hover:bg-health-dark text-white transition-colors duration-200 text-sm px-4 py-2"

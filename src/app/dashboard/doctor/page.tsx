@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useCustomSession } from '@/hooks/use-custom-session'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -51,7 +51,7 @@ import { toast } from 'sonner'
 import Link from 'next/link'
 
 export default function DoctorDashboard() {
-  const { data: session, status } = useSession()
+  const { user, loading } = useCustomSession()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -71,14 +71,14 @@ export default function DoctorDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
-    if (status === "loading") return
+    if (loading) return
     
-    if (!session) {
+    if (!user) {
       router.push('/auth/signin')
       return
     }
 
-    if (session.user?.role !== 'DOCTOR') {
+    if (user.role !== 'DOCTOR') {
       router.push('/dashboard')
       return
     }
@@ -91,7 +91,7 @@ export default function DoctorDashboard() {
     }, 30000)
     
     return () => clearInterval(refreshInterval)
-  }, [session, status, router])
+  }, [user, loading, router])
 
   const fetchDashboardData = async (manualRefresh = false) => {
     try {
@@ -179,7 +179,7 @@ export default function DoctorDashboard() {
         <div className="absolute inset-0 bg-black/20 rounded-lg"></div>
         <div className="relative flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2 text-white">Welcome back, Dr. {session.user?.name}!</h1>
+            <h1 className="text-3xl font-bold mb-2 text-white">Welcome back, Dr. {user?.name}!</h1>
             <p className="text-white/90">Doctor Dashboard - Manage your practice</p>
             <p className="text-white/70 text-sm mt-1">
               Last updated: {lastRefresh.toLocaleTimeString()}

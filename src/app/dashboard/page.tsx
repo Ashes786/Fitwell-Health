@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useCustomSession } from '@/hooks/use-custom-session'
 
 // Helper function to get role-specific redirect URL
 function getRoleRedirectUrl(userRole: string): string {
@@ -18,24 +18,29 @@ function getRoleRedirectUrl(userRole: string): string {
 }
 
 export default function Dashboard() {
-  const { data: session, status } = useSession()
+  const { user, loading } = useCustomSession()
   const router = useRouter()
   const [isRedirecting, setIsRedirecting] = useState(false)
 
   useEffect(() => {
-    if (status === "loading") return
+    console.log('Dashboard page - User:', user, 'Loading:', loading)
+    
+    if (loading) return
 
-    if (!session) {
+    if (!user) {
+      console.log('No user found, redirecting to signin')
       router.push('/auth/signin')
       return
     }
 
     if (!isRedirecting) {
+      console.log('Redirecting to role-specific dashboard for role:', user.role)
       setIsRedirecting(true)
-      const redirectUrl = getRoleRedirectUrl(session.user?.role)
+      const redirectUrl = getRoleRedirectUrl(user.role)
+      console.log('Redirect URL:', redirectUrl)
       router.push(redirectUrl)
     }
-  }, [session, status, router, isRedirecting])
+  }, [user, loading, router, isRedirecting])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">

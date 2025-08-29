@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useCustomSession } from '@/hooks/use-custom-session'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -51,7 +51,7 @@ import { useDataFetch } from '@/hooks/use-data-fetch'
 import { DataLoader, MetricCardLoader, ChartLoader } from '@/components/ui/data-loader'
 
 export default function SuperAdminDashboard() {
-  const { data: session, status } = useSession()
+  const { user, loading } = useCustomSession()
   const router = useRouter()
 
   // Use the new data fetching hook with caching and error handling
@@ -70,7 +70,7 @@ export default function SuperAdminDashboard() {
       return response.json()
     },
     {
-      enabled: !!session?.user,
+      enabled: !!user,
       refetchInterval: 30000, // Auto-refresh every 30 seconds
       retryCount: 3,
       retryDelay: 1000,
@@ -171,7 +171,7 @@ export default function SuperAdminDashboard() {
 
   // WebSocket integration for real-time updates
   const { isConnected, sendUpdate } = useWebSocketUpdates({
-    enabled: !!session?.user,
+    enabled: !!user,
     onDataUpdate: (data) => {
       if (data.type === 'system_stats' || data.type === 'doctor_availability') {
         // Refresh data when receiving real-time updates
@@ -201,18 +201,18 @@ export default function SuperAdminDashboard() {
   })
 
   useEffect(() => {
-    if (status === "loading") return
+    if (loading) return
     
-    if (!session) {
+    if (!user) {
       router.push('/auth/signin')
       return
     }
 
-    if (session.user?.role !== 'SUPER_ADMIN') {
+    if (user.role !== 'SUPER_ADMIN') {
       router.push('/dashboard')
       return
     }
-  }, [session, status, router])
+  }, [user, loading, router])
 
   const getGrowthIcon = (growth: number) => {
     return growth >= 0 ? (
@@ -273,7 +273,7 @@ export default function SuperAdminDashboard() {
         <div className="absolute inset-0 bg-black/20 rounded-lg"></div>
         <div className="relative flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2 text-white">Welcome back, {session.user?.name}!</h1>
+            <h1 className="text-3xl font-bold mb-2 text-white">Welcome back, {user?.name}!</h1>
             <p className="text-white/90">Super Admin Dashboard - Complete system overview</p>
             <p className="text-white/70 text-sm mt-1">
               Last updated: {lastRefresh.toLocaleTimeString()}

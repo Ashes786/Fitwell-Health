@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { signIn, useSession, getCsrfToken } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,35 +23,24 @@ import {
   Database
 } from "lucide-react"
 import Link from "next/link"
+import { useCustomSession } from "@/hooks/use-custom-session"
 
 export default function SignIn() {
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
-  const [csrfToken, setCsrfToken] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
-  const { data: session, status } = useSession()
-
-  // Get CSRF token on component mount
-  useEffect(() => {
-    const fetchCsrfToken = async () => {
-      try {
-        const token = await getCsrfToken()
-        setCsrfToken(token || "")
-      } catch (error) {
-        console.error("Failed to fetch CSRF token:", error)
-      }
-    }
-    fetchCsrfToken()
-  }, [])
+  const { user, loading, refetch } = useCustomSession()
 
   // Handle redirection when session is available
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.role) {
-      const userRole = session.user.role
+    console.log('User:', user, 'Loading:', loading)
+    if (user && user.role) {
+      console.log('Redirecting user with role:', user.role)
+      const userRole = user.role
       let redirectUrl = '/dashboard'
       
       switch (userRole) {
@@ -80,29 +68,47 @@ export default function SignIn() {
       
       router.push(redirectUrl)
     }
-  }, [session, status, router])
+  }, [user, loading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
+    console.log('Submitting sign-in form for:', identifier)
 
     try {
-      const result = await signIn("credentials", {
-        identifier, // This will be matched against email, phone, etc. in the auth logic
-        password,
-        csrfToken,
-        redirect: false,
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: identifier, // The backend expects 'email' but handles multiple identifier types
+          password,
+        }),
       })
 
-      if (result?.error) {
-        setError("Invalid credentials")
+      const data = await response.json()
+      console.log('Sign-in response:', data)
+
+      if (response.ok && data.success) {
+        // Success - wait a moment for cookie to be set, then refetch session
+        console.log('Sign-in successful, refetching session...')
+        setTimeout(async () => {
+          console.log('Calling refetch...')
+          await refetch()
+          console.log('Refetch completed')
+          setIsLoading(false)
+        }, 500)
+      } else {
+        // Handle error
+        console.log('Sign-in failed:', data.error)
+        setError(data.error || 'Invalid credentials')
         setIsLoading(false)
       }
-      // Don't set isLoading to false here - let the useEffect handle redirection
-      // The redirection will be handled by the useEffect hook when session is updated
     } catch (error) {
-      setError("An error occurred. Please try again.")
+      console.error('Sign in error:', error)
+      setError('An error occurred. Please try again.')
       setIsLoading(false)
     }
   }

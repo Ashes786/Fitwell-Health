@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useCustomSession } from '@/hooks/use-custom-session'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -70,7 +70,7 @@ import { toast } from 'sonner'
 import Link from 'next/link'
 
 export default function ControlRoomDashboard() {
-  const { data: session, status } = useSession()
+  const { user, loading } = useCustomSession()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -89,14 +89,14 @@ export default function ControlRoomDashboard() {
   const [staffStatus, setStaffStatus] = useState([])
 
   useEffect(() => {
-    if (status === "loading") return
+    if (loading) return
     
-    if (!session) {
+    if (!user) {
       router.push('/auth/signin')
       return
     }
 
-    if (session.user?.role !== 'CONTROL_ROOM') {
+    if (user.role !== 'CONTROL_ROOM') {
       router.push('/dashboard')
       return
     }
@@ -107,7 +107,7 @@ export default function ControlRoomDashboard() {
     const interval = setInterval(fetchDashboardData, 30000) // Update every 30 seconds
     
     return () => clearInterval(interval)
-  }, [session, status, router])
+  }, [user, loading, router])
 
   const fetchDashboardData = async () => {
     try {
@@ -216,7 +216,7 @@ export default function ControlRoomDashboard() {
         <div className="absolute inset-0 bg-black/20 rounded-lg"></div>
         <div className="relative flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2 text-white">Welcome back, {session.user?.name}!</h1>
+            <h1 className="text-3xl font-bold mb-2 text-white">Welcome back, {user?.name}!</h1>
             <p className="text-white/90">Control Room Dashboard - Real-time monitoring & coordination</p>
           </div>
           <div className="p-3 bg-white/20 rounded-full">

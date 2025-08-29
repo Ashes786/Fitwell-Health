@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { useCustomSignOut } from '@/hooks/use-custom-signout'
 import { 
   LayoutDashboard, 
   Users, 
@@ -138,12 +138,11 @@ const navigationItems = {
 
 export function DashboardLayout({ children, userRole, userName, userImage }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { data: session } = useSession()
+  const { signOut } = useCustomSignOut()
   const router = useRouter()
 
   const handleSignOut = async () => {
-    await fetch('/api/auth/signout', { method: 'POST' })
-    router.push('/auth/signin')
+    await signOut()
   }
 
   const navigation = navigationItems[userRole as keyof typeof navigationItems] || []

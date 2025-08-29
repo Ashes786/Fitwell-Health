@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
+import { useCustomSession } from '@/hooks/use-custom-session'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -52,7 +52,7 @@ import { toast } from 'sonner'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 
 export default function AdminDashboard() {
-  const { data: session, status } = useSession()
+  const { user, loading } = useCustomSession()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [analytics, setAnalytics] = useState({
@@ -78,14 +78,14 @@ export default function AdminDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
-    if (status === "loading") return
+    if (loading) return
     
-    if (!session) {
+    if (!user) {
       router.push('/auth/signin')
       return
     }
 
-    if (session.user?.role !== 'ADMIN') {
+    if (user.role !== 'ADMIN') {
       router.push('/dashboard')
       return
     }
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
     }, 30000)
     
     return () => clearInterval(refreshInterval)
-  }, [session, status, router])
+  }, [user, loading, router])
 
   const fetchDashboardData = async (manualRefresh = false) => {
     try {
@@ -220,7 +220,7 @@ export default function AdminDashboard() {
         <div className="absolute inset-0 bg-black/20 rounded-lg"></div>
         <div className="relative flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2 text-white">Welcome back, {session.user?.name}!</h1>
+            <h1 className="text-3xl font-bold mb-2 text-white">Welcome back, {user?.name}!</h1>
             <p className="text-white/90">Admin Dashboard - Network management and user oversight</p>
             <p className="text-white/70 text-sm mt-1">
               Last updated: {lastRefresh.toLocaleTimeString()}
