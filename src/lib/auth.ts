@@ -109,7 +109,7 @@ export const authOptions: NextAuthOptions = {
   },
   // Configure JWT settings for middleware
   jwt: {
-    secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
+    secret: process.env.NEXTAUTH_SECRET,
   },
   // Optimize session configuration
   useSecureCookies: process.env.NODE_ENV === 'production',
@@ -117,7 +117,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
     signOut: "/auth/signout",
   },
-  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
+  secret: process.env.NEXTAUTH_SECRET,
   
   // Custom error handling
   logger: {

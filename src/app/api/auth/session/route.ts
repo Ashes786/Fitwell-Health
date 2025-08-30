@@ -20,6 +20,13 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('Session error:', error)
+    
+    // If it's a JWT decryption error, clear the session by returning null
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ERR_JWE_DECRYPTION_FAILED') {
+      console.log('JWT decryption failed - clearing session')
+      return NextResponse.json({ user: null }, { status: 200 })
+    }
+    
     return NextResponse.json({ user: null }, { status: 200 })
   }
 }
