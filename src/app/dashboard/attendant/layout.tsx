@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from "next-auth/react"
+import { useSession } from "@/components/providers/session-provider"
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { UserRole } from "@prisma/client"
@@ -27,23 +27,23 @@ export default function AttendantLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { data: session, status } = useSession()
+  const { user, loading } = useSession()
   const router = useRouter()
 
   useEffect(() => {
     // Only redirect if we're not loading and session is available but invalid
-    if (status !== "loading") {
-      if (session && session.user?.role !== "ATTENDANT") {
-        const redirectUrl = getRoleRedirectUrl(session.user?.role)
+    if (!loading) {
+      if (user && user.role !== "ATTENDANT") {
+        const redirectUrl = getRoleRedirectUrl(user.role)
         router.push(redirectUrl)
-      } else if (!session) {
+      } else if (!user) {
         router.push("/auth/signin")
       }
     }
-  }, [session, status, router])
+  }, [user, loading, router])
 
   // Show loading state while session is being determined
-  if (status === "loading") {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="flex items-center justify-center h-64">
@@ -54,7 +54,7 @@ export default function AttendantLayout({
   }
 
   // If session is loaded but user is not ATTENDANT, redirect
-  if (session && session.user?.role !== "ATTENDANT") {
+  if (user && user.role !== "ATTENDANT") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="flex items-center justify-center h-64">
@@ -65,7 +65,7 @@ export default function AttendantLayout({
   }
 
   // If no session at all, redirect to signin
-  if (!session) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="flex items-center justify-center h-64">

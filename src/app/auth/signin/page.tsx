@@ -38,7 +38,7 @@ export default function SignIn() {
   // Handle redirection when session is available
   useEffect(() => {
     console.log('User:', user, 'Loading:', loading)
-    if (user && user.role) {
+    if (user && user.role && !loading) {
       console.log('Redirecting user with role:', user.role)
       const userRole = user.role
       let redirectUrl = '/dashboard'
@@ -66,7 +66,10 @@ export default function SignIn() {
           redirectUrl = '/dashboard'
       }
       
-      router.push(redirectUrl)
+      // Add a small delay to ensure cookie is set
+      setTimeout(() => {
+        router.push(redirectUrl)
+      }, 100)
     }
   }, [user, loading, router])
 
@@ -99,7 +102,7 @@ export default function SignIn() {
           await refetch()
           console.log('Refetch completed')
           setIsLoading(false)
-        }, 500)
+        }, 300) // Increased delay to ensure cookie is set
       } else {
         // Handle error
         console.log('Sign-in failed:', data.error)

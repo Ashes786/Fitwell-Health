@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from "@/components/providers/session-provider"
 import { io, Socket } from 'socket.io-client'
 
 interface UseWebSocketOptions {
@@ -13,12 +13,12 @@ interface UseWebSocketOptions {
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
   const { enabled = true, onConnect, onDisconnect, onMessage } = options
-  const { data: session } = useSession()
+  const { user } = useSession()
   const [isConnected, setIsConnected] = useState(false)
   const socketRef = useRef<Socket | null>(null)
 
   useEffect(() => {
-    if (!enabled || !session?.user) {
+    if (!enabled || !user) {
       return
     }
 
@@ -36,8 +36,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       
       // Authenticate with user role
       socket.emit('authenticate', {
-        userId: session.user.id,
-        role: session.user.role
+        userId: user.id,
+        role: user.role
       })
       
       onConnect?.()
@@ -124,7 +124,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       socketRef.current = null
       setIsConnected(false)
     }
-  }, [enabled, session, onConnect, onDisconnect, onMessage])
+  }, [enabled, user, onConnect, onDisconnect, onMessage])
 
   // Function to send messages through WebSocket
   const sendMessage = (event: string, data: any) => {

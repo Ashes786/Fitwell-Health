@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from "@/components/providers/session-provider"
 import { UserRole } from '@prisma/client'
 
 interface UserPermissions {
@@ -10,14 +10,14 @@ interface UserPermissions {
 }
 
 export function useUserPermissions() {
-  const { data: session } = useSession()
+  const { user } = useSession()
   const [permissions, setPermissions] = useState<UserPermissions | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchPermissions = async () => {
-      if (!session) {
+      if (!user) {
         setLoading(false)
         return
       }
@@ -37,7 +37,7 @@ export function useUserPermissions() {
     }
 
     fetchPermissions()
-  }, [session])
+  }, [user])
 
   const hasPermission = (permission: string): boolean => {
     if (!permissions) return false

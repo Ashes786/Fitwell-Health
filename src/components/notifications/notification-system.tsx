@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from "@/components/providers/session-provider"
 import { useRouter } from 'next/navigation'
 import { Bell, X, Check, CheckCheck, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -35,7 +35,7 @@ interface Notification {
 
 export function NotificationSystem() {
   const router = useRouter()
-  const { data: session } = useSession()
+  const { user } = useSession()
   const { toast } = useToast()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)

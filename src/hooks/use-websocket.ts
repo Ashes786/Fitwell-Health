@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from "@/components/providers/session-provider"
 import { io, Socket } from 'socket.io-client'
 
 interface UseWebSocketOptions {
@@ -16,14 +16,14 @@ interface WebSocketMessage {
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
   const { autoConnect = true } = options
-  const { data: session } = useSession()
+  const { user } = useSession()
   const socketRef = useRef<Socket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [messages, setMessages] = useState<WebSocketMessage[]>([])
   const [initialData, setInitialData] = useState<any>(null)
 
   useEffect(() => {
-    if (autoConnect && session?.user) {
+    if (autoConnect && user) {
       connect()
     }
 
@@ -32,10 +32,10 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         socketRef.current.disconnect()
       }
     }
-  }, [session, autoConnect])
+  }, [user, autoConnect])
 
   const connect = () => {
-    if (!session?.user || socketRef.current?.connected) return
+    if (!user || socketRef.current?.connected) return
 
     socketRef.current = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001', {
       transports: ['websocket', 'polling']
@@ -49,8 +49,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       
       // Authenticate with the server
       socket.emit('authenticate', {
-        userId: session.user.id,
-        role: session.user.role
+        userId: user.id,
+        role: user.role
       })
     })
 

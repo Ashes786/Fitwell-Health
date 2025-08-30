@@ -1,6 +1,6 @@
 'use client'
 
-import { useSession } from "next-auth/react"
+import { useSession } from "@/components/providers/session-provider"
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { UserRole } from "@prisma/client"
@@ -26,10 +26,10 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { data: session, status } = useSession()
+  const { user, loading } = useSession()
   const router = useRouter()
 
-  if (status === "loading") {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="flex items-center justify-center h-64">
@@ -42,7 +42,7 @@ export default function AdminLayout({
     )
   }
 
-  if (!session) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="flex items-center justify-center h-64">
@@ -55,8 +55,8 @@ export default function AdminLayout({
     )
   }
 
-  if (session.user?.role !== 'ADMIN') {
-    const redirectUrl = getRoleRedirectUrl(session.user?.role)
+  if (user.role !== 'ADMIN') {
+    const redirectUrl = getRoleRedirectUrl(user.role)
     router.push(redirectUrl)
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -72,9 +72,9 @@ export default function AdminLayout({
 
   return (
     <DashboardLayout 
-      userRole={session.user?.role || ''}
-      userName={session.user?.name || ''}
-      userImage={session.user?.image || ''}
+      userRole={user.role || ''}
+      userName={user.name || ''}
+      userImage={user.image || ''}
     >
       {children}
     </DashboardLayout>

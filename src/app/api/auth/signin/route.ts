@@ -9,13 +9,10 @@ export async function POST(request: Request) {
     
     console.log("Custom sign-in attempt for:", email)
     
-    // Find user by email or phone
+    // Find user by email
     const user = await db.user.findFirst({
       where: {
-        OR: [
-          { email: email },
-          { phone: email },
-        ]
+        email: email
       },
       select: {
         id: true,

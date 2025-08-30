@@ -1,9 +1,29 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { getToken } from 'next-auth/jwt'
+import jwt from 'jsonwebtoken'
+
+// Force this middleware to run in Node.js runtime
+export const runtime = 'nodejs'
 
 export async function middleware(request: NextRequest) {
-  const token = await getToken({ req: request })
+  // Get token from cookie
+  const cookieHeader = request.headers.get('cookie')
+  const token = cookieHeader?.split('auth-token=')[1]?.split(';')[0]
+  
+  console.log('Middleware - Token from cookie:', token ? 'Present' : 'Missing')
+  
+  let decodedToken = null
+  
+  if (token) {
+    try {
+      decodedToken = jwt.verify(token, process.env.NEXTAUTH_SECRET || "fallback-secret-for-development")
+      console.log('Middleware - Token decoded successfully:', decodedToken.role)
+    } catch (error) {
+      // Token is invalid, continue as unauthenticated
+      console.log('Middleware - Invalid JWT token:', error.message)
+    }
+  }
+  
   const { pathname } = request.nextUrl
 
   // Define public routes that don't require authentication
@@ -18,17 +38,18 @@ export async function middleware(request: NextRequest) {
   // Check if the current path is an auth route
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
 
-  // If user is not authenticated and trying to access a protected route
-  if (!token && !isPublicRoute) {
+  // Only redirect to signin if trying to access dashboard routes without authentication
+  const isDashboardRoute = pathname.startsWith('/dashboard')
+  
+  if (!decodedToken && isDashboardRoute) {
     const url = new URL('/auth/signin', request.url)
     url.searchParams.set('callbackUrl', pathname)
     return NextResponse.redirect(url)
   }
 
-  // If user is authenticated and trying to access auth routes
-  if (token && isAuthRoute) {
-    // Redirect to role-specific dashboard
-    const userRole = token.role as string
+  // If user is authenticated and trying to access auth routes, redirect to dashboard
+  if (decodedToken && isAuthRoute) {
+    const userRole = decodedToken.role as string
     let redirectUrl = '/dashboard'
     
     // Map roles to their specific dashboard pages
@@ -58,9 +79,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(redirectUrl, request.url))
   }
 
-  // If user is authenticated and accessing root path, redirect to role-specific dashboard
-  if (token && pathname === '/') {
-    const userRole = token.role as string
+  // If user is authenticated and accessing root dashboard path, redirect to role-specific dashboard
+  if (decodedToken && pathname === '/dashboard') {
+    const userRole = decodedToken.role as string
     let redirectUrl = '/dashboard'
     
     // Map roles to their specific dashboard pages

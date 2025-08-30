@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from "next-auth/react"
+import { useSession } from "@/components/providers/session-provider"
 import { useRouter } from 'next/navigation'
 import { UserRole } from "@prisma/client"
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
@@ -27,25 +27,25 @@ export default function SuperAdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { data: session, status } = useSession()
+  const { user, loading } = useSession()
   const router = useRouter()
 
   useEffect(() => {
     // Only redirect if we're not loading and session is available but invalid
-    if (status !== "loading") {
-      if (session && session.user?.role !== "SUPER_ADMIN") {
+    if (!loading) {
+      if (user && user.role !== "SUPER_ADMIN") {
         console.log('Redirecting: User is not SUPER_ADMIN')
-        const redirectUrl = getRoleRedirectUrl(session.user?.role)
+        const redirectUrl = getRoleRedirectUrl(user.role)
         router.push(redirectUrl)
-      } else if (!session) {
+      } else if (!user) {
         console.log('Redirecting: No session found')
         router.push("/auth/signin")
       }
     }
-  }, [session, status, router])
+  }, [user, loading, router])
 
   // Show loading state while session is being determined
-  if (status === "loading") {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="flex items-center justify-center h-64">
@@ -59,7 +59,7 @@ export default function SuperAdminLayout({
   }
 
   // If session is loaded but user is not SUPER_ADMIN, show redirecting message
-  if (session && session.user?.role !== "SUPER_ADMIN") {
+  if (user && user.role !== "SUPER_ADMIN") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="flex items-center justify-center h-64">
@@ -73,7 +73,7 @@ export default function SuperAdminLayout({
   }
 
   // If no session at all, show redirecting message
-  if (!session) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="flex items-center justify-center h-64">
@@ -88,9 +88,9 @@ export default function SuperAdminLayout({
 
   return (
     <DashboardLayout 
-      userRole={session.user?.role || ''}
-      userName={session.user?.name || ''}
-      userImage={session.user?.image || ''}
+      userRole={user.role || ''}
+      userName={user.name || ''}
+      userImage={user.image || ''}
     >
       {children}
     </DashboardLayout>

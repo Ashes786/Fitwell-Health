@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from "@/components/providers/session-provider"
 import { toast } from 'sonner'
 import io, { Socket } from 'socket.io-client'
 
@@ -22,13 +22,13 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
     onVitalUpdate 
   } = options
   
-  const { data: session } = useSession()
+  const { user } = useSession()
   const socketRef = useRef<Socket | null>(null)
   const reconnectAttempts = useRef(0)
   const maxReconnectAttempts = 5
 
   useEffect(() => {
-    if (!enabled || !session?.user) {
+    if (!enabled || !user) {
       return
     }
 
@@ -51,8 +51,8 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
           
           // Authenticate with the server
           socket.emit('authenticate', {
-            userId: session.user.id,
-            role: session.user.role
+            userId: user.id,
+            role: user.role
           })
         })
 
@@ -243,7 +243,7 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
         socketRef.current = null
       }
     }
-  }, [enabled, session, onDataUpdate, onNotification, onAppointmentUpdate, onVitalUpdate])
+  }, [enabled, user, onDataUpdate, onNotification, onAppointmentUpdate, onVitalUpdate])
 
   const sendUpdate = (type: string, data: any) => {
     if (socketRef.current && socketRef.current.connected) {

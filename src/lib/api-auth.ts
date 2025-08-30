@@ -1,10 +1,8 @@
 import { NextRequest } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from './auth'
 import { UserRole } from '@prisma/client'
+import { authenticateRequest, createAuthHandler, AuthResult } from './auth-utils'
 
 export interface AuthResult {
-  session: any
   user: any
   error?: string
   status?: number
@@ -16,43 +14,8 @@ export async function authenticateRequest(
   request: NextRequest, 
   requiredRoles?: UserRole[]
 ): Promise<AuthResult> {
-  try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session) {
-      return {
-        session: null,
-        user: null,
-        error: 'Unauthorized',
-        status: 401
-      }
-    }
-
-    if (requiredRoles && requiredRoles.length > 0) {
-      const userRole = session.user?.role as UserRole
-      if (!userRole || !requiredRoles.includes(userRole)) {
-        return {
-          session: null,
-          user: null,
-          error: 'Insufficient permissions',
-          status: 403
-        }
-      }
-    }
-
-    return {
-      session,
-      user: session.user
-    }
-  } catch (error) {
-    console.error('Authentication error:', error)
-    return {
-      session: null,
-      user: null,
-      error: 'Authentication failed',
-      status: 500
-    }
-  }
+  const { authenticateRequest: customAuthenticate } = await import('./auth-utils')
+  return customAuthenticate(request, requiredRoles)
 }
 
 export function createAuthHandler(handler: ApiHandler, requiredRoles?: UserRole[]) {
