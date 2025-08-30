@@ -36,7 +36,7 @@ function getRoleRedirectUrl(userRole: string): string {
 }
 
 export default function Home() {
-  const { user, loading } = useCustomSession()
+  const { user, loading, clearSession } = useCustomSession()
   const { signOut } = useCustomSignOut()
   const router = useRouter()
   const [isNavigating, setIsNavigating] = useState(false)
@@ -81,9 +81,16 @@ export default function Home() {
     setIsNavigating(true)
     
     try {
-      await signOut()
+      // Clear the session state immediately for better UX
+      clearSession()
+      // Then perform the actual signout using NextAuth's built-in function
+      await signOut({ 
+        redirect: true, // Let NextAuth handle the redirect
+        callbackUrl: '/auth/signin'
+      })
     } catch (error) {
       console.error('Sign out error:', error)
+      // Even if there's an error, keep the session cleared
       setIsNavigating(false)
     }
   }

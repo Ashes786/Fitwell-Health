@@ -10,16 +10,14 @@ export default function SignOutPage() {
   useEffect(() => {
     const handleSignOut = async () => {
       try {
-        // Use NextAuth's built-in signOut function
+        // Use NextAuth's built-in signOut function with proper redirect
         await signOut({ 
-          redirect: false,
+          redirect: true, // Let NextAuth handle the redirect
           callbackUrl: '/auth/signin'
         })
         
-        // Also call our API route for any additional cleanup
-        await fetch('/api/auth/signout', { method: 'POST' })
-        
-        // Redirect to signin page
+        // If we reach here, it means redirect was set to false or there was an issue
+        // Fallback redirect
         router.push('/auth/signin')
       } catch (error) {
         console.error('Sign out error:', error)

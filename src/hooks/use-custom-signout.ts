@@ -8,21 +8,20 @@ export function useCustomSignOut() {
 
   const signOutUser = async () => {
     try {
-      // Use NextAuth's built-in signOut function with redirect to signin page
+      // Use NextAuth's built-in signOut function with proper redirect
+      // This will handle server-side session invalidation
       await signOut({ 
-        redirect: false,
+        redirect: true, // Let NextAuth handle the redirect
         callbackUrl: '/auth/signin'
       })
       
-      // Also call our API route for any additional cleanup
-      await fetch('/api/auth/signout', { method: 'POST' })
+      // The code below will only run if redirect: false, but since we're using redirect: true,
+      // the signOut function will handle the redirect automatically
       
-      // Redirect to signin page
-      router.push('/auth/signin')
     } catch (error) {
       console.error('Sign out error:', error)
-      // Even if there's an error, try to redirect to signin
-      router.push('/auth/signin')
+      // Fallback: if there's an error, try to redirect manually
+      window.location.href = '/auth/signin'
     }
   }
 

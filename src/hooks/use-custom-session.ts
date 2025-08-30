@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useSession as useNextAuthSession } from 'next-auth/react'
 
 interface User {
   id: string
@@ -13,44 +13,31 @@ interface Session {
   user: User | null
   loading: boolean
   refetch: () => Promise<void>
+  clearSession: () => void
 }
 
 export function useCustomSession(): Session {
-  const [session, setSession] = useState<Session>({
-    user: null,
-    loading: true,
-    refetch: async () => {}
-  })
-
+  const { data: session, status, update } = useNextAuthSession()
+  
   const refetch = async () => {
-    console.log('Refetching session...')
-    try {
-      const response = await fetch('/api/auth/session')
-      const data = await response.json()
-      console.log('Session data:', data)
-      
-      setSession(prev => ({
-        ...prev,
-        user: data.user || null,
-        loading: false
-      }))
-    } catch (error) {
-      console.error('Error fetching session:', error)
-      setSession(prev => ({
-        ...prev,
-        user: null,
-        loading: false
-      }))
-    }
+    await update()
   }
 
-  useEffect(() => {
-    refetch()
-  }, [])
+  const clearSession = () => {
+    // NextAuth handles session clearing automatically
+    // This is kept for compatibility with existing code
+    console.log('Session clear requested - NextAuth handles this automatically')
+  }
 
   return {
-    user: session.user,
-    loading: session.loading,
-    refetch
+    user: session?.user ? {
+      id: session.user.id,
+      email: session.user.email || '',
+      name: session.user.name,
+      role: session.user.role
+    } : null,
+    loading: status === 'loading',
+    refetch,
+    clearSession
   }
 }

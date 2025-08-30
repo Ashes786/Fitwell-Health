@@ -1,10 +1,28 @@
 import { NextResponse } from 'next/server'
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    // NextAuth handles session invalidation automatically through its signOut function
-    // This route is kept for compatibility but the actual signout is handled client-side
+    // Get the response object
     const response = NextResponse.json({ success: true, message: 'Signout initiated' })
+    
+    // Clear all NextAuth related cookies
+    const cookies = request.cookies.getAll()
+    cookies.forEach(cookie => {
+      if (cookie.name.includes('next-auth') || cookie.name.includes('session')) {
+        response.cookies.delete(cookie.name, {
+          path: '/',
+          domain: process.env.NODE_ENV === 'production' ? process.env.DOMAIN : undefined,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax'
+        })
+      }
+    })
+    
+    // Set additional headers to ensure cookies are cleared
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    
     return response
   } catch (error) {
     console.error('Sign-out error:', error)

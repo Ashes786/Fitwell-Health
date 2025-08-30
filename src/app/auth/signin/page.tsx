@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -33,7 +34,8 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
-  const { user, loading, refetch } = useCustomSession()
+  const searchParams = useSearchParams()
+  const { user, loading } = useCustomSession()
 
   // Handle redirection when session is available
   useEffect(() => {
@@ -73,6 +75,14 @@ export default function SignIn() {
     }
   }, [user, loading, router])
 
+  // Check for callback URL from search params
+  useEffect(() => {
+    const callbackUrl = searchParams.get('callbackUrl')
+    if (callbackUrl && user && !loading) {
+      router.push(callbackUrl)
+    }
+  }, [user, loading, searchParams, router])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -80,33 +90,32 @@ export default function SignIn() {
     console.log('Submitting sign-in form for:', identifier)
 
     try {
-      const response = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: identifier, // The backend expects 'email' but handles multiple identifier types
-          password,
-        }),
+      // Use NextAuth's built-in signIn function
+      const result = await signIn('credentials', {
+        identifier: identifier,
+        password: password,
+        redirect: false, // We'll handle redirect manually
       })
 
-      const data = await response.json()
-      console.log('Sign-in response:', data)
+      console.log('NextAuth sign-in result:', result)
 
-      if (response.ok && data.success) {
-        // Success - wait a moment for cookie to be set, then refetch session
-        console.log('Sign-in successful, refetching session...')
-        setTimeout(async () => {
-          console.log('Calling refetch...')
-          await refetch()
-          console.log('Refetch completed')
-          setIsLoading(false)
-        }, 300) // Increased delay to ensure cookie is set
-      } else {
+      if (result?.error) {
         // Handle error
-        console.log('Sign-in failed:', data.error)
-        setError(data.error || 'Invalid credentials')
+        console.log('Sign-in failed:', result.error)
+        setError(result.error || 'Invalid credentials')
+        setIsLoading(false)
+      } else if (result?.ok) {
+        // Success - NextAuth will handle the session creation
+        console.log('Sign-in successful, waiting for session...')
+        // The session hook will automatically detect the new session and redirect
+        // We'll add a timeout in case something goes wrong
+        setTimeout(() => {
+          setIsLoading(false)
+        }, 5000)
+      } else {
+        // Unexpected result
+        console.log('Unexpected sign-in result:', result)
+        setError('An unexpected error occurred')
         setIsLoading(false)
       }
     } catch (error) {

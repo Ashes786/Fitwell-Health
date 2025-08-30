@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Define public routes that don't require authentication
-  const publicRoutes = ['/', '/auth/signin', '/auth/signup', '/auth/forgot-password']
+  const publicRoutes = ['/', '/auth/signin', '/auth/signup', '/auth/forgot-password', '/auth/signout']
   
   // Define auth routes that should redirect authenticated users
   const authRoutes = ['/auth/signin', '/auth/signup']
@@ -26,6 +26,11 @@ export async function middleware(request: NextRequest) {
 
   // Check if the current path is an API route
   const isApiRoute = pathname.startsWith('/api/')
+
+  // Special handling for signout route - always allow access
+  if (pathname === '/auth/signout') {
+    return NextResponse.next()
+  }
 
   // Handle API route authentication
   if (isApiRoute && !isPublicApiRoute) {
@@ -50,7 +55,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If user is authenticated and trying to access auth routes
+  // If user is authenticated and trying to access auth routes (except signout)
   if (token && isAuthRoute) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
