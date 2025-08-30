@@ -1,4 +1,5 @@
-import jwt from 'jsonwebtoken'
+import { getServerSession } from 'next-auth'
+import { authOptions } from './auth'
 import { db } from './db'
 import { NextRequest, NextResponse } from 'next/server'
 import { UserRole } from '@prisma/client'
@@ -17,28 +18,24 @@ export interface AuthResult {
 }
 
 /**
- * Verify JWT token from request cookies
+ * Verify JWT token from request using NextAuth
  */
 export async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
   try {
-    // Get token from cookie
-    const cookieHeader = request.headers.get('cookie')
-    const token = cookieHeader?.split('auth-token=')[1]?.split(';')[0]
+    // Get session using NextAuth's getServerSession
+    const session = await getServerSession(authOptions)
 
-    if (!token) {
+    if (!session || !session.user) {
       return {
         user: null,
-        error: 'No authentication token provided',
+        error: 'No authentication session found',
         status: 401
       }
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET || "fallback-secret-for-development") as any
-    
     // Get fresh user data
     const user = await db.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: session.user.id as string },
       select: {
         id: true,
         email: true,

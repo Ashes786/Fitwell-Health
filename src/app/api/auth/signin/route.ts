@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 
 export async function POST(request: Request) {
   try {
@@ -35,38 +34,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
     }
 
-    // Create JWT token
-    const token = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-      process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
-      { expiresIn: '30d' }
-    )
-
-    // Create response with token in cookie
-    const response = NextResponse.json({
+    // Return user data (the actual JWT token will be handled by NextAuth)
+    return NextResponse.json({
       success: true,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,
-      }
+      },
+      message: "Authentication successful. Please use NextAuth for session management."
     })
-
-    // Set HTTP-only cookie with the token
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-    })
-
-    return response
   } catch (error) {
     console.error('Custom sign-in error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

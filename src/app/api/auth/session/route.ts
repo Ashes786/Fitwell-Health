@@ -1,42 +1,21 @@
 import { NextResponse } from 'next/server'
-import jwt from 'jsonwebtoken'
-import { db } from '@/lib/db'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 export async function GET(request: Request) {
   try {
-    // Get token from cookie
-    const cookieHeader = request.headers.get('cookie')
-    const token = cookieHeader?.split('auth-token=')[1]?.split(';')[0]
+    const session = await getServerSession(authOptions)
 
-    if (!token) {
-      return NextResponse.json({ user: null }, { status: 200 })
-    }
-
-    // Verify token
-    const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET || "fallback-secret-for-development") as any
-    
-    // Get fresh user data
-    const user = await db.user.findUnique({
-      where: { id: decoded.id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isActive: true,
-      }
-    })
-
-    if (!user || !user.isActive) {
+    if (!session) {
       return NextResponse.json({ user: null }, { status: 200 })
     }
 
     return NextResponse.json({
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
+        role: session.user.role,
       }
     })
   } catch (error) {

@@ -2,19 +2,6 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
-// Helper function to get role-specific redirect URL
-function getRoleRedirectUrl(userRole: string): string {
-  const roleMap: Record<string, string> = {
-    'SUPER_ADMIN': '/dashboard/super-admin',
-    'ADMIN': '/dashboard/admin',
-    'DOCTOR': '/dashboard/doctor',
-    'PATIENT': '/dashboard/patient',
-    'ATTENDANT': '/dashboard/attendant',
-    'CONTROL_ROOM': '/dashboard/control-room'
-  }
-  return roleMap[userRole] || '/dashboard'
-}
-
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request })
   const { pathname } = request.nextUrl
@@ -65,14 +52,17 @@ export async function middleware(request: NextRequest) {
 
   // If user is authenticated and trying to access auth routes
   if (token && isAuthRoute) {
-    const redirectUrl = getRoleRedirectUrl(token.role as string)
-    return NextResponse.redirect(new URL(redirectUrl, request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // If user is authenticated and accessing root path, redirect to role-specific dashboard
+  // If user is authenticated and accessing root path, redirect to unified dashboard
   if (token && pathname === '/') {
-    const redirectUrl = getRoleRedirectUrl(token.role as string)
-    return NextResponse.redirect(new URL(redirectUrl, request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  // If user is trying to access role-specific dashboard URLs, redirect to unified dashboard
+  if (token && pathname.startsWith('/dashboard/') && pathname !== '/dashboard') {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // Add performance headers to the response

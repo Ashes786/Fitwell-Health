@@ -1,9 +1,40 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useCustomSession } from '@/hooks/use-custom-session'
 
 export default function Dashboard() {
   const { user, loading } = useCustomSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && user) {
+      // Redirect to role-specific dashboard based on user role
+      switch (user.role) {
+        case 'SUPER_ADMIN':
+          router.push('/dashboard/super-admin')
+          break
+        case 'ADMIN':
+          router.push('/dashboard/admin')
+          break
+        case 'DOCTOR':
+          router.push('/dashboard/doctor')
+          break
+        case 'PATIENT':
+          router.push('/dashboard/patient')
+          break
+        case 'ATTENDANT':
+          router.push('/dashboard/attendant')
+          break
+        case 'CONTROL_ROOM':
+          router.push('/dashboard/control-room')
+          break
+        default:
+          router.push('/dashboard')
+      }
+    }
+  }, [user, loading, router])
 
   if (loading) {
     return (

@@ -1,4 +1,5 @@
 // Compatibility layer for next-auth/react imports
+import React from 'react'
 export { useSession } from '@/components/providers/session-provider'
 
 // Mock other NextAuth React exports that might be used
@@ -20,5 +21,5 @@ export function signOut() {
 
 // Mock SessionProvider component
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return React.createElement(React.Fragment, null, children)
 }
