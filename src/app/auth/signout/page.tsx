@@ -2,16 +2,30 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { signOut, useSession } from 'next-auth/react'
+import { signOut } from 'next-auth/react'
 
 export default function SignOutPage() {
   const router = useRouter()
-  const { data: session } = useSession()
 
   useEffect(() => {
     const handleSignOut = async () => {
-      await signOut({ redirect: false })
-      router.push('/auth/signin')
+      try {
+        // Use NextAuth's built-in signOut function
+        await signOut({ 
+          redirect: false,
+          callbackUrl: '/auth/signin'
+        })
+        
+        // Also call our API route for any additional cleanup
+        await fetch('/api/auth/signout', { method: 'POST' })
+        
+        // Redirect to signin page
+        router.push('/auth/signin')
+      } catch (error) {
+        console.error('Sign out error:', error)
+        // Even if there's an error, try to redirect to signin
+        router.push('/auth/signin')
+      }
     }
 
     handleSignOut()

@@ -190,8 +190,10 @@ export default function Home() {
             <div className="mb-8 sm:mb-12">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight tracking-tight">
                 <span className="block">Welcome to</span>
-                <span className="block bg-gradient-to-r from-health-primary to-health-dark bg-clip-text text-transparent mt-2">
-                  Fitwell H.E.A.L.T.H.
+                <span className="block mt-2">
+                  <span className="bg-gradient-to-r from-green-600 via-teal-600 to-blue-600 bg-clip-text text-transparent">
+                    Fitwell H.E.A.L.T.H.
+                  </span>
                 </span>
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl text-gray-600 font-normal max-w-3xl mx-auto leading-relaxed px-4">
@@ -230,7 +232,7 @@ export default function Home() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-2 border-health-primary text-health-primary hover:bg-health-primary hover:text-white px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg bg-white/80 backdrop-blur-sm"
+                className="border-2 border-health-primary text-health-primary hover:bg-health-primary hover:text-gray-900 px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg bg-white/80 backdrop-blur-sm"
               >
                 <span>Watch Demo</span>
               </Button>
