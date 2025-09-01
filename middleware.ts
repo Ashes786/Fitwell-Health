@@ -65,10 +65,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // If user is trying to access role-specific dashboard URLs, redirect to unified dashboard
-  if (token && pathname.startsWith('/dashboard/') && pathname !== '/dashboard') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
+  // Allow direct access to role-specific dashboards
+  // Note: Role-based access control is handled at the page level
 
   // Add performance headers to the response
   const response = NextResponse.next()

@@ -22,17 +22,10 @@ import Link from "next/link"
 import { useCustomSession } from "@/hooks/use-custom-session"
 import { useCustomSignOut } from "@/hooks/use-custom-signout"
 
-// Helper function to get role-specific redirect URL
+// Helper function to get role-specific redirect URL - now unified
 function getRoleRedirectUrl(userRole: string): string {
-  const roleMap: Record<string, string> = {
-    'SUPER_ADMIN': '/dashboard/super-admin',
-    'ADMIN': '/dashboard/admin',
-    'DOCTOR': '/dashboard/doctor',
-    'PATIENT': '/dashboard/patient',
-    'ATTENDANT': '/dashboard/attendant',
-    'CONTROL_ROOM': '/dashboard/control-room'
-  }
-  return roleMap[userRole] || '/dashboard'
+  // Always redirect to unified dashboard - it handles role-specific content
+  return '/dashboard'
 }
 
 export default function Home() {

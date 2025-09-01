@@ -84,12 +84,9 @@ export default function AttendantDashboard() {
       return
     }
 
-    if (user.role !== 'ATTENDANT') {
-      router.push('/dashboard')
-      return
-    }
-
-    fetchDashboardData()
+    // Redirect to unified dashboard - it handles role-specific content
+    router.push('/dashboard')
+    return
   }, [user, loading, router])
 
   const fetchDashboardData = async () => {

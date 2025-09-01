@@ -96,17 +96,9 @@ export default function ControlRoomDashboard() {
       return
     }
 
-    if (user.role !== 'CONTROL_ROOM') {
-      router.push('/dashboard')
-      return
-    }
-
-    fetchDashboardData()
-    
-    // Set up real-time updates
-    const interval = setInterval(fetchDashboardData, 30000) // Update every 30 seconds
-    
-    return () => clearInterval(interval)
+    // Redirect to unified dashboard - it handles role-specific content
+    router.push('/dashboard')
+    return
   }, [user, loading, router])
 
   const fetchDashboardData = async () => {

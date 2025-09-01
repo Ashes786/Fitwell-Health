@@ -208,10 +208,9 @@ export default function SuperAdminDashboard() {
       return
     }
 
-    if (user.role !== 'SUPER_ADMIN') {
-      router.push('/dashboard')
-      return
-    }
+    // Redirect to unified dashboard - it handles role-specific content
+    router.push('/dashboard')
+    return
   }, [user, loading, router])
 
   const getGrowthIcon = (growth: number) => {

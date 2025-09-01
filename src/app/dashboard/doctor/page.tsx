@@ -78,19 +78,9 @@ export default function DoctorDashboard() {
       return
     }
 
-    if (user.role !== 'DOCTOR') {
-      router.push('/dashboard')
-      return
-    }
-
-    fetchDashboardData()
-    
-    // Auto-refresh every 30 seconds
-    const refreshInterval = setInterval(() => {
-      fetchDashboardData()
-    }, 30000)
-    
-    return () => clearInterval(refreshInterval)
+    // Redirect to unified dashboard - it handles role-specific content
+    router.push('/dashboard')
+    return
   }, [user, loading, router])
 
   const fetchDashboardData = async (manualRefresh = false) => {

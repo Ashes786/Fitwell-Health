@@ -42,31 +42,8 @@ export default function SignIn() {
     console.log('User:', user, 'Loading:', loading)
     if (user && user.role && !loading) {
       console.log('Redirecting user with role:', user.role)
-      const userRole = user.role
-      let redirectUrl = '/dashboard'
-      
-      switch (userRole) {
-        case 'SUPER_ADMIN':
-          redirectUrl = '/dashboard/super-admin'
-          break
-        case 'ADMIN':
-          redirectUrl = '/dashboard/admin'
-          break
-        case 'DOCTOR':
-          redirectUrl = '/dashboard/doctor'
-          break
-        case 'PATIENT':
-          redirectUrl = '/dashboard/patient'
-          break
-        case 'ATTENDANT':
-          redirectUrl = '/dashboard/attendant'
-          break
-        case 'CONTROL_ROOM':
-          redirectUrl = '/dashboard/control-room'
-          break
-        default:
-          redirectUrl = '/dashboard'
-      }
+      // Always redirect to the unified dashboard - it will handle role-specific content
+      const redirectUrl = '/dashboard'
       
       // Add a small delay to ensure cookie is set
       setTimeout(() => {

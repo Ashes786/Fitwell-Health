@@ -89,21 +89,10 @@ export default function PatientDashboard() {
       return
     }
 
-    if (user.role !== 'PATIENT') {
-      console.log('User role is not PATIENT, redirecting to dashboard')
-      router.push('/dashboard')
-      return
-    }
-
-    console.log('Fetching patient dashboard data...')
-    fetchDashboardData()
-    
-    // Auto-refresh every 30 seconds
-    const refreshInterval = setInterval(() => {
-      fetchDashboardData()
-    }, 30000)
-    
-    return () => clearInterval(refreshInterval)
+    // Redirect to unified dashboard - it handles role-specific content
+    console.log('Redirecting to unified dashboard')
+    router.push('/dashboard')
+    return
   }, [user, loading, router])
 
   const fetchDashboardData = async (manualRefresh = false) => {
