@@ -97,6 +97,7 @@ interface QuickAction {
   color: string
   bgColor: string
   hoverColor: string
+  route: string
 }
 
 interface ChartData {
@@ -212,7 +213,8 @@ export default function Dashboard() {
           icon: Users, 
           color: 'text-blue-600',
           bgColor: 'bg-blue-50',
-          hoverColor: 'hover:bg-blue-100'
+          hoverColor: 'hover:bg-blue-100',
+          route: '/dashboard/admins'
         },
         { 
           name: 'System Analytics', 
@@ -220,7 +222,8 @@ export default function Dashboard() {
           icon: ChartBar, 
           color: 'text-purple-600',
           bgColor: 'bg-purple-50',
-          hoverColor: 'hover:bg-purple-100'
+          hoverColor: 'hover:bg-purple-100',
+          route: '/dashboard/analytics'
         },
         { 
           name: 'Security Settings', 
@@ -228,7 +231,8 @@ export default function Dashboard() {
           icon: Shield, 
           color: 'text-green-600',
           bgColor: 'bg-green-50',
-          hoverColor: 'hover:bg-green-100'
+          hoverColor: 'hover:bg-green-100',
+          route: '/dashboard/security'
         },
         { 
           name: 'System Health', 
@@ -236,7 +240,8 @@ export default function Dashboard() {
           icon: ActivityIcon, 
           color: 'text-orange-600',
           bgColor: 'bg-orange-50',
-          hoverColor: 'hover:bg-orange-100'
+          hoverColor: 'hover:bg-orange-100',
+          route: '/dashboard/system-status'
         }
       ],
       'ADMIN': [
@@ -246,7 +251,8 @@ export default function Dashboard() {
           icon: UserCircle, 
           color: 'text-blue-600',
           bgColor: 'bg-blue-50',
-          hoverColor: 'hover:bg-blue-100'
+          hoverColor: 'hover:bg-blue-100',
+          route: '/dashboard/patients'
         },
         { 
           name: 'Staff Scheduling', 
@@ -254,7 +260,8 @@ export default function Dashboard() {
           icon: CalendarDays, 
           color: 'text-purple-600',
           bgColor: 'bg-purple-50',
-          hoverColor: 'hover:bg-purple-100'
+          hoverColor: 'hover:bg-purple-100',
+          route: '/dashboard/organizations'
         },
         { 
           name: 'Revenue Reports', 
@@ -262,7 +269,8 @@ export default function Dashboard() {
           icon: DollarSign, 
           color: 'text-green-600',
           bgColor: 'bg-green-50',
-          hoverColor: 'hover:bg-green-100'
+          hoverColor: 'hover:bg-green-100',
+          route: '/dashboard/analytics'
         },
         { 
           name: 'Resource Planning', 
@@ -270,7 +278,8 @@ export default function Dashboard() {
           icon: Building, 
           color: 'text-orange-600',
           bgColor: 'bg-orange-50',
-          hoverColor: 'hover:bg-orange-100'
+          hoverColor: 'hover:bg-orange-100',
+          route: '/dashboard/control-room'
         }
       ],
       'DOCTOR': [
@@ -280,7 +289,8 @@ export default function Dashboard() {
           icon: Calendar, 
           color: 'text-blue-600',
           bgColor: 'bg-blue-50',
-          hoverColor: 'hover:bg-blue-100'
+          hoverColor: 'hover:bg-blue-100',
+          route: '/dashboard/appointments'
         },
         { 
           name: 'Patient Records', 
@@ -288,7 +298,8 @@ export default function Dashboard() {
           icon: FileText, 
           color: 'text-purple-600',
           bgColor: 'bg-purple-50',
-          hoverColor: 'hover:bg-purple-100'
+          hoverColor: 'hover:bg-purple-100',
+          route: '/dashboard/patients'
         },
         { 
           name: 'Prescriptions', 
@@ -296,7 +307,8 @@ export default function Dashboard() {
           icon: Pill, 
           color: 'text-green-600',
           bgColor: 'bg-green-50',
-          hoverColor: 'hover:bg-green-100'
+          hoverColor: 'hover:bg-green-100',
+          route: '/dashboard/prescriptions'
         },
         { 
           name: 'Telemedicine', 
@@ -304,7 +316,8 @@ export default function Dashboard() {
           icon: VideoCamera, 
           color: 'text-orange-600',
           bgColor: 'bg-orange-50',
-          hoverColor: 'hover:bg-orange-100'
+          hoverColor: 'hover:bg-orange-100',
+          route: '/dashboard/consultation'
         }
       ],
       'PATIENT': [
@@ -314,7 +327,8 @@ export default function Dashboard() {
           icon: Calendar, 
           color: 'text-blue-600',
           bgColor: 'bg-blue-50',
-          hoverColor: 'hover:bg-blue-100'
+          hoverColor: 'hover:bg-blue-100',
+          route: '/dashboard/book-appointment'
         },
         { 
           name: 'Health Records', 
@@ -322,7 +336,8 @@ export default function Dashboard() {
           icon: FileText, 
           color: 'text-purple-600',
           bgColor: 'bg-purple-50',
-          hoverColor: 'hover:bg-purple-100'
+          hoverColor: 'hover:bg-purple-100',
+          route: '/dashboard/health-records'
         },
         { 
           name: 'Health Vitals', 
@@ -330,7 +345,8 @@ export default function Dashboard() {
           icon: Heart, 
           color: 'text-green-600',
           bgColor: 'bg-green-50',
-          hoverColor: 'hover:bg-green-100'
+          hoverColor: 'hover:bg-green-100',
+          route: '/dashboard/vitals'
         },
         { 
           name: 'Medications', 
@@ -338,7 +354,8 @@ export default function Dashboard() {
           icon: Pill, 
           color: 'text-orange-600',
           bgColor: 'bg-orange-50',
-          hoverColor: 'hover:bg-orange-100'
+          hoverColor: 'hover:bg-orange-100',
+          route: '/dashboard/prescriptions'
         }
       ],
       'ATTENDANT': [
@@ -348,7 +365,8 @@ export default function Dashboard() {
           icon: UserCheck, 
           color: 'text-blue-600',
           bgColor: 'bg-blue-50',
-          hoverColor: 'hover:bg-blue-100'
+          hoverColor: 'hover:bg-blue-100',
+          route: '/dashboard/register-patient'
         },
         { 
           name: 'Appointment Scheduling', 
@@ -356,7 +374,8 @@ export default function Dashboard() {
           icon: Calendar, 
           color: 'text-purple-600',
           bgColor: 'bg-purple-50',
-          hoverColor: 'hover:bg-purple-100'
+          hoverColor: 'hover:bg-purple-100',
+          route: '/dashboard/appointments'
         },
         { 
           name: 'Patient Care', 
@@ -364,7 +383,8 @@ export default function Dashboard() {
           icon: HeartPulse, 
           color: 'text-green-600',
           bgColor: 'bg-green-50',
-          hoverColor: 'hover:bg-green-100'
+          hoverColor: 'hover:bg-green-100',
+          route: '/dashboard/patients'
         },
         { 
           name: 'Documentation', 
@@ -372,7 +392,8 @@ export default function Dashboard() {
           icon: ClipboardList, 
           color: 'text-orange-600',
           bgColor: 'bg-orange-50',
-          hoverColor: 'hover:bg-orange-100'
+          hoverColor: 'hover:bg-orange-100',
+          route: '/dashboard/reports'
         }
       ],
       'CONTROL_ROOM': [
@@ -382,7 +403,8 @@ export default function Dashboard() {
           icon: AlertTriangle, 
           color: 'text-red-600',
           bgColor: 'bg-red-50',
-          hoverColor: 'hover:bg-red-100'
+          hoverColor: 'hover:bg-red-100',
+          route: '/dashboard/emergency-alerts'
         },
         { 
           name: 'Bed Management', 
@@ -390,7 +412,8 @@ export default function Dashboard() {
           icon: Building, 
           color: 'text-blue-600',
           bgColor: 'bg-blue-50',
-          hoverColor: 'hover:bg-blue-100'
+          hoverColor: 'hover:bg-blue-100',
+          route: '/dashboard/bed-management'
         },
         { 
           name: 'Staff Coordination', 
@@ -398,7 +421,8 @@ export default function Dashboard() {
           icon: Users2, 
           color: 'text-purple-600',
           bgColor: 'bg-purple-50',
-          hoverColor: 'hover:bg-purple-100'
+          hoverColor: 'hover:bg-purple-100',
+          route: '/dashboard/staff-coordination'
         },
         { 
           name: 'Equipment Status', 
@@ -406,7 +430,8 @@ export default function Dashboard() {
           icon: Wrench, 
           color: 'text-orange-600',
           bgColor: 'bg-orange-50',
-          hoverColor: 'hover:bg-orange-100'
+          hoverColor: 'hover:bg-orange-100',
+          route: '/dashboard/equipment-status'
         }
       ]
     }
@@ -538,18 +563,18 @@ export default function Dashboard() {
     const revenueData = getRevenueChartData()
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Welcome Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
+        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl p-6 text-white shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold mb-2">
+              <h1 className="text-3xl font-bold mb-2">
                 Welcome back, {user.name?.split(' ')[0] || user.email}!
               </h1>
-              <p className="text-blue-100 text-lg">
+              <p className="text-blue-100 text-base">
                 {user.role?.replace('_', ' ')} Dashboard • {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
-              <div className="flex items-center space-x-4 mt-4">
+              <div className="flex items-center space-x-4 mt-3">
                 <Badge className="bg-white/20 text-white border-white/30">
                   {stats.systemHealth && (
                     <span className="flex items-center space-x-2">
@@ -563,7 +588,7 @@ export default function Dashboard() {
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <Button 
                 variant="secondary" 
                 size="lg"
@@ -576,21 +601,21 @@ export default function Dashboard() {
                 className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
               >
                 {isRefreshing ? (
-                  <RefreshCw className="h-5 w-5 animate-spin mr-2" />
+                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
                 ) : (
-                  <RefreshCw className="h-5 w-5 mr-2" />
+                  <RefreshCw className="h-4 w-4 mr-2" />
                 )}
                 Refresh
               </Button>
-              <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                <HeartPulse className="h-10 w-10 text-white" />
+              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                <HeartPulse className="h-8 w-8 text-white" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {statsCards.map((stat, index) => {
             const Icon = stat.icon
             const TrendIcon = stat.trend === 'up' ? TrendingUp : stat.trend === 'down' ? TrendingDown : ActivityIcon
@@ -598,19 +623,19 @@ export default function Dashboard() {
             
             return (
               <Card key={index} className="bg-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 rounded-2xl ${stat.color.replace('text-', 'bg-').replace('600', '100')} bg-opacity-50`}>
-                      <Icon className={`h-6 w-6 ${stat.color}`} />
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`p-2 rounded-xl ${stat.color.replace('text-', 'bg-').replace('600', '100')} bg-opacity-50`}>
+                      <Icon className={`h-5 w-5 ${stat.color}`} />
                     </div>
                     <div className="flex items-center space-x-1">
-                      <TrendIcon className={`h-4 w-4 ${trendColor}`} />
-                      <span className={`text-sm font-medium ${trendColor}`}>{stat.change}</span>
+                      <TrendIcon className={`h-3 w-3 ${trendColor}`} />
+                      <span className={`text-xs font-medium ${trendColor}`}>{stat.change}</span>
                     </div>
                   </div>
                   <div>
-                    <p className="text-gray-600 text-sm font-medium mb-1">{stat.title}</p>
-                    <p className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <p className="text-gray-600 text-xs font-medium mb-1">{stat.title}</p>
+                    <p className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                       {stat.value}
                     </p>
                   </div>
@@ -620,111 +645,107 @@ export default function Dashboard() {
           })}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Quick Actions */}
           <div className="lg:col-span-1">
-            <Card className="bg-white border-0 shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl font-bold text-gray-900 flex items-center space-x-2">
-                  <Zap className="h-5 w-5 text-purple-600" />
+            <Card className="bg-white border-0 shadow-lg h-fit">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+                  <Zap className="h-4 w-4 text-purple-600" />
                   <span>Quick Actions</span>
                 </CardTitle>
-                <CardDescription className="text-gray-600">
+                <CardDescription className="text-gray-600 text-sm">
                   Most frequently used features
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {quickActions.map((action, index) => {
                   const Icon = action.icon
                   return (
                     <div
                       key={index}
-                      className={`p-4 rounded-2xl border-2 border-transparent ${action.bgColor} ${action.hoverColor} cursor-pointer transition-all duration-300 group hover:shadow-md`}
+                      className={`p-3 rounded-xl border-2 border-transparent ${action.bgColor} ${action.hoverColor} cursor-pointer transition-all duration-300 group hover:shadow-md`}
                       onClick={() => {
-                        toast.info(`${action.name} feature would be implemented here`)
+                        router.push(action.route)
                       }}
                     >
-                      <div className="flex items-center space-x-4">
-                        <div className={`p-3 rounded-xl ${action.bgColor} group-hover:scale-110 transition-transform duration-300`}>
-                          <Icon className={`h-6 w-6 ${action.color}`} />
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-lg ${action.bgColor} group-hover:scale-110 transition-transform duration-300`}>
+                          <Icon className={`h-5 w-5 ${action.color}`} />
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">
+                          <p className="font-semibold text-gray-900 group-hover:text-gray-700 transition-colors text-sm">
                             {action.name}
                           </p>
-                          <p className="text-sm text-gray-600 group-hover:text-gray-500 transition-colors">
+                          <p className="text-xs text-gray-600 group-hover:text-gray-500 transition-colors">
                             {action.description}
                           </p>
                         </div>
-                        <Plus className={`h-5 w-5 ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                       </div>
                     </div>
                   )
                 })}
               </CardContent>
             </Card>
-          </div>
 
-          {/* Charts */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Appointments Chart */}
-            <Card className="bg-white border-0 shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl font-bold text-gray-900 flex items-center space-x-2">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                  <span>Weekly Appointments</span>
+            {/* System Status Card */}
+            <Card className="bg-white border-0 shadow-lg mt-4 h-fit">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+                  <ActivityIcon className="h-4 w-4 text-orange-600" />
+                  <span>System Status</span>
                 </CardTitle>
-                <CardDescription className="text-gray-600">
-                  Appointment trends over the past week
+                <CardDescription className="text-gray-600 text-sm">
+                  Current system overview
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={appointmentData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="date" stroke="#6b7280" />
-                      <YAxis stroke="#6b7280" />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'white', 
-                          borderRadius: '12px',
-                          border: '1px solid #e5e7eb',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                        }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="appointments" 
-                        stroke="#3b82f6" 
-                        strokeWidth={3}
-                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                        activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-xs font-medium text-gray-900">Database</span>
+                  </div>
+                  <span className="text-xs text-green-600 font-medium">Online</span>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-xs font-medium text-gray-900">API Services</span>
+                  </div>
+                  <span className="text-xs text-green-600 font-medium">Operational</span>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-xs font-medium text-gray-900">Security</span>
+                  </div>
+                  <span className="text-xs text-blue-600 font-medium">Secured</span>
                 </div>
               </CardContent>
             </Card>
+          </div>
 
-            {/* Revenue Chart */}
-            {(user.role === 'SUPER_ADMIN' || user.role === 'ADMIN' || user.role === 'DOCTOR') && (
+          {/* Charts */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Appointments Chart */}
               <Card className="bg-white border-0 shadow-lg">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-bold text-gray-900 flex items-center space-x-2">
-                    <DollarSign className="h-5 w-5 text-green-600" />
-                    <span>Revenue Trend</span>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-bold text-gray-900 flex items-center space-x-2">
+                    <Calendar className="h-4 w-4 text-blue-600" />
+                    <span>Weekly Appointments</span>
                   </CardTitle>
-                  <CardDescription className="text-gray-600">
-                    Monthly revenue performance
+                  <CardDescription className="text-gray-600 text-sm">
+                    Appointment trends over the past week
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-64">
+                  <div className="h-48">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={revenueData}>
+                      <LineChart data={appointmentData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis dataKey="month" stroke="#6b7280" />
+                        <XAxis dataKey="date" stroke="#6b7280" />
                         <YAxis stroke="#6b7280" />
                         <Tooltip 
                           contentStyle={{ 
@@ -734,17 +755,94 @@ export default function Dashboard() {
                             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                           }}
                         />
-                        <Bar 
-                          dataKey="revenue" 
-                          fill="#10b981" 
-                          radius={[4, 4, 0, 0]}
+                        <Line 
+                          type="monotone" 
+                          dataKey="appointments" 
+                          stroke="#3b82f6" 
+                          strokeWidth={3}
+                          dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
                         />
-                      </BarChart>
+                      </LineChart>
                     </ResponsiveContainer>
                   </div>
                 </CardContent>
               </Card>
-            )}
+
+              {/* Revenue Chart */}
+              {(user.role === 'SUPER_ADMIN' || user.role === 'ADMIN' || user.role === 'DOCTOR') && (
+                <Card className="bg-white border-0 shadow-lg">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-bold text-gray-900 flex items-center space-x-2">
+                      <DollarSign className="h-4 w-4 text-green-600" />
+                      <span>Revenue Trend</span>
+                    </CardTitle>
+                    <CardDescription className="text-gray-600 text-sm">
+                      Monthly revenue performance
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-48">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={revenueData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                          <XAxis dataKey="month" stroke="#6b7280" />
+                          <YAxis stroke="#6b7280" />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'white', 
+                              borderRadius: '12px',
+                              border: '1px solid #e5e7eb',
+                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                            }}
+                          />
+                          <Bar 
+                            dataKey="revenue" 
+                            fill="#10b981" 
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Additional Chart or Content */}
+            <Card className="bg-white border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+                  <Users className="h-5 w-5 text-indigo-600" />
+                  <span>Activity Overview</span>
+                </CardTitle>
+                <CardDescription className="text-gray-600">
+                  Recent system activity and user engagement
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-xl">
+                    <div className="text-2xl font-bold text-blue-600 mb-1">
+                      {stats.totalPatients || stats.weeklyAppointments || '24'}
+                    </div>
+                    <div className="text-sm text-gray-600">Active Users</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-xl">
+                    <div className="text-2xl font-bold text-green-600 mb-1">
+                      {stats.patientSatisfaction || '96'}%
+                    </div>
+                    <div className="text-sm text-gray-600">Satisfaction</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-xl">
+                    <div className="text-2xl font-bold text-purple-600 mb-1">
+                      {stats.completedAppointments || '18'}
+                    </div>
+                    <div className="text-sm text-gray-600">Today's Tasks</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

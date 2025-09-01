@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -58,94 +58,95 @@ interface DashboardLayoutProps {
   userImage?: string
 }
 
-// Navigation items for different roles - updated for unified dashboard
+// Navigation items for different roles - updated with correct unified routes
 const navigationItems = {
   SUPER_ADMIN: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Analytics', href: '/dashboard', icon: ChartBar },
-    { name: 'Manage Admins', href: '/dashboard', icon: Users },
-    { name: 'Partners', href: '/dashboard', icon: Building },
-    { name: 'Subscription Plans', href: '/dashboard', icon: CreditCard },
-    { name: 'Networks', href: '/dashboard', icon: Server },
-    { name: 'Database', href: '/dashboard', icon: Database },
-    { name: 'System Status', href: '/dashboard', icon: Server },
-    { name: 'Security', href: '/dashboard', icon: Lock },
-    { name: 'Settings', href: '/dashboard', icon: Settings },
+    { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBar },
+    { name: 'Manage Admins', href: '/dashboard/admins', icon: Users },
+    { name: 'Partners', href: '/dashboard/partners', icon: Building },
+    { name: 'Subscription Plans', href: '/dashboard/subscription-plans', icon: CreditCard },
+    { name: 'Networks', href: '/dashboard/networks', icon: Server },
+    { name: 'Database', href: '/dashboard/database', icon: Database },
+    { name: 'System Status', href: '/dashboard/system-status', icon: Server },
+    { name: 'Security', href: '/dashboard/security', icon: Lock },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ],
   ADMIN: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Patients', href: '/dashboard', icon: UserCheck },
-    { name: 'Organizations', href: '/dashboard', icon: Building },
-    { name: 'Control Room', href: '/dashboard', icon: Monitor },
-    { name: 'Attendants', href: '/dashboard', icon: Users2 },
-    { name: 'Doctors', href: '/dashboard', icon: Stethoscope },
-    { name: 'Partners', href: '/dashboard', icon: Building },
-    { name: 'Analytics', href: '/dashboard', icon: ChartBar },
-    { name: 'Subscription Requests', href: '/dashboard', icon: Clipboard },
-    { name: 'Settings', href: '/dashboard', icon: Settings },
+    { name: 'Patients', href: '/dashboard/patients', icon: UserCheck },
+    { name: 'Organizations', href: '/dashboard/organizations', icon: Building },
+    { name: 'Control Room', href: '/dashboard/control-room', icon: Monitor },
+    { name: 'Attendants', href: '/dashboard/attendants', icon: Users2 },
+    { name: 'Doctors', href: '/dashboard/doctors', icon: Stethoscope },
+    { name: 'Partners', href: '/dashboard/partners', icon: Building },
+    { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBar },
+    { name: 'Subscription Requests', href: '/dashboard/subscription-requests', icon: Clipboard },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ],
   DOCTOR: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Appointments', href: '/dashboard', icon: Calendar },
-    { name: 'Consultation', href: '/dashboard', icon: Video },
-    { name: 'Patients', href: '/dashboard', icon: UserCheck },
-    { name: 'Availability', href: '/dashboard', icon: Clock },
-    { name: 'Prescriptions', href: '/dashboard', icon: Pill },
-    { name: 'Revenue', href: '/dashboard', icon: DollarSign },
-    { name: 'Messages', href: '/dashboard', icon: MessageSquare },
-    { name: 'Profile', href: '/dashboard', icon: User },
+    { name: 'Appointments', href: '/dashboard/appointments', icon: Calendar },
+    { name: 'Consultation', href: '/dashboard/consultation', icon: Video },
+    { name: 'Patients', href: '/dashboard/patients', icon: UserCheck },
+    { name: 'Schedule', href: '/dashboard/schedule', icon: Clock },
+    { name: 'Prescriptions', href: '/dashboard/prescriptions', icon: Pill },
+    { name: 'Revenue', href: '/dashboard/revenue', icon: DollarSign },
+    { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare },
+    { name: 'Profile', href: '/dashboard/profile', icon: User },
   ],
   PATIENT: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Subscription', href: '/dashboard', icon: CreditCard },
-    { name: 'Book Consultation', href: '/dashboard', icon: Calendar },
-    { name: 'Patient Journey', href: '/dashboard', icon: Activity },
-    { name: 'Appointments', href: '/dashboard', icon: Calendar },
-    { name: 'Referrals', href: '/dashboard', icon: FileText },
-    { name: 'Prescriptions', href: '/dashboard', icon: Pill },
-    { name: 'Lab Tests', href: '/dashboard', icon: FlaskConical },
-    { name: 'Buy Medicine', href: '/dashboard', icon: Package },
-    { name: 'Health Records', href: '/dashboard', icon: FileText },
-    { name: 'HealthPay Card', href: '/dashboard', icon: CreditCard },
-    { name: 'AI Reports', href: '/dashboard', icon: ChartBar },
-    { name: 'Healthcare', href: '/dashboard', icon: Building },
-    { name: 'Profile', href: '/dashboard', icon: User },
+    { name: 'Subscription', href: '/dashboard/subscription', icon: CreditCard },
+    { name: 'Book Consultation', href: '/dashboard/book-appointment', icon: Calendar },
+    { name: 'Patient Journey', href: '/dashboard/journey', icon: Activity },
+    { name: 'Appointments', href: '/dashboard/appointments', icon: Calendar },
+    { name: 'Health Records', href: '/dashboard/health-records', icon: FileText },
+    { name: 'Prescriptions', href: '/dashboard/prescriptions', icon: Pill },
+    { name: 'Lab Tests', href: '/dashboard/lab-tests', icon: FlaskConical },
+    { name: 'Buy Medicine', href: '/dashboard/cart', icon: Package },
+    { name: 'HealthPay Card', href: '/dashboard/health-card', icon: CreditCard },
+    { name: 'AI Reports', href: '/dashboard/ai-reports', icon: ChartBar },
+    { name: 'Healthcare', href: '/dashboard/directory', icon: Building },
+    { name: 'Profile', href: '/dashboard/profile', icon: User },
   ],
   ATTENDANT: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Patient Registration', href: '/dashboard', icon: UserCheck },
-    { name: 'Appointments', href: '/dashboard', icon: Calendar },
-    { name: 'Admissions', href: '/dashboard', icon: Clipboard },
-    { name: 'File Verification', href: '/dashboard', icon: FileText },
-    { name: 'Patient Coordination', href: '/dashboard', icon: Users2 },
-    { name: 'Billing', href: '/dashboard', icon: CreditCard },
-    { name: 'Reports', href: '/dashboard', icon: ChartBar },
-    { name: 'Settings', href: '/dashboard', icon: Settings },
+    { name: 'Patient Registration', href: '/dashboard/register-patient', icon: UserCheck },
+    { name: 'Appointments', href: '/dashboard/appointments', icon: Calendar },
+    { name: 'Patients', href: '/dashboard/patients', icon: Users2 },
+    { name: 'Reports', href: '/dashboard/reports', icon: ChartBar },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ],
   CONTROL_ROOM: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Live Monitoring', href: '/dashboard', icon: Monitor },
-    { name: 'Doctor Allocation', href: '/dashboard', icon: Stethoscope },
-    { name: 'Emergency Cases', href: '/dashboard', icon: AlertTriangle },
-    { name: 'Bed Management', href: '/dashboard', icon: Building },
-    { name: 'Staff Coordination', href: '/dashboard', icon: Users2 },
-    { name: 'Equipment Status', href: '/dashboard', icon: Wrench },
-    { name: 'Ambulance Tracking', href: '/dashboard', icon: Truck },
-    { name: 'Emergency Alerts', href: '/dashboard', icon: Bell },
-    { name: 'Reports', href: '/dashboard', icon: ChartBar },
+    { name: 'Live Monitoring', href: '/dashboard/control-room', icon: Monitor },
+    { name: 'Doctor Assignment', href: '/dashboard/doctor-assignment', icon: Stethoscope },
+    { name: 'Emergency Cases', href: '/dashboard/emergency-cases', icon: AlertTriangle },
+    { name: 'Bed Management', href: '/dashboard/bed-management', icon: Building },
+    { name: 'Staff Coordination', href: '/dashboard/staff-coordination', icon: Users2 },
+    { name: 'Equipment Status', href: '/dashboard/equipment-status', icon: Wrench },
+    { name: 'Ambulance Tracking', href: '/dashboard/ambulance-tracking', icon: Truck },
+    { name: 'Emergency Alerts', href: '/dashboard/emergency-alerts', icon: Bell },
+    { name: 'Reports', href: '/dashboard/reports', icon: ChartBar },
   ]
 }
 
 export function DashboardLayout({ children, userRole, userName, userImage }: DashboardLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true) // Start with sidebar open
   const { signOut } = useCustomSignOut()
   const router = useRouter()
+  const pathname = usePathname()
 
   const handleSignOut = async () => {
     await signOut()
   }
 
-  const navigation = navigationItems[userRole as keyof typeof navigationItems] || []
+  // Update navigation items with current page detection
+  const navigation = navigationItems[userRole as keyof typeof navigationItems]?.map(item => ({
+    ...item,
+    current: pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+  })) || []
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -213,7 +214,12 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
                       ? "bg-health-primary text-white"
                       : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                   )}
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={(e) => {
+                    // Only close sidebar on mobile
+                    if (window.innerWidth < 1024) {
+                      setSidebarOpen(false)
+                    }
+                  }}
                 >
                   <Icon className="mr-3 h-5 w-5" />
                   {item.name}
@@ -245,7 +251,7 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
               <Button
                 variant="ghost"
                 size="sm"
-                className="lg:hidden mr-4 text-gray-600 hover:text-gray-900"
+                className="mr-4 text-gray-600 hover:text-gray-900"
                 onClick={() => setSidebarOpen(true)}
               >
                 <Menu className="h-5 w-5" />
@@ -272,7 +278,10 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-gray-50 overflow-auto">
+        <main className={cn(
+          "flex-1 p-4 sm:p-6 lg:p-8 bg-gray-50 overflow-auto transition-all duration-300",
+          sidebarOpen ? "lg:ml-64" : "lg:ml-0"
+        )}>
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
