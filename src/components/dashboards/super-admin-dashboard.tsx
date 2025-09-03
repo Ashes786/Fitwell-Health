@@ -36,7 +36,12 @@ import {
   Network,
   Cloud,
   Cpu,
-  HardDrive
+  HardDrive,
+  Zap,
+  Target,
+  Clock,
+  BarChart3,
+  PieChart
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -46,144 +51,48 @@ interface SuperAdminDashboardProps {
   userImage?: string
 }
 
-interface UserStats {
-  totalPatients: number
-  totalDoctors: number
-  totalAttendants: number
-  totalOrganizations: number
-}
-
-interface RevenueStats {
-  totalRevenue: number
-  subscriptionBreakdown: {
-    patient: number
-    doctor: number
-    organization: number
-  }
-  monthlyGrowth: number
-}
-
-interface MarketplaceStats {
-  totalLabs: number
-  totalPharmacies: number
-  totalHospitals: number
-  newOnboarding: number
-}
-
-interface PlatformKPIs {
-  activeConsultations: number
-  averageWaitTime: string
-  appUsageRate: number
-  systemUptime: string
-}
-
-interface SystemHealth {
-  uptime: string
-  errors: number
-  alerts: number
-  status: 'healthy' | 'warning' | 'critical'
-}
-
-interface Notification {
-  id: string
-  type: 'critical' | 'compliance' | 'system' | 'security'
-  message: string
-  time: string
-  priority: 'high' | 'medium' | 'low'
-  resolved: boolean
-}
-
 interface Stats {
   totalUsers: number
   totalRevenue: number
   totalPartners: number
   systemHealth: string
+  activeConsultations: number
+  systemUptime: string
+  monthlyGrowth: number
+}
+
+interface QuickAction {
+  name: string
+  icon: any
+  color: string
+  bgColor: string
+  route: string
 }
 
 export function SuperAdminDashboard({ userName, userImage }: SuperAdminDashboardProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
-  // Mock data for super admin dashboard
-  const [userStats, setUserStats] = useState<UserStats>({
-    totalPatients: 15420,
-    totalDoctors: 485,
-    totalAttendants: 320,
-    totalOrganizations: 45
-  })
-
-  const [revenueStats, setRevenueStats] = useState<RevenueStats>({
-    totalRevenue: 2850000,
-    subscriptionBreakdown: {
-      patient: 1200000,
-      doctor: 850000,
-      organization: 800000
-    },
-    monthlyGrowth: 18.5
-  })
-
-  const [marketplaceStats, setMarketplaceStats] = useState<MarketplaceStats>({
-    totalLabs: 125,
-    totalPharmacies: 89,
-    totalHospitals: 67,
-    newOnboarding: 12
-  })
-
-  const [platformKPIs, setPlatformKPIs] = useState<PlatformKPIs>({
-    activeConsultations: 1247,
-    averageWaitTime: '8.5 min',
-    appUsageRate: 94.2,
-    systemUptime: '99.98%'
-  })
-
-  const [systemHealth, setSystemHealth] = useState<SystemHealth>({
-    uptime: '99.98%',
-    errors: 3,
-    alerts: 2,
-    status: 'healthy'
-  })
-
-  const [notifications, setNotifications] = useState<Notification[]>([
-    { id: '1', type: 'critical', message: 'Database cluster showing high latency', time: '15 min ago', priority: 'high', resolved: false },
-    { id: '2', type: 'compliance', message: 'GDPR compliance audit due next week', time: '1 hour ago', priority: 'high', resolved: false },
-    { id: '3', type: 'security', message: 'Unusual login activity detected', time: '2 hours ago', priority: 'high', resolved: true },
-    { id: '4', type: 'system', message: 'Backup system completed successfully', time: '3 hours ago', priority: 'low', resolved: true }
-  ])
-
   const [stats, setStats] = useState<Stats>({
-    totalUsers: 16225,
-    totalRevenue: 2850000,
-    totalPartners: 281,
-    systemHealth: 'Healthy'
+    totalUsers: 0,
+    totalRevenue: 0,
+    totalPartners: 0,
+    systemHealth: 'Healthy',
+    activeConsultations: 0,
+    systemUptime: '99.9%',
+    monthlyGrowth: 0
   })
 
-  useEffect(() => {
-    loadDashboardData()
-  }, [])
-
-  const loadDashboardData = async () => {
-    setIsLoading(true)
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setLastRefresh(new Date())
-    } catch (error) {
-      toast.error('Failed to load dashboard data')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const quickActions = [
+  const quickActions: QuickAction[] = [
     { 
-      name: 'Add/Remove Admins', 
+      name: 'Manage Admins', 
       icon: Users2, 
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       route: '/dashboard/admins'
     },
     { 
-      name: 'Create/Update Plans', 
+      name: 'Subscription Plans', 
       icon: CreditCard, 
       color: 'text-green-600',
       bgColor: 'bg-green-50',
@@ -197,49 +106,90 @@ export function SuperAdminDashboard({ userName, userImage }: SuperAdminDashboard
       route: '/dashboard/organizations'
     },
     { 
-      name: 'Add Hospital/Lab', 
-      icon: Hospital, 
+      name: 'System Status', 
+      icon: Monitor, 
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
-      route: '/dashboard/partners'
+      route: '/dashboard/system-status'
     }
   ]
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy': return 'bg-green-100 text-green-800'
-      case 'warning': return 'bg-yellow-100 text-yellow-800'
-      case 'critical': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
+  useEffect(() => {
+    loadDashboardData()
+  }, [])
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-50 text-red-600 border-red-200'
-      case 'medium': return 'bg-yellow-50 text-yellow-600 border-yellow-200'
-      default: return 'bg-blue-50 text-blue-600 border-blue-200'
-    }
-  }
+  const loadDashboardData = async () => {
+    setIsLoading(true)
+    try {
+      // Fetch data from API endpoints
+      const [usersRes, revenueRes, partnersRes, systemRes, kpisRes] = await Promise.all([
+        fetch('/api/super-admin/analytics'),
+        fetch('/api/super-admin/subscription-plans'),
+        fetch('/api/super-admin/partners'),
+        fetch('/api/system/monitor'),
+        fetch('/api/super-admin/system-status')
+      ])
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'critical': return <AlertTriangle className="h-4 w-4" />
-      case 'compliance': return <Shield className="h-4 w-4" />
-      case 'system': return <Server className="h-4 w-4" />
-      case 'security': return <Shield className="h-4 w-4" />
-      default: return <Bell className="h-4 w-4" />
+      const data = {
+        totalUsers: 0,
+        totalRevenue: 0,
+        totalPartners: 0,
+        systemHealth: 'Healthy',
+        activeConsultations: 0,
+        systemUptime: '99.9%',
+        monthlyGrowth: 0
+      }
+
+      if (usersRes.ok) {
+        const usersData = await usersRes.json()
+        const userStats = usersData.userStats || {}
+        data.totalUsers = (userStats.totalPatients || 0) + (userStats.totalDoctors || 0) + (userStats.totalAttendants || 0) + (userStats.totalOrganizations || 0)
+      }
+
+      if (revenueRes.ok) {
+        const revenueData = await revenueRes.json()
+        const revenueStats = revenueData.revenueStats || {}
+        data.totalRevenue = revenueStats.totalRevenue || 0
+        data.monthlyGrowth = revenueStats.monthlyGrowth || 0
+      }
+
+      if (partnersRes.ok) {
+        const partnersData = await partnersRes.json()
+        const marketplaceStats = partnersData.marketplaceStats || {}
+        data.totalPartners = (marketplaceStats.totalLabs || 0) + (marketplaceStats.totalPharmacies || 0) + (marketplaceStats.totalHospitals || 0)
+      }
+
+      if (systemRes.ok) {
+        const systemData = await systemRes.json()
+        const systemHealth = systemData.systemHealth || {}
+        data.systemHealth = systemHealth.status === 'healthy' ? 'Healthy' : systemHealth.status === 'warning' ? 'Warning' : 'Critical'
+        data.systemUptime = systemHealth.uptime || '99.9%'
+      }
+
+      if (kpisRes.ok) {
+        const kpisData = await kpisRes.json()
+        const platformKPIs = kpisData.platformKPIs || {}
+        data.activeConsultations = platformKPIs.activeConsultations || 0
+      }
+
+      setStats(data)
+      setLastRefresh(new Date())
+    } catch (error) {
+      toast.error('Failed to load dashboard data')
+      console.error('Dashboard data loading error:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="animate-pulse">
-              <CardContent className="p-4">
-                <div className="h-20 bg-gray-200 rounded"></div>
+              <CardContent className="p-6">
+                <div className="h-24 bg-gray-200 rounded-lg"></div>
               </CardContent>
             </Card>
           ))}
@@ -249,324 +199,183 @@ export function SuperAdminDashboard({ userName, userImage }: SuperAdminDashboard
   }
 
   return (
-    <div className="space-y-6">
-      {/* Greeting & Profile Summary */}
-      <Card className="bg-gradient-to-r from-gray-800 to-gray-900 text-white border-0 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Avatar className="h-16 w-16 border-2 border-white">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Section */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <Avatar className="h-16 w-16 ring-4 ring-white shadow-lg">
                 <AvatarImage src={userImage} />
-                <AvatarFallback className="bg-white text-gray-800 text-xl">
+                <AvatarFallback className="bg-gradient-to-br from-purple-600 to-pink-600 text-white text-xl font-bold">
                   {userName?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <h1 className="text-2xl font-bold">Super Admin Dashboard - {userName}</h1>
-                <p className="text-gray-300">Platform Owner & System Administrator</p>
-                <div className="flex items-center space-x-3 mt-2">
-                  <Badge className="bg-white/20 text-white border-white/30">
-                    <div className="w-2 h-2 rounded-full mr-2 bg-green-400"></div>
-                    System Operational
-                  </Badge>
-                  <span className="text-gray-300 text-sm">
-                    Last updated: {lastRefresh.toLocaleTimeString()}
-                  </span>
-                </div>
-              </div>
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
-            <div className="text-right">
-              <div className="text-sm text-gray-300">Platform Overview</div>
-              <div className="text-lg font-semibold">{stats.totalUsers.toLocaleString()} users • ${stats.totalRevenue.toLocaleString()} revenue</div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Welcome back, {userName}</h1>
+              <p className="text-gray-600 mt-1">Super Administrator</p>
+              <div className="flex items-center space-x-4 mt-2">
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <div className="w-2 h-2 rounded-full mr-2 bg-green-500"></div>
+                  System Operational
+                </Badge>
+                <span className="text-sm text-gray-500">
+                  Updated {lastRefresh.toLocaleTimeString()}
+                </span>
+              </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Settings className="h-4 w-4" />
+            Settings
+          </Button>
+        </div>
+      </div>
 
-      {/* KPIs at the top */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Users</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.totalUsers.toLocaleString()}</p>
-                <p className="text-xs text-gray-600">All roles combined</p>
+      {/* Key Metrics Grid - 4 essential stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-all duration-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-blue-100 rounded-xl">
+                <Users className="h-6 w-6 text-blue-600" />
               </div>
-              <Users className="h-8 w-8 text-blue-600" />
+              <TrendingUp className="h-5 w-5 text-green-500" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+              <p className="text-3xl font-bold text-gray-900 mb-2">{stats.totalUsers.toLocaleString()}</p>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-blue-600 font-medium">All roles</span>
+                <span className="text-gray-500">combined</span>
+              </div>
             </div>
           </CardContent>
         </Card>
-        
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-green-600">${(stats.totalRevenue / 1000000).toFixed(1)}M</p>
-                <p className="text-xs text-green-600">+{revenueStats.monthlyGrowth}% monthly</p>
+
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-all duration-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-green-100 rounded-xl">
+                <DollarSign className="h-6 w-6 text-green-600" />
               </div>
-              <DollarSign className="h-8 w-8 text-green-600" />
+              <TrendingUp className="h-5 w-5 text-green-500" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Revenue</p>
+              <p className="text-3xl font-bold text-gray-900 mb-2">${(stats.totalRevenue / 1000000).toFixed(1)}M</p>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-green-600 font-medium">+{stats.monthlyGrowth}%</span>
+                <span className="text-gray-500">monthly growth</span>
+              </div>
             </div>
           </CardContent>
         </Card>
-        
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Marketplace</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.totalPartners}</p>
-                <p className="text-xs text-gray-600">Labs, pharmacies, hospitals</p>
+
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-all duration-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-purple-100 rounded-xl">
+                <Building className="h-6 w-6 text-purple-600" />
               </div>
-              <Building className="h-8 w-8 text-purple-600" />
+              <TrendingUp className="h-5 w-5 text-green-500" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Marketplace</p>
+              <p className="text-3xl font-bold text-gray-900 mb-2">{stats.totalPartners}</p>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-purple-600 font-medium">Partners</span>
+                <span className="text-gray-500">onboarded</span>
+              </div>
             </div>
           </CardContent>
         </Card>
-        
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">System Health</p>
-                <p className="text-2xl font-bold text-emerald-600">{systemHealth.uptime}</p>
-                <p className="text-xs text-gray-600">{systemHealth.errors} errors • {systemHealth.alerts} alerts</p>
+
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-all duration-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-emerald-100 rounded-xl">
+                <Activity className="h-6 w-6 text-emerald-600" />
               </div>
-              <Activity className="h-8 w-8 text-emerald-600" />
+              <CheckCircle className="h-5 w-5 text-emerald-500" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">System Health</p>
+              <p className="text-3xl font-bold text-gray-900 mb-2">{stats.systemHealth}</p>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-emerald-600 font-medium">{stats.systemUptime}</span>
+                <span className="text-gray-500">uptime</span>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Main Content Grid - Charts and Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column */}
+        {/* Charts Section - 2/3 width */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Total Users Breakdown */}
-          <Card className="bg-white border-0 shadow-lg">
+          {/* User Growth Chart */}
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Users className="h-5 w-5 text-blue-600" />
-                <span>Total Users</span>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-blue-600" />
+                Platform Growth Analytics
               </CardTitle>
-              <CardDescription>Patients, doctors, attendants, orgs</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600 mb-1">{userStats.totalPatients.toLocaleString()}</div>
-                  <div className="text-sm text-gray-600">Patients</div>
-                </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600 mb-1">{userStats.totalDoctors}</div>
-                  <div className="text-sm text-gray-600">Doctors</div>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600 mb-1">{userStats.totalAttendants}</div>
-                  <div className="text-sm text-gray-600">Attendants</div>
-                </div>
-                <div className="text-center p-4 bg-orange-50 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600 mb-1">{userStats.totalOrganizations}</div>
-                  <div className="text-sm text-gray-600">Organizations</div>
+              <div className="h-64 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center">
+                <div className="text-center">
+                  <BarChart3 className="h-12 w-12 text-blue-600 mx-auto mb-2" />
+                  <p className="text-blue-700 font-medium">User Growth Trends</p>
+                  <p className="text-blue-600 text-sm">Platform-wide analytics</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Revenue & Subscription Breakdown */}
-          <Card className="bg-white border-0 shadow-lg">
+          {/* Revenue Distribution Chart */}
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <DollarSign className="h-5 w-5 text-green-600" />
-                <span>Revenue & Subscription Breakdown</span>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <PieChart className="h-5 w-5 text-green-600" />
+                Revenue Distribution
               </CardTitle>
-              <CardDescription>Total revenue & subscription analysis</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Revenue Distribution</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                      <span className="text-sm font-medium">Patient Subscriptions</span>
-                      <span className="text-lg font-bold text-blue-600">${(revenueStats.subscriptionBreakdown.patient / 1000000).toFixed(1)}M</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                      <span className="text-sm font-medium">Doctor Subscriptions</span>
-                      <span className="text-lg font-bold text-green-600">${(revenueStats.subscriptionBreakdown.doctor / 1000000).toFixed(1)}M</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                      <span className="text-sm font-medium">Organization Plans</span>
-                      <span className="text-lg font-bold text-purple-600">${(revenueStats.subscriptionBreakdown.organization / 1000000).toFixed(1)}M</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Growth Metrics</h4>
-                  <div className="space-y-3">
-                    <div className="text-center p-4 bg-emerald-50 rounded-lg">
-                      <div className="text-2xl font-bold text-emerald-600 mb-1">+{revenueStats.monthlyGrowth}%</div>
-                      <div className="text-sm text-gray-600">Monthly Growth</div>
-                    </div>
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <div className="text-xl font-bold text-blue-600 mb-1">${(revenueStats.totalRevenue / 1000000).toFixed(1)}M</div>
-                      <div className="text-sm text-gray-600">Total Revenue</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Marketplace Overview */}
-          <Card className="bg-white border-0 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Building className="h-5 w-5 text-indigo-600" />
-                <span>Marketplace Overview</span>
-              </CardTitle>
-              <CardDescription>Labs, pharmacies, hospitals onboarded</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-red-50 rounded-lg">
-                  <div className="text-2xl font-bold text-red-600 mb-1">{marketplaceStats.totalHospitals}</div>
-                  <div className="text-sm text-gray-600">Hospitals</div>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600 mb-1">{marketplaceStats.totalLabs}</div>
-                  <div className="text-sm text-gray-600">Labs</div>
-                </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600 mb-1">{marketplaceStats.totalPharmacies}</div>
-                  <div className="text-sm text-gray-600">Pharmacies</div>
-                </div>
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600 mb-1">{marketplaceStats.newOnboarding}</div>
-                  <div className="text-sm text-gray-600">New This Month</div>
+              <div className="h-64 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center">
+                <div className="text-center">
+                  <PieChart className="h-12 w-12 text-green-600 mx-auto mb-2" />
+                  <p className="text-green-700 font-medium">Revenue Analytics</p>
+                  <p className="text-green-600 text-sm">Subscription breakdown</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column */}
+        {/* Quick Actions Section - 1/3 width */}
         <div className="space-y-6">
-          {/* Platform-Wide KPIs */}
-          <Card className="bg-white border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <ChartBar className="h-5 w-5 text-purple-600" />
-                <span>Platform-Wide KPIs</span>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Zap className="h-5 w-5 text-yellow-600" />
+                Quick Actions
               </CardTitle>
-              <CardDescription>Active consultations, wait time, usage</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600 mb-1">{platformKPIs.activeConsultations}</div>
-                  <div className="text-sm text-gray-600">Active Consultations</div>
-                </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-xl font-bold text-green-600 mb-1">{platformKPIs.averageWaitTime}</div>
-                  <div className="text-sm text-gray-600">Average Wait Time</div>
-                </div>
-                <div className="text-center p-3 bg-purple-50 rounded-lg">
-                  <div className="text-xl font-bold text-purple-600 mb-1">{platformKPIs.appUsageRate}%</div>
-                  <div className="text-sm text-gray-600">App Usage Rate</div>
-                </div>
-                <div className="text-center p-3 bg-emerald-50 rounded-lg">
-                  <div className="text-lg font-bold text-emerald-600 mb-1">{platformKPIs.systemUptime}</div>
-                  <div className="text-sm text-gray-600">System Uptime</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* System Health/Logs */}
-          <Card className="bg-white border-0 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Server className="h-5 w-5 text-emerald-600" />
-                <span>System Health</span>
-              </CardTitle>
-              <CardDescription>Uptime, errors, alerts</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-lg">
-                  <span className="text-sm font-medium">System Status</span>
-                  <Badge className={getStatusColor(systemHealth.status)}>
-                    {systemHealth.status}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                  <span className="text-sm font-medium">Uptime</span>
-                  <span className="text-sm font-bold text-blue-600">{systemHealth.uptime}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                  <span className="text-sm font-medium">Active Errors</span>
-                  <span className="text-sm font-bold text-red-600">{systemHealth.errors}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                  <span className="text-sm font-medium">System Alerts</span>
-                  <span className="text-sm font-bold text-yellow-600">{systemHealth.alerts}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Notifications */}
-          <Card className="bg-white border-0 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Bell className="h-5 w-5 text-orange-600" />
-                <span>Notifications</span>
-              </CardTitle>
-              <CardDescription>Critical issues, compliance reminders</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 max-h-64 overflow-y-auto">
-                {notifications.map((notification) => (
-                  <div key={notification.id} className={`p-3 border rounded-lg ${getPriorityColor(notification.priority)} ${notification.resolved ? 'opacity-50' : ''}`}>
-                    <div className="flex items-start space-x-2">
-                      {getNotificationIcon(notification.type)}
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{notification.message}</p>
-                        <p className="text-xs opacity-75">{notification.time}</p>
-                        {notification.resolved && (
-                          <Badge className="text-xs bg-green-100 text-green-800 mt-1">Resolved</Badge>
-                        )}
-                      </div>
+            <CardContent className="space-y-3">
+              {quickActions.map((action, index) => (
+                <Link key={index} href={action.route}>
+                  <Button variant="outline" className="w-full justify-start gap-3 h-auto p-3">
+                    <div className={`p-2 rounded-lg ${action.bgColor}`}>
+                      <action.icon className={`h-4 w-4 ${action.color}`} />
                     </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card className="bg-white border-0 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Plus className="h-5 w-5 text-blue-600" />
-                <span>Quick Actions</span>
-              </CardTitle>
-              <CardDescription>Platform management tasks</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                {quickActions.map((action, index) => {
-                  const Icon = action.icon
-                  return (
-                    <Link key={index} href={action.route}>
-                      <div className={`p-3 rounded-lg border-2 border-transparent ${action.bgColor} hover:border-blue-300 cursor-pointer transition-all duration-300`}>
-                        <Icon className={`h-5 w-5 ${action.color} mb-2`} />
-                        <p className="text-xs font-medium text-gray-900">{action.name}</p>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
+                    <span className="font-medium">{action.name}</span>
+                  </Button>
+                </Link>
+              ))}
             </CardContent>
           </Card>
         </div>
