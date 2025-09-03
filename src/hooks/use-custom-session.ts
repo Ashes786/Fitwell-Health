@@ -1,6 +1,6 @@
 "use client"
 
-import { useSession as useNextAuthSession } from '@/lib/compat-next-auth-react'
+import { useSession as useNextAuthSession } from '@/components/providers/session-provider'
 
 interface User {
   id: string

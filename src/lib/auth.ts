@@ -1,5 +1,6 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { db } from "./db"
 import bcrypt from "bcryptjs"
 import { UserRole } from "@prisma/client"
@@ -15,6 +16,7 @@ const getBaseUrl = () => {
 }
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(db),
   debug: process.env.DEBUG_ENABLED === 'true', // Use environment variable for debug mode
   providers: [
     CredentialsProvider({
@@ -96,12 +98,15 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role
         token.id = user.id
         token.email = user.email
+        token.name = user.name
       }
       return token
     },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string
+        session.user.email = token.email as string
+        session.user.name = token.name as string
         session.user.role = token.role as string
       }
       return session
