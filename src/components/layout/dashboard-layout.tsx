@@ -160,8 +160,8 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
 
       {/* Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex-shrink-0",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out flex-shrink-0",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:w-20"
       )}>
         <div className="flex flex-col h-full">
           {/* Logo and close button */}
@@ -170,7 +170,7 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
               <div className="w-8 h-8 bg-health-primary rounded-lg flex items-center justify-center">
                 <HeartPulse className="h-5 w-5 text-white" />
               </div>
-              <span className="text-lg font-bold text-gray-900">Fitwell</span>
+              {sidebarOpen && <span className="text-lg font-bold text-gray-900">Fitwell</span>}
             </div>
             <Button
               variant="ghost"
@@ -189,14 +189,16 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
                 <AvatarImage src={userImage} />
                 <AvatarFallback className="bg-health-primary text-white">{userName?.charAt(0)}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {userName}
-                </p>
-                <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
-                  {userRole?.replace('_', ' ')}
-                </Badge>
-              </div>
+              {sidebarOpen && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {userName}
+                  </p>
+                  <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                    {userRole?.replace('_', ' ')}
+                  </Badge>
+                </div>
+              )}
             </div>
           </div>
 
@@ -209,7 +211,7 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                    "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors group",
                     item.current
                       ? "bg-health-primary text-white"
                       : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
@@ -220,9 +222,10 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
                       setSidebarOpen(false)
                     }
                   }}
+                  title={!sidebarOpen ? item.name : undefined}
                 >
-                  <Icon className="mr-3 h-5 w-5" />
-                  {item.name}
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  {sidebarOpen && <span className="ml-3">{item.name}</span>}
                 </Link>
               )
             })}
@@ -232,11 +235,12 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
           <div className="p-4 border-t border-gray-200">
             <Button
               variant="ghost"
-              className="w-full justify-start text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+              className="w-full justify-start text-gray-700 hover:text-gray-900 hover:bg-gray-100 group"
               onClick={handleSignOut}
+              title={!sidebarOpen ? "Sign Out" : undefined}
             >
-              <LogOut className="mr-3 h-5 w-5" />
-              Sign Out
+              <LogOut className="h-5 w-5 flex-shrink-0" />
+              {sidebarOpen && <span className="ml-3">Sign Out</span>}
             </Button>
           </div>
         </div>
@@ -252,7 +256,7 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
                 variant="ghost"
                 size="sm"
                 className="mr-4 text-gray-600 hover:text-gray-900"
-                onClick={() => setSidebarOpen(true)}
+                onClick={() => setSidebarOpen(!sidebarOpen)}
               >
                 <Menu className="h-5 w-5" />
               </Button>
@@ -280,9 +284,9 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
         {/* Page content */}
         <main className={cn(
           "flex-1 p-4 sm:p-6 lg:p-8 bg-gray-50 overflow-auto transition-all duration-300",
-          sidebarOpen ? "lg:ml-64" : "lg:ml-0"
+          sidebarOpen ? "lg:ml-64" : "lg:ml-20"
         )}>
-          <div className="max-w-7xl mx-auto">
+          <div className="w-full">
             {children}
           </div>
         </main>

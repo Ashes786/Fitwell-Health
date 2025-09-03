@@ -239,7 +239,7 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 <div className="h-24 bg-gray-200 rounded-lg"></div>
               </CardContent>
             </Card>
@@ -250,10 +250,10 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50">
       {/* Header Section */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             <div className="relative">
               <Avatar className="h-16 w-16 ring-4 ring-white shadow-lg">
@@ -286,9 +286,9 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
       </div>
 
       {/* Key Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
@@ -308,7 +308,7 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
         </Card>
 
         <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
@@ -328,7 +328,7 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
         </Card>
 
         <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
@@ -348,7 +348,7 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
         </Card>
 
         <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
@@ -369,9 +369,9 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Left Column - Patient Overview */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="xl:col-span-1 space-y-6">
           <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -407,7 +407,7 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
         </div>
 
         {/* Middle Column - Appointments & Partners */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="xl:col-span-1 space-y-6">
           {/* Appointments */}
           <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
@@ -471,7 +471,7 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
         </div>
 
         {/* Right Column - Revenue & Actions */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="xl:col-span-1 space-y-6">
           {/* Revenue */}
           <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
