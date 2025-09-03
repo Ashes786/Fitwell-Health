@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
@@ -15,7 +14,6 @@ import { RefreshCw } from 'lucide-react'
 
 export default function Dashboard() {
   const { user, loading } = useCustomSession()
-  const [isLoading] = useState(true)
 
   const getRoleDashboardContent = () => {
     if (!user) return null
@@ -109,16 +107,7 @@ export default function Dashboard() {
       userName={user.name || user.email} 
       userImage={user.avatar}
     >
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <RefreshCw className="h-12 w-12 animate-spin mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-600">Loading dashboard...</p>
-          </div>
-        </div>
-      ) : (
-        getRoleDashboardContent()
-      )}
+      {getRoleDashboardContent()}
     </DashboardLayout>
   )
 }
