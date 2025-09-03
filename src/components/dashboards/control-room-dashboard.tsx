@@ -29,10 +29,15 @@ import {
   Calendar,
   Clipboard,
   Wrench,
-  Truck
+  Truck,
+  Zap,
+  Activity,
+  BarChart3
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { BarChart } from '@/components/ui/bar-chart'
+import { LineChart } from '@/components/ui/line-chart'
 
 interface ControlRoomDashboardProps {
   userName: string
@@ -92,6 +97,20 @@ interface Stats {
   emergencyCases: number
 }
 
+interface ConsultationTrend {
+  time: string
+  active: number
+  waiting: number
+  completed: number
+}
+
+interface ResourceUtilization {
+  resource: string
+  used: number
+  total: number
+  percentage: number
+}
+
 export function ControlRoomDashboard({ userName, userImage }: ControlRoomDashboardProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
@@ -142,6 +161,23 @@ export function ControlRoomDashboard({ userName, userImage }: ControlRoomDashboa
     emergencyCases: 3
   })
 
+  const [consultationTrend, setConsultationTrend] = useState<ConsultationTrend[]>([
+    { time: '9:00', active: 3, waiting: 5, completed: 2 },
+    { time: '10:00', active: 5, waiting: 8, completed: 4 },
+    { time: '11:00', active: 8, waiting: 12, completed: 6 },
+    { time: '12:00', active: 6, waiting: 10, completed: 8 },
+    { time: '13:00', active: 4, waiting: 7, completed: 5 },
+    { time: '14:00', active: 7, waiting: 9, completed: 7 },
+    { time: '15:00', active: 8, waiting: 11, completed: 9 }
+  ])
+
+  const [resourceUtilization, setResourceUtilization] = useState<ResourceUtilization[]>([
+    { resource: 'Consultation Rooms', used: 12, total: 15, percentage: 80 },
+    { resource: 'Available GPs', used: 5, total: 8, percentage: 63 },
+    { resource: 'Emergency Bays', used: 3, total: 5, percentage: 60 },
+    { resource: 'Waiting Area', used: 18, total: 25, percentage: 72 }
+  ])
+
   useEffect(() => {
     loadDashboardData()
   }, [])
@@ -161,32 +197,52 @@ export function ControlRoomDashboard({ userName, userImage }: ControlRoomDashboa
 
   const quickActions = [
     { 
-      name: 'Assign GP', 
+      name: 'Assign Doctor', 
       icon: UserCheck, 
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
-      route: '/dashboard/doctor-assignment'
-    },
-    { 
-      name: 'Confirm Appointment', 
-      icon: CheckCircle, 
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      action: () => toast.info('Appointment confirmation feature')
-    },
-    { 
-      name: 'Reschedule', 
-      icon: Calendar, 
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      action: () => toast.info('Rescheduling feature')
+      route: '/dashboard/doctor-assignment',
+      description: 'Assign doctors to patients'
     },
     { 
       name: 'Emergency Alert', 
       icon: AlertTriangle, 
       color: 'text-red-600',
       bgColor: 'bg-red-50',
-      action: () => toast.info('Emergency alert system')
+      route: '/dashboard/emergency-alerts',
+      description: 'Manage emergency cases'
+    },
+    { 
+      name: 'Bed Management', 
+      icon: Building, 
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      route: '/dashboard/bed-management',
+      description: 'Manage bed occupancy'
+    },
+    { 
+      name: 'Staff Coordination', 
+      icon: Users, 
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+      route: '/dashboard/staff-coordination',
+      description: 'Coordinate staff activities'
+    },
+    { 
+      name: 'Equipment Status', 
+      icon: Wrench, 
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+      route: '/dashboard/equipment-status',
+      description: 'Monitor equipment'
+    },
+    { 
+      name: 'Ambulance Tracking', 
+      icon: Truck, 
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50',
+      route: '/dashboard/ambulance-tracking',
+      description: 'Track ambulance fleet'
     }
   ]
 
@@ -326,6 +382,87 @@ export function ControlRoomDashboard({ userName, userImage }: ControlRoomDashboa
                 <p className="text-2xl font-bold text-red-600">{stats.emergencyCases}</p>
               </div>
               <AlertTriangle className="h-8 w-8 text-red-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions Section */}
+      <Card className="bg-white border-0 shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+            <Zap className="h-5 w-5 text-yellow-600" />
+            <span>Control Room Quick Actions</span>
+          </CardTitle>
+          <CardDescription>Critical operations and monitoring tools</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {quickActions.map((action, index) => {
+              const Icon = action.icon
+              return (
+                <Link key={index} href={action.route}>
+                  <div className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer group">
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-3 rounded-lg ${action.bgColor} group-hover:scale-110 transition-transform duration-200`}>
+                        <Icon className={`h-6 w-6 ${action.color}`} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          {action.name}
+                        </h3>
+                        <p className="text-sm text-gray-600">{action.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Real-time Monitoring Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Consultation Trends */}
+        <Card className="bg-white border-0 shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+              <Activity className="h-5 w-5 text-blue-600" />
+              <span>Real-time Consultation Trends</span>
+            </CardTitle>
+            <CardDescription>Live consultation status throughout the day</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <LineChart 
+                data={consultationTrend}
+                categories={['active', 'waiting', 'completed']}
+                colors={['#3B82F6', '#F59E0B', '#10B981']}
+                valueFormatter={(value) => value.toString()}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Resource Utilization */}
+        <Card className="bg-white border-0 shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5 text-purple-600" />
+              <span>Resource Utilization</span>
+            </CardTitle>
+            <CardDescription>Current resource allocation and usage</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <BarChart 
+                data={resourceUtilization.map(r => ({ resource: r.resource, percentage: r.percentage }))}
+                categories={['percentage']}
+                index="resource"
+                colors={['#8B5CF6']}
+                valueFormatter={(value) => `${value}%`}
+              />
             </div>
           </CardContent>
         </Card>

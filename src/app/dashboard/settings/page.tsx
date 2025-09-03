@@ -1,391 +1,650 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useCustomSession } from '@/hooks/use-custom-session'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useCustomSession } from "@/hooks/use-custom-session"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { 
   Settings, 
+  User, 
   Bell, 
   Shield, 
-  User, 
+  Database,
+  Palette,
+  Globe,
   Mail,
   Phone,
+  MapPin,
+  Calendar,
   Lock,
-  Globe,
-  Moon,
-  Sun,
-  ToggleLeft,
-  ToggleRight,
-  Save
-} from 'lucide-react'
-import { toast } from 'sonner'
+  Key,
+  Download,
+  Upload,
+  Save,
+  RefreshCw
+} from "lucide-react"
+import { toast } from "sonner"
 
-interface UserSettings {
+interface UserProfile {
   name: string
   email: string
-  phone: string
-  notifications: {
-    email: boolean
-    push: boolean
-    sms: boolean
-  }
-  privacy: {
-    profileVisible: boolean
-    shareData: boolean
-  }
-  preferences: {
-    theme: 'light' | 'dark'
-    language: string
-  }
+  phone?: string
+  role: string
+  specialization?: string
+  address?: string
+  city?: string
+  country?: string
+  dateOfBirth?: string
+  avatar?: string
+  createdAt: string
+  lastLogin?: string
 }
 
-export default function SettingsPage() {
+interface NotificationSettings {
+  emailNotifications: boolean
+  pushNotifications: boolean
+  appointmentReminders: boolean
+  marketingEmails: boolean
+  securityAlerts: boolean
+  systemUpdates: boolean
+}
+
+interface SystemSettings {
+  theme: 'light' | 'dark' | 'auto'
+  language: string
+  timezone: string
+  dateFormat: string
+  timeFormat: '12h' | '24h'
+}
+
+export default function UnifiedSettings() {
   const { user, loading } = useCustomSession()
   const router = useRouter()
-  const [settings, setSettings] = useState<UserSettings>({
+  const [isDataLoading, setIsDataLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  
+  const [profile, setProfile] = useState<UserProfile>({
     name: '',
     email: '',
     phone: '',
-    notifications: {
-      email: true,
-      push: true,
-      sms: false
-    },
-    privacy: {
-      profileVisible: true,
-      shareData: false
-    },
-    preferences: {
-      theme: 'light',
-      language: 'English'
-    }
+    role: '',
+    specialization: '',
+    address: '',
+    city: '',
+    country: '',
+    dateOfBirth: '',
+    avatar: '',
+    createdAt: '',
+    lastLogin: ''
   })
-  const [isLoading, setIsLoading] = useState(true)
+
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
+    emailNotifications: true,
+    pushNotifications: true,
+    appointmentReminders: true,
+    marketingEmails: false,
+    securityAlerts: true,
+    systemUpdates: false
+  })
+
+  const [systemSettings, setSystemSettings] = useState<SystemSettings>({
+    theme: 'light',
+    language: 'en',
+    timezone: 'UTC',
+    dateFormat: 'MM/DD/YYYY',
+    timeFormat: '12h'
+  })
 
   useEffect(() => {
-    if (loading) return
-
-    if (!user) {
-      router.push('/auth/signin')
-      return
+    if (user && !loading) {
+      loadUserProfile()
     }
+  }, [user, loading])
 
-    // Load user settings
-    setSettings(prev => ({
-      ...prev,
-      name: user.name || '',
-      email: user.email || '',
-      phone: '+1 (555) 123-4567' // Mock phone
-    }))
-    setIsLoading(false)
-  }, [user, loading, router])
+  const loadUserProfile = async () => {
+    if (!user) return
 
-  const handleSaveSettings = async () => {
     try {
-      toast.success('Settings saved successfully!')
+      // Simulate loading user profile
+      setProfile({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        role: user.role || '',
+        specialization: user.specialization || '',
+        address: '',
+        city: '',
+        country: '',
+        dateOfBirth: '',
+        avatar: user.avatar || '',
+        createdAt: user.createdAt || new Date().toISOString(),
+        lastLogin: user.lastLogin || new Date().toISOString()
+      })
     } catch (error) {
-      toast.error('Failed to save settings')
+      console.error('Error loading user profile:', error)
+      toast.error('Failed to load profile')
+    } finally {
+      setIsDataLoading(false)
     }
   }
 
-  const toggleNotification = (type: keyof UserSettings['notifications']) => {
-    setSettings(prev => ({
-      ...prev,
-      notifications: {
-        ...prev.notifications,
-        [type]: !prev.notifications[type]
-      }
-    }))
+  const handleSaveProfile = async () => {
+    setIsSaving(true)
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      toast.success('Profile updated successfully')
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      toast.error('Failed to update profile')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const togglePrivacy = (type: keyof UserSettings['privacy']) => {
-    setSettings(prev => ({
-      ...prev,
-      privacy: {
-        ...prev.privacy,
-        [type]: !prev.privacy[type]
-      }
-    }))
+  const handleSaveNotifications = async () => {
+    setIsSaving(true)
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      toast.success('Notification settings updated')
+    } catch (error) {
+      console.error('Error saving notification settings:', error)
+      toast.error('Failed to update notification settings')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  if (loading || isLoading) {
+  const handleSaveSystemSettings = async () => {
+    setIsSaving(true)
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      toast.success('System settings updated')
+    } catch (error) {
+      console.error('Error saving system settings:', error)
+      toast.error('Failed to update system settings')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleExportData = () => {
+    toast.info('Data export started')
+  }
+
+  const handleDeleteAccount = () => {
+    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      toast.error('Account deletion requires additional verification')
+    }
+  }
+
+  if (loading || isDataLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading settings...</p>
-        </div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className="text-center">
-        <p className="text-gray-600">Please sign in to access settings.</p>
-        <Button onClick={() => router.push('/auth/signin')} className="mt-4">
-          Sign In
-        </Button>
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
+          <p className="text-gray-600 mb-4">Please sign in to access settings.</p>
+          <Button onClick={() => router.push('/auth/signin')} variant="outline">
+            Sign In
+          </Button>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
+          <p className="text-gray-600 mt-2">
+            Manage your account preferences and system settings
+          </p>
         </div>
-        <Button onClick={handleSaveSettings}>
-          <Save className="h-4 w-4 mr-2" />
-          Save Changes
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" onClick={handleExportData}>
+            <Download className="mr-2 h-4 w-4" />
+            Export Data
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Profile */}
-        <div className="lg:col-span-1 space-y-6">
+      <Tabs defaultValue="profile" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="system">System</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Profile Information
+              <CardTitle className="flex items-center space-x-2">
+                <User className="h-5 w-5 text-blue-600" />
+                <span>Profile Information</span>
               </CardTitle>
+              <CardDescription>
+                Update your personal information and profile details
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={user.avatar} />
-                  <AvatarFallback className="bg-blue-100 text-blue-600 text-xl">
-                    {user.name?.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h3 className="font-semibold text-gray-900">{user.name}</h3>
-                  <Badge variant="secondary">{user.role?.replace('_', ' ')}</Badge>
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={profile.name}
+                    onChange={(e) => setProfile({...profile, name: e.target.value})}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={profile.email}
+                    onChange={(e) => setProfile({...profile, email: e.target.value})}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    value={profile.phone}
+                    onChange={(e) => setProfile({...profile, phone: e.target.value})}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="role">Role</Label>
+                  <Input
+                    id="role"
+                    value={profile.role.replace('_', ' ')}
+                    disabled
+                    className="mt-1 bg-gray-50"
+                  />
+                </div>
+                {profile.specialization && (
+                  <div>
+                    <Label htmlFor="specialization">Specialization</Label>
+                    <Input
+                      id="specialization"
+                      value={profile.specialization}
+                      disabled
+                      className="mt-1 bg-gray-50"
+                    />
+                  </div>
+                )}
+                <div>
+                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={profile.dateOfBirth}
+                    onChange={(e) => setProfile({...profile, dateOfBirth: e.target.value})}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    value={profile.address}
+                    onChange={(e) => setProfile({...profile, address: e.target.value})}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    value={profile.city}
+                    onChange={(e) => setProfile({...profile, city: e.target.value})}
+                    className="mt-1"
+                  />
                 </div>
               </div>
               
-              <div className="space-y-3">
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline">Cancel</Button>
+                <Button onClick={handleSaveProfile} disabled={isSaving}>
+                  {isSaving ? (
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  Save Changes
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Full Name</label>
-                  <input
-                    type="text"
-                    value={settings.name}
-                    onChange={(e) => setSettings(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  <Label className="text-sm text-gray-600">Member Since</Label>
+                  <p className="font-medium">
+                    {new Date(profile.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-600">Last Login</Label>
+                  <p className="font-medium">
+                    {profile.lastLogin ? new Date(profile.lastLogin).toLocaleDateString() : 'Never'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Bell className="h-5 w-5 text-orange-600" />
+                <span>Notification Preferences</span>
+              </CardTitle>
+              <CardDescription>
+                Choose how you want to receive notifications
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="font-medium">Email Notifications</Label>
+                    <p className="text-sm text-gray-600">Receive notifications via email</p>
+                  </div>
+                  <Switch
+                    checked={notificationSettings.emailNotifications}
+                    onCheckedChange={(checked) => 
+                      setNotificationSettings({...notificationSettings, emailNotifications: checked})
+                    }
                   />
                 </div>
                 
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Email</label>
-                  <div className="flex items-center mt-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
-                    <Mail className="h-4 w-4 text-gray-400 mr-2" />
-                    <span>{settings.email}</span>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="font-medium">Push Notifications</Label>
+                    <p className="text-sm text-gray-600">Receive push notifications in browser</p>
                   </div>
+                  <Switch
+                    checked={notificationSettings.pushNotifications}
+                    onCheckedChange={(checked) => 
+                      setNotificationSettings({...notificationSettings, pushNotifications: checked})
+                    }
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="font-medium">Appointment Reminders</Label>
+                    <p className="text-sm text-gray-600">Get reminded about upcoming appointments</p>
+                  </div>
+                  <Switch
+                    checked={notificationSettings.appointmentReminders}
+                    onCheckedChange={(checked) => 
+                      setNotificationSettings({...notificationSettings, appointmentReminders: checked})
+                    }
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="font-medium">Marketing Emails</Label>
+                    <p className="text-sm text-gray-600">Receive promotional emails and updates</p>
+                  </div>
+                  <Switch
+                    checked={notificationSettings.marketingEmails}
+                    onCheckedChange={(checked) => 
+                      setNotificationSettings({...notificationSettings, marketingEmails: checked})
+                    }
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="font-medium">Security Alerts</Label>
+                    <p className="text-sm text-gray-600">Get notified about security events</p>
+                  </div>
+                  <Switch
+                    checked={notificationSettings.securityAlerts}
+                    onCheckedChange={(checked) => 
+                      setNotificationSettings({...notificationSettings, securityAlerts: checked})
+                    }
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="font-medium">System Updates</Label>
+                    <p className="text-sm text-gray-600">Receive system maintenance notifications</p>
+                  </div>
+                  <Switch
+                    checked={notificationSettings.systemUpdates}
+                    onCheckedChange={(checked) => 
+                      setNotificationSettings({...notificationSettings, systemUpdates: checked})
+                    }
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline">Cancel</Button>
+                <Button onClick={handleSaveNotifications} disabled={isSaving}>
+                  {isSaving ? (
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  Save Preferences
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="system" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Palette className="h-5 w-5 text-purple-600" />
+                <span>Appearance & Display</span>
+              </CardTitle>
+              <CardDescription>
+                Customize how the application looks and feels
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="theme">Theme</Label>
+                  <Select value={systemSettings.theme} onValueChange={(value: 'light' | 'dark' | 'auto') => 
+                    setSystemSettings({...systemSettings, theme: value})
+                  }>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                      <SelectItem value="auto">Auto</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Phone</label>
-                  <div className="flex items-center mt-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
-                    <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                    <span>{settings.phone}</span>
-                  </div>
+                  <Label htmlFor="language">Language</Label>
+                  <Select value={systemSettings.language} onValueChange={(value) => 
+                    setSystemSettings({...systemSettings, language: value})
+                  }>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="de">German</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+                
+                <div>
+                  <Label htmlFor="timezone">Timezone</Label>
+                  <Select value={systemSettings.timezone} onValueChange={(value) => 
+                    setSystemSettings({...systemSettings, timezone: value})
+                  }>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="UTC">UTC</SelectItem>
+                      <SelectItem value="EST">Eastern Time</SelectItem>
+                      <SelectItem value="PST">Pacific Time</SelectItem>
+                      <SelectItem value="GMT">GMT</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="dateFormat">Date Format</Label>
+                  <Select value={systemSettings.dateFormat} onValueChange={(value) => 
+                    setSystemSettings({...systemSettings, dateFormat: value})
+                  }>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
+                      <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
+                      <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="timeFormat">Time Format</Label>
+                  <Select value={systemSettings.timeFormat} onValueChange={(value: '12h' | '24h') => 
+                    setSystemSettings({...systemSettings, timeFormat: value})
+                  }>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="12h">12-hour</SelectItem>
+                      <SelectItem value="24h">24-hour</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline">Cancel</Button>
+                <Button onClick={handleSaveSystemSettings} disabled={isSaving}>
+                  {isSaving ? (
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  Save Settings
+                </Button>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </TabsContent>
 
-        {/* Right Column - Settings */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Notifications */}
+        <TabsContent value="security" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Notification Settings
+              <CardTitle className="flex items-center space-x-2">
+                <Shield className="h-5 w-5 text-red-600" />
+                <span>Security Settings</span>
               </CardTitle>
-              <CardDescription>Choose how you want to receive notifications</CardDescription>
+              <CardDescription>
+                Manage your account security and privacy
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-gray-600" />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                   <div>
-                    <p className="font-medium text-gray-900">Email Notifications</p>
-                    <p className="text-sm text-gray-600">Receive updates via email</p>
+                    <Label className="font-medium">Change Password</Label>
+                    <p className="text-sm text-gray-600">Update your account password</p>
                   </div>
+                  <Button variant="outline">
+                    <Key className="mr-2 h-4 w-4" />
+                    Change Password
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => toggleNotification('email')}
-                  className="p-2"
-                >
-                  {settings.notifications.email ? (
-                    <ToggleRight className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <ToggleLeft className="h-4 w-4 text-gray-400" />
-                  )}
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Bell className="h-5 w-5 text-gray-600" />
+                
+                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                   <div>
-                    <p className="font-medium text-gray-900">Push Notifications</p>
-                    <p className="text-sm text-gray-600">Receive browser notifications</p>
+                    <Label className="font-medium">Two-Factor Authentication</Label>
+                    <p className="text-sm text-gray-600">Add an extra layer of security</p>
                   </div>
+                  <Badge className="bg-yellow-100 text-yellow-800">Not Enabled</Badge>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => toggleNotification('push')}
-                  className="p-2"
-                >
-                  {settings.notifications.push ? (
-                    <ToggleRight className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <ToggleLeft className="h-4 w-4 text-gray-400" />
-                  )}
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Phone className="h-5 w-5 text-gray-600" />
+                
+                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                   <div>
-                    <p className="font-medium text-gray-900">SMS Notifications</p>
-                    <p className="text-sm text-gray-600">Receive text messages</p>
+                    <Label className="font-medium">Active Sessions</Label>
+                    <p className="text-sm text-gray-600">Manage your logged-in devices</p>
                   </div>
+                  <Button variant="outline">View Sessions</Button>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => toggleNotification('sms')}
-                  className="p-2"
-                >
-                  {settings.notifications.sms ? (
-                    <ToggleRight className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <ToggleLeft className="h-4 w-4 text-gray-400" />
-                  )}
-                </Button>
               </div>
+              
+              <Card className="border-red-200">
+                <CardHeader>
+                  <CardTitle className="text-red-600">Danger Zone</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="font-medium">Delete Account</Label>
+                        <p className="text-sm text-gray-600">Permanently delete your account and all data</p>
+                      </div>
+                      <Button 
+                        variant="destructive" 
+                        onClick={handleDeleteAccount}
+                      >
+                        Delete Account
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </CardContent>
           </Card>
-
-          {/* Privacy */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Privacy Settings
-              </CardTitle>
-              <CardDescription>Control your privacy and data sharing preferences</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <User className="h-5 w-5 text-gray-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">Profile Visibility</p>
-                    <p className="text-sm text-gray-600">Make your profile visible to others</p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => togglePrivacy('profileVisible')}
-                  className="p-2"
-                >
-                  {settings.privacy.profileVisible ? (
-                    <ToggleRight className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <ToggleLeft className="h-4 w-4 text-gray-400" />
-                  )}
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Globe className="h-5 w-5 text-gray-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">Data Sharing</p>
-                    <p className="text-sm text-gray-600">Share anonymized data for research</p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => togglePrivacy('shareData')}
-                  className="p-2"
-                >
-                  {settings.privacy.shareData ? (
-                    <ToggleRight className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <ToggleLeft className="h-4 w-4 text-gray-400" />
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Preferences */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Preferences
-              </CardTitle>
-              <CardDescription>Customize your app experience</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  {settings.preferences.theme === 'dark' ? (
-                    <Moon className="h-5 w-5 text-gray-600" />
-                  ) : (
-                    <Sun className="h-5 w-5 text-gray-600" />
-                  )}
-                  <div>
-                    <p className="font-medium text-gray-900">Theme</p>
-                    <p className="text-sm text-gray-600">
-                      {settings.preferences.theme === 'dark' ? 'Dark mode' : 'Light mode'}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSettings(prev => ({
-                    ...prev,
-                    preferences: {
-                      ...prev.preferences,
-                      theme: prev.preferences.theme === 'light' ? 'dark' : 'light'
-                    }
-                  }))}
-                  className="p-2"
-                >
-                  {settings.preferences.theme === 'dark' ? (
-                    <Moon className="h-4 w-4 text-blue-600" />
-                  ) : (
-                    <Sun className="h-4 w-4 text-yellow-600" />
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

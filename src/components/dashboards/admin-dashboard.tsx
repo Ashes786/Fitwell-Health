@@ -34,14 +34,14 @@ import {
   Hospital,
   FlaskConical,
   ShoppingCart,
-  ChartBar,
+  ChartBar as ChartBarIcon,
   Clock,
   Star,
   Target,
   Zap,
   Award,
   BarChart3,
-  PieChart,
+  PieChart as PieChartIcon,
   UserPlus,
   UserRound,
   UserRoundPlus,
@@ -61,7 +61,6 @@ import {
   MemoryStick,
   Thermometer,
   Gauge,
-  LineChart,
   AreaChart,
   ScatterChart,
   Radar,
@@ -106,13 +105,6 @@ import {
   FileWarning,
   FileHeart,
   FileMedical,
-  FileBarChart,
-  FilePieChart,
-  FileLineChart,
-  FileAreaChart,
-  FileScatterChart,
-  FileRadar,
-  FileTreemap,
   Report,
   Analytics,
   Dashboard,
@@ -127,7 +119,6 @@ import {
   Hexagon,
   Octagon,
   Pentagon,
-  Star,
   Heart,
   Leaf,
   TreePine,
@@ -938,7 +929,7 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
           <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <PieChart className="h-5 w-5 text-green-600" />
+                <PieChartIcon className="h-5 w-5 text-green-600" />
                 Revenue Analytics
               </CardTitle>
             </CardHeader>

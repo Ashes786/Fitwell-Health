@@ -58,77 +58,77 @@ interface DashboardLayoutProps {
   userImage?: string
 }
 
-// Navigation items for different roles - updated with correct routes
+// Unified navigation items for all roles - simplified structure
 const navigationItems = {
   SUPER_ADMIN: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Analytics', href: '/dashboard/super-admin/analytics', icon: ChartBar },
-    { name: 'Manage Admins', href: '/dashboard/super-admin/admins', icon: Users },
-    { name: 'Partners', href: '/dashboard/super-admin/partners', icon: Building },
-    { name: 'Subscription Plans', href: '/dashboard/super-admin/subscription-plans', icon: CreditCard },
-    { name: 'Networks', href: '/dashboard/super-admin/networks', icon: Server },
-    { name: 'Database', href: '/dashboard/super-admin/database', icon: Database },
-    { name: 'System Status', href: '/dashboard/super-admin/system-status', icon: Server },
-    { name: 'Security', href: '/dashboard/super-admin/security', icon: Lock },
-    { name: 'Settings', href: '/dashboard/super-admin/settings', icon: Settings },
+    { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBar },
+    { name: 'Manage Admins', href: '/dashboard/admins', icon: Users },
+    { name: 'Partners', href: '/dashboard/partners', icon: Building },
+    { name: 'Subscription Plans', href: '/dashboard/subscription-plans', icon: CreditCard },
+    { name: 'Networks', href: '/dashboard/networks', icon: Server },
+    { name: 'Database', href: '/dashboard/database', icon: Database },
+    { name: 'System Status', href: '/dashboard/system-status', icon: Server },
+    { name: 'Security', href: '/dashboard/security', icon: Lock },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ],
   ADMIN: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Patients', href: '/dashboard/admin/patients', icon: UserCheck },
-    { name: 'Organizations', href: '/dashboard/admin/organizations', icon: Building },
-    { name: 'Control Room', href: '/dashboard/admin/control-room', icon: Monitor },
-    { name: 'Attendants', href: '/dashboard/admin/attendants', icon: Users2 },
-    { name: 'Doctors', href: '/dashboard/admin/doctors', icon: Stethoscope },
-    { name: 'Partners', href: '/dashboard/admin/partners', icon: Building },
-    { name: 'Analytics', href: '/dashboard/admin/analytics', icon: ChartBar },
-    { name: 'Subscription Requests', href: '/dashboard/admin/subscription-requests', icon: Clipboard },
-    { name: 'Settings', href: '/dashboard/admin/settings', icon: Settings },
+    { name: 'Patients', href: '/dashboard/patients', icon: UserCheck },
+    { name: 'Organizations', href: '/dashboard/organizations', icon: Building },
+    { name: 'Control Room', href: '/dashboard/control-room', icon: Monitor },
+    { name: 'Attendants', href: '/dashboard/attendants', icon: Users2 },
+    { name: 'Doctors', href: '/dashboard/doctors', icon: Stethoscope },
+    { name: 'Partners', href: '/dashboard/partners', icon: Building },
+    { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBar },
+    { name: 'Subscription Requests', href: '/dashboard/subscription-requests', icon: Clipboard },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ],
   DOCTOR: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Appointments', href: '/dashboard/doctor/appointments', icon: Calendar },
-    { name: 'Consultation', href: '/dashboard/doctor/consultation', icon: Video },
-    { name: 'Patients', href: '/dashboard/doctor/patients', icon: UserCheck },
-    { name: 'Schedule', href: '/dashboard/doctor/schedule', icon: Clock },
-    { name: 'Prescriptions', href: '/dashboard/doctor/prescriptions', icon: Pill },
-    { name: 'Revenue', href: '/dashboard/doctor/revenue', icon: DollarSign },
-    { name: 'Messages', href: '/dashboard/doctor/messages', icon: MessageSquare },
+    { name: 'Appointments', href: '/dashboard/appointments', icon: Calendar },
+    { name: 'Consultation', href: '/dashboard/consultation', icon: Video },
+    { name: 'Patients', href: '/dashboard/patients', icon: UserCheck },
+    { name: 'Schedule', href: '/dashboard/schedule', icon: Clock },
+    { name: 'Prescriptions', href: '/dashboard/prescriptions', icon: Pill },
+    { name: 'Revenue', href: '/dashboard/revenue', icon: DollarSign },
+    { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare },
     { name: 'Profile', href: '/dashboard/profile', icon: User },
   ],
   PATIENT: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Subscription', href: '/dashboard/patient/subscription', icon: CreditCard },
-    { name: 'Book Consultation', href: '/dashboard/patient/book-appointment', icon: Calendar },
-    { name: 'Patient Journey', href: '/dashboard/patient/journey', icon: Activity },
-    { name: 'Appointments', href: '/dashboard/patient/appointments', icon: Calendar },
-    { name: 'Health Records', href: '/dashboard/patient/health-records', icon: FileText },
-    { name: 'Prescriptions', href: '/dashboard/patient/prescriptions', icon: Pill },
-    { name: 'Lab Tests', href: '/dashboard/patient/lab-tests', icon: FlaskConical },
-    { name: 'Buy Medicine', href: '/dashboard/patient/cart', icon: Package },
-    { name: 'HealthPay Card', href: '/dashboard/patient/health-card', icon: CreditCard },
-    { name: 'AI Reports', href: '/dashboard/patient/ai-reports', icon: ChartBar },
-    { name: 'Healthcare', href: '/dashboard/patient/directory', icon: Building },
+    { name: 'Subscription', href: '/dashboard/subscription', icon: CreditCard },
+    { name: 'Book Consultation', href: '/dashboard/book-appointment', icon: Calendar },
+    { name: 'Patient Journey', href: '/dashboard/journey', icon: Activity },
+    { name: 'Appointments', href: '/dashboard/appointments', icon: Calendar },
+    { name: 'Health Records', href: '/dashboard/health-records', icon: FileText },
+    { name: 'Prescriptions', href: '/dashboard/prescriptions', icon: Pill },
+    { name: 'Lab Tests', href: '/dashboard/lab-tests', icon: FlaskConical },
+    { name: 'Buy Medicine', href: '/dashboard/cart', icon: Package },
+    { name: 'HealthPay Card', href: '/dashboard/health-card', icon: CreditCard },
+    { name: 'AI Reports', href: '/dashboard/ai-reports', icon: ChartBar },
+    { name: 'Healthcare', href: '/dashboard/directory', icon: Building },
     { name: 'Profile', href: '/dashboard/profile', icon: User },
   ],
   ATTENDANT: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Patient Registration', href: '/dashboard/attendant/register-patient', icon: UserCheck },
-    { name: 'Appointments', href: '/dashboard/attendant/appointments', icon: Calendar },
-    { name: 'Patients', href: '/dashboard/attendant/patients', icon: Users2 },
-    { name: 'Reports', href: '/dashboard/attendant/reports', icon: ChartBar },
-    { name: 'Settings', href: '/dashboard/attendant/settings', icon: Settings },
+    { name: 'Patient Registration', href: '/dashboard/register-patient', icon: UserCheck },
+    { name: 'Appointments', href: '/dashboard/appointments', icon: Calendar },
+    { name: 'Patients', href: '/dashboard/patients', icon: Users2 },
+    { name: 'Reports', href: '/dashboard/reports', icon: ChartBar },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ],
   CONTROL_ROOM: [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Live Monitoring', href: '/dashboard/control-room', icon: Monitor },
-    { name: 'Doctor Assignment', href: '/dashboard/control-room/doctor-assignment', icon: Stethoscope },
-    { name: 'Emergency Cases', href: '/dashboard/control-room/emergency-cases', icon: AlertTriangle },
-    { name: 'Bed Management', href: '/dashboard/control-room/bed-management', icon: Building },
-    { name: 'Staff Coordination', href: '/dashboard/control-room/staff-coordination', icon: Users2 },
-    { name: 'Equipment Status', href: '/dashboard/control-room/equipment-status', icon: Wrench },
-    { name: 'Ambulance Tracking', href: '/dashboard/control-room/ambulance-tracking', icon: Truck },
-    { name: 'Emergency Alerts', href: '/dashboard/control-room/emergency-alerts', icon: Bell },
-    { name: 'Reports', href: '/dashboard/control-room/reports', icon: ChartBar },
+    { name: 'Live Monitoring', href: '/dashboard/monitoring', icon: Monitor },
+    { name: 'Doctor Assignment', href: '/dashboard/doctor-assignment', icon: Stethoscope },
+    { name: 'Emergency Cases', href: '/dashboard/emergency-cases', icon: AlertTriangle },
+    { name: 'Bed Management', href: '/dashboard/bed-management', icon: Building },
+    { name: 'Staff Coordination', href: '/dashboard/staff-coordination', icon: Users2 },
+    { name: 'Equipment Status', href: '/dashboard/equipment-status', icon: Wrench },
+    { name: 'Ambulance Tracking', href: '/dashboard/ambulance-tracking', icon: Truck },
+    { name: 'Emergency Alerts', href: '/dashboard/emergency-alerts', icon: Bell },
+    { name: 'Reports', href: '/dashboard/reports', icon: ChartBar },
   ]
 }
 
@@ -246,31 +246,38 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              {/* User info moved to header */}
+              {/* Notifications */}
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 relative">
+                <Bell className="h-5 w-5" />
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+              </Button>
+              
+              {/* Help */}
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                <HelpCircle className="h-5 w-5" />
+              </Button>
+              
+              {/* User info */}
               <div className="flex items-center space-x-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={userImage} />
-                  <AvatarFallback className="bg-health-primary text-white">{userName?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="hidden sm:block">
+                <div className="hidden sm:block text-right">
                   <p className="text-sm font-medium text-gray-900">{userName}</p>
                   <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
                     {userRole?.replace('_', ' ')}
                   </Badge>
                 </div>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={userImage} />
+                  <AvatarFallback className="bg-health-primary text-white">{userName?.charAt(0)}</AvatarFallback>
+                </Avatar>
               </div>
+              
+              {/* Cart for patients */}
               {userRole === 'PATIENT' && (
                 <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 relative">
                   <ShoppingCart className="h-5 w-5" />
                   <span className="absolute -top-1 -right-1 bg-health-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
                 </Button>
               )}
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-                <Bell className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-                <HelpCircle className="h-5 w-5" />
-              </Button>
             </div>
           </div>
         </header>

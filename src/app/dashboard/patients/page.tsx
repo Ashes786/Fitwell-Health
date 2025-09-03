@@ -1,288 +1,408 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useCustomSession } from '@/hooks/use-custom-session'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useCustomSession } from "@/hooks/use-custom-session"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { 
   Users, 
   Search, 
-  Filter, 
-  Plus,
+  Plus, 
+  UserCheck, 
   Mail,
   Phone,
+  MapPin,
   Calendar,
-  Heart,
-  Activity
-} from 'lucide-react'
-import { toast } from 'sonner'
+  Activity,
+  Edit,
+  Trash2,
+  Eye,
+  Filter
+} from "lucide-react"
+import { toast } from "sonner"
 
 interface Patient {
   id: string
   name: string
   email: string
-  phone: string
-  age: number
-  gender: string
-  lastVisit: string
-  status: 'active' | 'inactive'
-  healthScore: number
+  phone?: string
+  isActive: boolean
+  createdAt: string
+  lastLogin?: string
+  profile?: {
+    dateOfBirth?: string
+    gender?: string
+    bloodGroup?: string
+    address?: string
+    city?: string
+    emergencyContact?: string
+    medicalHistory?: string
+  }
+  subscription?: {
+    id: string
+    plan: string
+    status: string
+    expiresAt: string
+  }
 }
 
-export default function PatientsPage() {
+export default function UnifiedPatients() {
   const { user, loading } = useCustomSession()
   const router = useRouter()
+  const [isDataLoading, setIsDataLoading] = useState(true)
   const [patients, setPatients] = useState<Patient[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+
+  // Role-based API endpoint and permissions
+  const getApiEndpoint = () => {
+    if (!user) return null
+    switch (user.role) {
+      case 'SUPER_ADMIN':
+      case 'ADMIN':
+        return '/api/admin/patients'
+      case 'DOCTOR':
+        return '/api/doctor/patients'
+      case 'ATTENDANT':
+        return '/api/attendant/patients'
+      default:
+        return null
+    }
+  }
+
+  const getPermissions = () => {
+    if (!user) return { canAdd: false, canEdit: false, canDelete: false }
+    switch (user.role) {
+      case 'SUPER_ADMIN':
+      case 'ADMIN':
+        return { canAdd: true, canEdit: true, canDelete: true }
+      case 'DOCTOR':
+        return { canAdd: false, canEdit: false, canDelete: false }
+      case 'ATTENDANT':
+        return { canAdd: true, canEdit: true, canDelete: false }
+      default:
+        return { canAdd: false, canEdit: false, canDelete: false }
+    }
+  }
+
+  const permissions = getPermissions()
 
   useEffect(() => {
-    if (loading) return
-
-    if (!user) {
-      router.push('/auth/signin')
-      return
+    if (user && !loading) {
+      fetchPatients()
     }
-
-    fetchPatients()
-  }, [user, loading, router])
+  }, [user, loading])
 
   const fetchPatients = async () => {
-    try {
-      setIsLoading(true)
-      
-      // Fetch patients based on user role
-      let endpoint = ''
-      switch (user?.role) {
-        case 'DOCTOR':
-          endpoint = '/api/doctor/patients'
-          break
-        case 'ATTENDANT':
-          endpoint = '/api/attendant/patients'
-          break
-        case 'ADMIN':
-          endpoint = '/api/admin/patients'
-          break
-        default:
-          endpoint = '/api/patients'
-      }
+    const apiEndpoint = getApiEndpoint()
+    if (!apiEndpoint) return
 
-      const response = await fetch(endpoint)
+    try {
+      const response = await fetch(apiEndpoint)
       if (response.ok) {
         const data = await response.json()
-        setPatients(data)
+        // Handle different response formats based on role
+        let patientList = []
+        if (data.patients) {
+          patientList = data.patients
+        } else if (data.doctorPatients) {
+          patientList = data.doctorPatients
+        } else if (data.attendantPatients) {
+          patientList = data.attendantPatients
+        }
+
+        const formattedPatients = patientList.map((patient: any) => ({
+          id: patient.id,
+          name: patient.name,
+          email: patient.email,
+          phone: patient.phone,
+          isActive: patient.isActive ?? true,
+          createdAt: patient.createdAt,
+          lastLogin: patient.lastLogin,
+          profile: patient.profile ? {
+            dateOfBirth: patient.profile.dateOfBirth,
+            gender: patient.profile.gender,
+            bloodGroup: patient.profile.bloodGroup,
+            address: patient.profile.address,
+            city: patient.profile.city,
+            emergencyContact: patient.profile.emergencyContact,
+            medicalHistory: patient.profile.medicalHistory
+          } : undefined,
+          subscription: patient.subscription ? {
+            id: patient.subscription.id,
+            plan: patient.subscription.plan?.name || 'Unknown',
+            status: patient.subscription.status,
+            expiresAt: patient.subscription.expiresAt
+          } : undefined
+        }))
+        setPatients(formattedPatients)
       } else {
-        // Fallback to mock data
-        setPatients(getMockPatients(user?.role))
+        toast.error('Failed to fetch patients')
       }
     } catch (error) {
       console.error('Error fetching patients:', error)
       toast.error('Failed to load patients')
-      setPatients(getMockPatients(user?.role))
     } finally {
-      setIsLoading(false)
+      setIsDataLoading(false)
     }
   }
 
-  const getMockPatients = (role: string) => {
-    return [
-      {
-        id: '1',
-        name: 'John Smith',
-        email: 'john.smith@email.com',
-        phone: '+1 (555) 123-4567',
-        age: 45,
-        gender: 'Male',
-        lastVisit: '2024-01-10',
-        status: 'active',
-        healthScore: 85
-      },
-      {
-        id: '2',
-        name: 'Sarah Johnson',
-        email: 'sarah.johnson@email.com',
-        phone: '+1 (555) 234-5678',
-        age: 32,
-        gender: 'Female',
-        lastVisit: '2024-01-12',
-        status: 'active',
-        healthScore: 92
-      },
-      {
-        id: '3',
-        name: 'Michael Brown',
-        email: 'michael.brown@email.com',
-        phone: '+1 (555) 345-6789',
-        age: 28,
-        gender: 'Male',
-        lastVisit: '2024-01-08',
-        status: 'inactive',
-        healthScore: 78
-      },
-      {
-        id: '4',
-        name: 'Emily Davis',
-        email: 'emily.davis@email.com',
-        phone: '+1 (555) 456-7890',
-        age: 67,
-        gender: 'Female',
-        lastVisit: '2024-01-15',
-        status: 'active',
-        healthScore: 88
-      }
-    ]
-  }
-
-  const getHealthScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600 bg-green-100'
-    if (score >= 80) return 'text-blue-600 bg-blue-100'
-    if (score >= 70) return 'text-yellow-600 bg-yellow-100'
-    return 'text-red-600 bg-red-100'
-  }
-
-  const getPageTitle = () => {
-    switch (user?.role) {
-      case 'DOCTOR': return 'My Patients'
-      case 'ATTENDANT': return 'Registered Patients'
-      case 'ADMIN': return 'All Patients'
-      default: return 'Patients'
+  const handleAddPatient = () => {
+    if (permissions.canAdd) {
+      router.push('/dashboard/register-patient')
+    } else {
+      toast.error('You do not have permission to add patients')
     }
   }
 
-  const getPageDescription = () => {
-    switch (user?.role) {
-      case 'DOCTOR': return 'View and manage your patient list'
-      case 'ATTENDANT': return 'View and manage registered patients'
-      case 'ADMIN': return 'View all patients in the system'
-      default: return 'Manage patients'
-    }
-  }
-
-  if (loading || isLoading) {
+  if (loading || isDataLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading patients...</p>
-        </div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className="text-center">
-        <p className="text-gray-600">Please sign in to view patients.</p>
-        <Button onClick={() => router.push('/auth/signin')} className="mt-4">
-          Sign In
-        </Button>
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
+          <p className="text-gray-600 mb-4">Please sign in to access this page.</p>
+          <Button onClick={() => router.push('/auth/signin')} variant="outline">
+            Sign In
+          </Button>
+        </div>
       </div>
+    )
+  }
+
+  const filteredPatients = patients.filter(patient =>
+    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.phone?.includes(searchTerm)
+  )
+
+  const activePatients = filteredPatients.filter(p => p.isActive)
+  const inactivePatients = filteredPatients.filter(p => !p.isActive)
+
+  const PatientCard = ({ patient }: { patient: Patient }) => {
+    return (
+      <Card className="border-blue-200 hover:shadow-md transition-shadow">
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <UserCheck className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">{patient.name}</h3>
+                  <p className="text-sm text-gray-600">{patient.email}</p>
+                  {patient.phone && (
+                    <p className="text-sm text-gray-600">{patient.phone}</p>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge className={patient.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+                    {patient.isActive ? "Active" : "Inactive"}
+                  </Badge>
+                  {patient.subscription && (
+                    <Badge className="bg-purple-100 text-purple-800">
+                      {patient.subscription.plan}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {patient.profile && (
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  {patient.profile.dateOfBirth && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Date of Birth</p>
+                      <p className="text-sm text-gray-900">{patient.profile.dateOfBirth}</p>
+                    </div>
+                  )}
+                  {patient.profile.gender && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Gender</p>
+                      <p className="text-sm text-gray-900">{patient.profile.gender}</p>
+                    </div>
+                  )}
+                  {patient.profile.bloodGroup && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Blood Group</p>
+                      <p className="text-sm text-gray-900">{patient.profile.bloodGroup}</p>
+                    </div>
+                  )}
+                  {patient.profile.city && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Location</p>
+                      <p className="text-sm text-gray-900 flex items-center">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        {patient.profile.city}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-sm">
+                <div>
+                  <p className="text-gray-600">
+                    Joined: {new Date(patient.createdAt).toLocaleDateString()}
+                  </p>
+                  {patient.lastLogin && (
+                    <p className="text-gray-600">
+                      Last login: {new Date(patient.lastLogin).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2 ml-4">
+              <Button 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={() => router.push(`/dashboard/patients/${patient.id}`)}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                View Details
+              </Button>
+              {permissions.canEdit && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+              )}
+              {permissions.canDelete && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-red-600 text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{getPageTitle()}</h1>
-          <p className="text-gray-600 mt-1">{getPageDescription()}</p>
+          <h1 className="text-3xl font-bold text-gray-900">Patient Management</h1>
+          <p className="text-gray-600 mt-2">
+            View and manage patients {user.role && `as ${user.role.replace('_', ' ')}`}
+          </p>
         </div>
-        <div className="flex items-center space-x-3">
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-          <Button variant="outline" size="sm">
-            <Search className="h-4 w-4 mr-2" />
-            Search
-          </Button>
-          {(user.role === 'DOCTOR' || user.role === 'ATTENDANT') && (
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
+        <div className="flex items-center space-x-2">
+          {permissions.canAdd && (
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={handleAddPatient}
+            >
+              <Plus className="mr-2 h-4 w-4" />
               Add Patient
             </Button>
           )}
         </div>
       </div>
 
-      {/* Patients Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {patients.map((patient) => (
-          <Card key={patient.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-start space-x-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={`/api/placeholder/avatar/${patient.id}`} />
-                  <AvatarFallback className="bg-blue-100 text-blue-600">
-                    {patient.name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900 truncate">{patient.name}</h3>
-                    <Badge variant={patient.status === 'active' ? 'default' : 'secondary'}>
-                      {patient.status}
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <div className="flex items-center space-x-1">
-                      <Mail className="h-3 w-3" />
-                      <span className="truncate">{patient.email}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Phone className="h-3 w-3" />
-                      <span>{patient.phone}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>Last visit: {patient.lastVisit}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">
-                        {patient.age} years, {patient.gender}
-                      </span>
-                      <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${getHealthScoreColor(patient.healthScore)}`}>
-                        <Heart className="h-3 w-3" />
-                        <span>{patient.healthScore}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <div className="flex items-center space-x-2 text-xs text-gray-500">
-                  <Activity className="h-3 w-3" />
-                  <span>Active care</span>
-                </div>
-                <Button variant="outline" size="sm">
-                  View Profile
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {patients.length === 0 && (
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardContent className="text-center py-12">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No patients found</h3>
-            <p className="text-gray-600 mb-4">No patients are currently available.</p>
-            {(user.role === 'DOCTOR' || user.role === 'ATTENDANT') && (
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add First Patient
-              </Button>
-            )}
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Patients</p>
+                <p className="text-2xl font-bold text-blue-600">{patients.length}</p>
+              </div>
+              <Users className="h-8 w-8 text-blue-600" />
+            </div>
           </CardContent>
         </Card>
-      )}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Active Patients</p>
+                <p className="text-2xl font-bold text-green-600">{activePatients.length}</p>
+              </div>
+              <Activity className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Inactive Patients</p>
+                <p className="text-2xl font-bold text-gray-600">{inactivePatients.length}</p>
+              </div>
+              <Calendar className="h-8 w-8 text-gray-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search and Filter */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search patients by name, email, or phone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button variant="outline">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Patient List */}
+      <div className="space-y-4">
+        {filteredPatients.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No patients found</h3>
+              <p className="text-gray-600 mb-4">
+                {searchTerm ? 'No patients match your search criteria.' : 'No patients have been added yet.'}
+              </p>
+              {permissions.canAdd && !searchTerm && (
+                <Button onClick={handleAddPatient}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Your First Patient
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          filteredPatients.map((patient) => (
+            <PatientCard key={patient.id} patient={patient} />
+          ))
+        )}
+      </div>
     </div>
   )
 }

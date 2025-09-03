@@ -29,10 +29,14 @@ import {
   LogOut,
   Heart,
   Monitor,
-  DollarSign
+  DollarSign,
+  Zap,
+  PieChart
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { BarChart } from '@/components/ui/bar-chart'
+import { LineChart } from '@/components/ui/line-chart'
 
 interface AttendantDashboardProps {
   userName: string
@@ -82,6 +86,18 @@ interface Stats {
   pendingTasks: number
 }
 
+interface RegistrationData {
+  date: string
+  registrations: number
+  appointments: number
+}
+
+interface TaskDistribution {
+  type: string
+  count: number
+  color: string
+}
+
 export function AttendantDashboard({ userName, userImage }: AttendantDashboardProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
@@ -123,6 +139,23 @@ export function AttendantDashboard({ userName, userImage }: AttendantDashboardPr
     pendingTasks: 4
   })
 
+  const [registrationData, setRegistrationData] = useState<RegistrationData[]>([
+    { date: 'Mon', registrations: 8, appointments: 12 },
+    { date: 'Tue', registrations: 12, appointments: 15 },
+    { date: 'Wed', registrations: 6, appointments: 18 },
+    { date: 'Thu', registrations: 15, appointments: 22 },
+    { date: 'Fri', registrations: 10, appointments: 16 },
+    { date: 'Sat', registrations: 4, appointments: 8 },
+    { date: 'Sun', registrations: 2, appointments: 5 }
+  ])
+
+  const [taskDistribution, setTaskDistribution] = useState<TaskDistribution[]>([
+    { type: 'Registration', count: 8, color: '#3B82F6' },
+    { type: 'Payment', count: 5, color: '#10B981' },
+    { type: 'Follow-up', count: 12, color: '#F59E0B' },
+    { type: 'Documentation', count: 6, color: '#EF4444' }
+  ])
+
   useEffect(() => {
     loadDashboardData()
   }, [])
@@ -142,32 +175,52 @@ export function AttendantDashboard({ userName, userImage }: AttendantDashboardPr
 
   const quickActions = [
     { 
-      name: 'Register Patient', 
+      name: 'Register New Patient', 
       icon: UserCheck, 
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
-      route: '/dashboard/register-patient'
+      route: '/dashboard/register-patient',
+      description: 'Quick patient registration'
     },
     { 
-      name: 'Book Appointment', 
+      name: 'Schedule Appointment', 
       icon: Calendar, 
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
-      route: '/dashboard/appointments'
+      route: '/dashboard/appointments',
+      description: 'Book new appointments'
     },
     { 
-      name: 'View Patient Records', 
+      name: 'Patient Records', 
       icon: FileText, 
       color: 'text-green-600',
       bgColor: 'bg-green-50',
-      route: '/dashboard/patients'
+      route: '/dashboard/patients',
+      description: 'View patient history'
     },
     { 
-      name: 'Manage Tasks', 
-      icon: Clipboard, 
+      name: 'Process Payment', 
+      icon: DollarSign, 
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
-      route: '/dashboard/tasks'
+      route: '/dashboard/payments',
+      description: 'Handle transactions'
+    },
+    { 
+      name: 'Task Management', 
+      icon: Clipboard, 
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+      route: '/dashboard/tasks',
+      description: 'Manage daily tasks'
+    },
+    { 
+      name: 'Reports', 
+      icon: TrendingUp, 
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50',
+      route: '/dashboard/reports',
+      description: 'View analytics'
     }
   ]
 
@@ -306,6 +359,87 @@ export function AttendantDashboard({ userName, userImage }: AttendantDashboardPr
                 <p className="text-2xl font-bold text-orange-600">{stats.pendingTasks}</p>
               </div>
               <Clipboard className="h-8 w-8 text-orange-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions Section */}
+      <Card className="bg-white border-0 shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+            <Zap className="h-5 w-5 text-yellow-600" />
+            <span>Quick Actions</span>
+          </CardTitle>
+          <CardDescription>Frequently used tasks and features</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {quickActions.map((action, index) => {
+              const Icon = action.icon
+              return (
+                <Link key={index} href={action.route}>
+                  <div className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer group">
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-3 rounded-lg ${action.bgColor} group-hover:scale-110 transition-transform duration-200`}>
+                        <Icon className={`h-6 w-6 ${action.color}`} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          {action.name}
+                        </h3>
+                        <p className="text-sm text-gray-600">{action.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Weekly Registration Chart */}
+        <Card className="bg-white border-0 shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              <span>Weekly Registration Trend</span>
+            </CardTitle>
+            <CardDescription>Patient registrations and appointments over the week</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <LineChart 
+                data={registrationData}
+                categories={['registrations', 'appointments']}
+                colors={['#3B82F6', '#10B981']}
+                valueFormatter={(value) => value.toString()}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Task Distribution Chart */}
+        <Card className="bg-white border-0 shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+              <PieChart className="h-5 w-5 text-purple-600" />
+              <span>Task Distribution</span>
+            </CardTitle>
+            <CardDescription>Current task breakdown by type</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <BarChart 
+                data={taskDistribution}
+                categories={['count']}
+                index="type"
+                colors={taskDistribution.map(t => t.color)}
+                valueFormatter={(value) => value.toString()}
+              />
             </div>
           </CardContent>
         </Card>
