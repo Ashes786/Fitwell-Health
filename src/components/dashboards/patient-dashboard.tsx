@@ -373,12 +373,12 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
         </Card>
       </div>
 
-      {/* Main Content Grid */}
+        {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Appointments & Vitals */}
         <div className="lg:col-span-2 space-y-6">
           {/* Upcoming Appointments */}
-          <Card className="border-0 shadow-lg bg-white">
+          <Card className="border-0 shadow-lg bg-white h-full">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -391,7 +391,7 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="h-64 overflow-y-auto">
               <div className="space-y-4">
                 {appointments.slice(0, 3).map((appointment) => (
                   <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
@@ -436,14 +436,14 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
           </Card>
 
           {/* Health Vitals */}
-          <Card className="border-0 shadow-lg bg-white">
+          <Card className="border-0 shadow-lg bg-white h-full">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Activity className="h-5 w-5 text-green-600" />
                 Health Vitals
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="h-64 overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {vitals.map((vital, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
@@ -470,14 +470,14 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
         {/* Right Column */}
         <div className="space-y-6">
           {/* Ongoing Treatments */}
-          <Card className="border-0 shadow-lg bg-white">
+          <Card className="border-0 shadow-lg bg-white h-full">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Pill className="h-5 w-5 text-purple-600" />
                 Current Medications
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="h-48 overflow-y-auto">
               <div className="space-y-4">
                 {prescriptions.filter(p => p.status === 'active').map((prescription) => (
                   <div key={prescription.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
@@ -501,15 +501,15 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
           </Card>
 
           {/* Notifications */}
-          <Card className="border-0 shadow-lg bg-white">
+          <Card className="border-0 shadow-lg bg-white h-full">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Bell className="h-5 w-5 text-red-600" />
                 Health Reminders
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3 max-h-64 overflow-y-auto">
+            <CardContent className="h-48 overflow-y-auto">
+              <div className="space-y-3">
                 {notifications.map((notification) => (
                   <div key={notification.id} className={`p-3 rounded-lg border ${getNotificationColor(notification.priority)}`}>
                     <div className="flex items-start space-x-3">
@@ -526,22 +526,22 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
           </Card>
 
           {/* Quick Actions */}
-          <Card className="border-0 shadow-lg bg-white">
+          <Card className="border-0 shadow-lg bg-white h-full">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Zap className="h-5 w-5 text-yellow-600" />
                 Quick Actions
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="h-48">
               <div className="grid grid-cols-2 gap-3">
                 {quickActions.map((action, index) => {
                   const Icon = action.icon
                   return (
                     <Link key={index} href={action.route}>
-                      <div className={`p-4 rounded-xl border-2 border-transparent ${action.bgColor} hover:border-blue-300 cursor-pointer transition-all duration-300 hover:shadow-md`}>
+                      <div className={`p-4 rounded-xl border-2 border-transparent ${action.bgColor} hover:border-blue-300 cursor-pointer transition-all duration-300 hover:shadow-md h-full flex flex-col items-center justify-center`}>
                         <Icon className={`h-6 w-6 ${action.color} mb-2`} />
-                        <p className="text-xs font-medium text-gray-900">{action.name}</p>
+                        <p className="text-xs font-medium text-gray-900 text-center">{action.name}</p>
                       </div>
                     </Link>
                   )
