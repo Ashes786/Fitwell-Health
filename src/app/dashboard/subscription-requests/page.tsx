@@ -4,8 +4,8 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { SuperAdminSubscriptionRequests } from '@/app/dashboard/super-admin/subscription-requests/page'
-import { AdminSubscriptionRequests } from '@/app/dashboard/admin/subscription-requests/page'
+import SuperAdminSubscriptionRequests from '@/app/dashboard/super-admin/subscription-requests/page'
+import AdminSubscriptionRequests from '@/app/dashboard/admin/subscription-requests/page'
 
 export default function SubscriptionRequestsPage() {
   const { user, loading } = useCustomSession()

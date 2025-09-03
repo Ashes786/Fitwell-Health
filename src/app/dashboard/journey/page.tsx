@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { PatientJourney } from '@/app/dashboard/patient/journey/page'
+import PatientJourney from '@/app/dashboard/patient/journey/page'
 
 export default function JourneyPage() {
   const { user, loading } = useCustomSession()

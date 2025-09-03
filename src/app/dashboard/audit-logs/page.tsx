@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { AdminAuditLogs } from '@/app/dashboard/admin/audit-logs/page'
+import AdminAuditLogs from '@/app/dashboard/admin/audit-logs/page'
 
 export default function AuditLogsPage() {
   const { user, loading } = useCustomSession()

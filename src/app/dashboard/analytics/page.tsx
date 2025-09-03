@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { SuperAdminAnalytics } from '@/app/dashboard/super-admin/analytics/page'
+import SuperAdminAnalytics from '@/app/dashboard/super-admin/analytics/page'
 import AdminAnalytics from '@/app/dashboard/admin/analytics/page'
 
 export default function AnalyticsPage() {

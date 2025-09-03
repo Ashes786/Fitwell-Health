@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { PatientDirectory } from '@/app/dashboard/patient/directory/page'
+import PatientDirectory from '@/app/dashboard/patient/directory/page'
 
 export default function DirectoryPage() {
   const { user, loading } = useCustomSession()

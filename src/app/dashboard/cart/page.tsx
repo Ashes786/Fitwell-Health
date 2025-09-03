@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { PatientCart } from '@/app/dashboard/patient/cart/page'
+import PatientCart from '@/app/dashboard/patient/cart/page'
 
 export default function CartPage() {
   const { user, loading } = useCustomSession()

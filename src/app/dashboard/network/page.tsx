@@ -4,8 +4,8 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { SuperAdminNetworks } from '@/app/dashboard/super-admin/networks/page'
-import { AdminNetwork } from '@/app/dashboard/admin/network/page'
+import SuperAdminNetworks from '@/app/dashboard/super-admin/networks/page'
+import AdminNetwork from '@/app/dashboard/admin/network/page'
 
 export default function NetworkPage() {
   const { user, loading } = useCustomSession()

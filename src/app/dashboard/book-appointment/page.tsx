@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { PatientBookAppointment } from '@/app/dashboard/patient/book-appointment/page'
+import PatientBookAppointment from '@/app/dashboard/patient/book-appointment/page'
 
 export default function BookAppointmentPage() {
   const { user, loading } = useCustomSession()

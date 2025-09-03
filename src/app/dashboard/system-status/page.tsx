@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { SuperAdminSystemStatus } from '@/app/dashboard/super-admin/system-status/page'
+import SuperAdminSystemStatus from '@/app/dashboard/super-admin/system-status/page'
 
 export default function SystemStatusPage() {
   const { user, loading } = useCustomSession()

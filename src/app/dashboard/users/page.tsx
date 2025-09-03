@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { AdminUsers } from '@/app/dashboard/admin/users/page'
+import AdminUsers from '@/app/dashboard/admin/users/page'
 
 export default function UsersPage() {
   const { user, loading } = useCustomSession()

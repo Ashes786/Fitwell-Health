@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { PatientRecommendations } from '@/app/dashboard/patient/recommendations/page'
+import PatientRecommendations from '@/app/dashboard/patient/recommendations/page'
 
 export default function RecommendationsPage() {
   const { user, loading } = useCustomSession()

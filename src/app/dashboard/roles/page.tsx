@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { AdminRoles } from '@/app/dashboard/admin/roles/page'
+import AdminRoles from '@/app/dashboard/admin/roles/page'
 
 export default function RolesPage() {
   const { user, loading } = useCustomSession()

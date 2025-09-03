@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { PatientAiReports } from '@/app/dashboard/patient/ai-reports/page'
+import PatientAiReports from '@/app/dashboard/patient/ai-reports/page'
 
 export default function AiReportsPage() {
   const { user, loading } = useCustomSession()

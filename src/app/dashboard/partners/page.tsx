@@ -4,8 +4,8 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { SuperAdminPartners } from '@/app/dashboard/super-admin/partners/page'
-import { AdminPartners } from '@/app/dashboard/admin/partners/page'
+import SuperAdminPartners from '@/app/dashboard/super-admin/partners/page'
+import AdminPartners from '@/app/dashboard/admin/partners/page'
 
 export default function PartnersPage() {
   const { user, loading } = useCustomSession()

@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { SuperAdminSecurity } from '@/app/dashboard/super-admin/security/page'
+import SuperAdminSecurity from '@/app/dashboard/super-admin/security/page'
 
 export default function SecurityPage() {
   const { user, loading } = useCustomSession()

@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { PatientSubscription } from '@/app/dashboard/patient/subscription/page'
+import PatientSubscription from '@/app/dashboard/patient/subscription/page'
 
 export default function SubscriptionPage() {
   const { user, loading } = useCustomSession()

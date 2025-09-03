@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { PatientBilling } from '@/app/dashboard/patient/billing/page'
+import PatientBilling from '@/app/dashboard/patient/billing/page'
 
 export default function BillingPage() {
   const { user, loading } = useCustomSession()
