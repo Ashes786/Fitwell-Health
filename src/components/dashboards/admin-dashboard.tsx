@@ -32,7 +32,12 @@ import {
   Hospital,
   FlaskConical,
   ShoppingCart,
-  ChartBar
+  ChartBar,
+  Clock,
+  Star,
+  Target,
+  Zap,
+  Award
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -230,12 +235,12 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="animate-pulse">
-              <CardContent className="p-4">
-                <div className="h-20 bg-gray-200 rounded"></div>
+              <CardContent className="p-6">
+                <div className="h-24 bg-gray-200 rounded-lg"></div>
               </CardContent>
             </Card>
           ))}
@@ -245,245 +250,272 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Greeting & Profile Summary */}
-      <Card className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white border-0 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Avatar className="h-16 w-16 border-2 border-white">
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <Avatar className="h-16 w-16 ring-4 ring-white shadow-lg">
                 <AvatarImage src={userImage} />
-                <AvatarFallback className="bg-white text-indigo-600 text-xl">
+                <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-blue-600 text-white text-xl font-bold">
                   {userName?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <h1 className="text-2xl font-bold">Welcome back, {userName}!</h1>
-                <p className="text-indigo-100">Organization Administrator</p>
-                <div className="flex items-center space-x-3 mt-2">
-                  <Badge className="bg-white/20 text-white border-white/30">
-                    <div className="w-2 h-2 rounded-full mr-2 bg-green-400"></div>
-                    System Active
-                  </Badge>
-                  <span className="text-indigo-100 text-sm">
-                    Last updated: {lastRefresh.toLocaleTimeString()}
-                  </span>
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Welcome back, {userName}</h1>
+              <p className="text-gray-600 mt-1">Organization Administrator</p>
+              <div className="flex items-center space-x-4 mt-2">
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <div className="w-2 h-2 rounded-full mr-2 bg-green-500"></div>
+                  System Active
+                </Badge>
+                <span className="text-sm text-gray-500">
+                  Updated {lastRefresh.toLocaleTimeString()}
+                </span>
+              </div>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Settings className="h-4 w-4" />
+            Settings
+          </Button>
+        </div>
+      </div>
+
+      {/* Key Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Users className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">Total Patients</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{stats.totalPatients.toLocaleString()}</p>
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <span className="text-sm text-green-600">+{orgStats.newToday} today</span>
                 </div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-sm text-indigo-100">Organization Overview</div>
-              <div className="text-lg font-semibold">{stats.totalPatients} patients • {stats.totalDoctors} doctors</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* KPIs at the top */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Registered Patients</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.totalPatients}</p>
-                <p className="text-xs text-green-600">+{orgStats.newToday} today</p>
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Stethoscope className="h-5 w-5 text-green-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">Medical Staff</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{stats.totalDoctors}</p>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span className="text-sm text-green-600">{staffStats.activeDoctors} active</span>
+                </div>
               </div>
-              <Users className="h-8 w-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
-        
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Registered Doctors</p>
-                <p className="text-2xl font-bold text-green-600">{stats.totalDoctors}</p>
-                <p className="text-xs text-gray-600">{staffStats.activeDoctors} active</p>
+
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <CreditCard className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">Subscriptions</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{stats.activeSubscriptions}</p>
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <span className="text-sm text-green-600">+{subscriptionStats.growthRate}%</span>
+                </div>
               </div>
-              <Stethoscope className="h-8 w-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
-        
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Active Subscriptions</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.activeSubscriptions}</p>
-                <p className="text-xs text-green-600">+{subscriptionStats.growthRate}% growth</p>
+
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Calendar className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">Today's Schedule</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{stats.todayAppointments}</p>
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-orange-500" />
+                  <span className="text-sm text-orange-600">Appointments</span>
+                </div>
               </div>
-              <CreditCard className="h-8 w-8 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Today's Appointments</p>
-                <p className="text-2xl font-bold text-orange-600">{stats.todayAppointments}</p>
-                <p className="text-xs text-gray-600">GP: {appointmentSummary.todayGP} • Spec: {appointmentSummary.todaySpecialist}</p>
-              </div>
-              <Calendar className="h-8 w-8 text-orange-600" />
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Registered Patients Overview */}
-          <Card className="bg-white border-0 shadow-lg">
+        {/* Left Column - Patient Overview */}
+        <div className="lg:col-span-1 space-y-6">
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Users className="h-5 w-5 text-blue-600" />
-                <span>Registered Patients</span>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Target className="h-5 w-5 text-blue-600" />
+                Patient Overview
               </CardTitle>
-              <CardDescription>Count, new today/this week</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-3xl font-bold text-blue-600 mb-1">{orgStats.totalPatients}</div>
-                  <div className="text-sm text-gray-600">Total Patients</div>
+            <CardContent className="space-y-4">
+              <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+                <div className="text-4xl font-bold text-blue-600 mb-2">{orgStats.totalPatients.toLocaleString()}</div>
+                <div className="text-sm text-blue-700 font-medium">Total Patients</div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-green-50 rounded-xl border border-green-200">
+                  <div className="text-2xl font-bold text-green-600 mb-1">{orgStats.newToday}</div>
+                  <div className="text-xs text-green-700 font-medium">New Today</div>
                 </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-3xl font-bold text-green-600 mb-1">{orgStats.newToday}</div>
-                  <div className="text-sm text-gray-600">New Today</div>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-3xl font-bold text-purple-600 mb-1">{orgStats.newThisWeek}</div>
-                  <div className="text-sm text-gray-600">New This Week</div>
+                <div className="text-center p-4 bg-purple-50 rounded-xl border border-purple-200">
+                  <div className="text-2xl font-bold text-purple-600 mb-1">{orgStats.newThisWeek}</div>
+                  <div className="text-xs text-purple-700 font-medium">This Week</div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Appointment Summary */}
-          <Card className="bg-white border-0 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Calendar className="h-5 w-5 text-orange-600" />
-                <span>Appointment Summary</span>
-              </CardTitle>
-              <CardDescription>Today/this week: GP vs Specialist</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Today's Appointments</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                      <span className="text-sm font-medium">GP Consultations</span>
-                      <span className="text-lg font-bold text-blue-600">{appointmentSummary.todayGP}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                      <span className="text-sm font-medium">Specialist Consultations</span>
-                      <span className="text-lg font-bold text-purple-600">{appointmentSummary.todaySpecialist}</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">This Week's Appointments</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                      <span className="text-sm font-medium">GP Consultations</span>
-                      <span className="text-lg font-bold text-green-600">{appointmentSummary.thisWeekGP}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-                      <span className="text-sm font-medium">Specialist Consultations</span>
-                      <span className="text-lg font-bold text-orange-600">{appointmentSummary.thisWeekSpecialist}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Organization Partners */}
-          <Card className="bg-white border-0 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Building className="h-5 w-5 text-indigo-600" />
-                <span>Organization Partners</span>
-              </CardTitle>
-              <CardDescription>Linked hospitals, labs, pharmacies</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {partners.map((partner) => (
-                  <div key={partner.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-                    <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded-lg ${getTypeColor(partner.type)}`}>
-                        {getPartnerIcon(partner.type)}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{partner.name}</p>
-                        <p className="text-sm text-gray-600">{partner.location}</p>
-                      </div>
-                    </div>
-                    <Badge className={getStatusColor(partner.status)}>
-                      {partner.status}
-                    </Badge>
-                  </div>
-                ))}
+              <div className="pt-4 border-t">
+                <Button variant="outline" className="w-full justify-center gap-2">
+                  <Users className="h-4 w-4" />
+                  View All Patients
+                </Button>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column */}
-        <div className="space-y-6">
-          {/* Active Subscriptions */}
-          <Card className="bg-white border-0 shadow-lg">
+        {/* Middle Column - Appointments & Partners */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Appointments */}
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <CreditCard className="h-5 w-5 text-purple-600" />
-                <span>Active Subscriptions</span>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-orange-600" />
+                Appointments
               </CardTitle>
-              <CardDescription>Count + revenue snapshot</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-3xl font-bold text-purple-600 mb-1">{subscriptionStats.activeSubscriptions}</div>
-                  <div className="text-sm text-gray-600">Active Plans</div>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50 rounded-xl text-center">
+                  <div className="text-2xl font-bold text-blue-600 mb-1">{appointmentSummary.todayGP}</div>
+                  <div className="text-xs text-blue-700 font-medium">GP Today</div>
                 </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600 mb-1">${subscriptionStats.revenueSnapshot.toLocaleString()}</div>
-                  <div className="text-sm text-gray-600">Monthly Revenue</div>
+                <div className="p-4 bg-purple-50 rounded-xl text-center">
+                  <div className="text-2xl font-bold text-purple-600 mb-1">{appointmentSummary.todaySpecialist}</div>
+                  <div className="text-xs text-purple-700 font-medium">Specialists</div>
                 </div>
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-xl font-bold text-blue-600 mb-1">+{subscriptionStats.growthRate}%</div>
-                  <div className="text-sm text-gray-600">Growth Rate</div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium text-gray-700">This Week GP</span>
+                  <span className="text-lg font-semibold text-gray-900">{appointmentSummary.thisWeekGP}</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium text-gray-700">This Week Specialists</span>
+                  <span className="text-lg font-semibold text-gray-900">{appointmentSummary.thisWeekSpecialist}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Partners */}
+          <Card className="border-0 shadow-lg bg-white">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Building className="h-5 w-5 text-indigo-600" />
+                Partners
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {partners.map((partner) => (
+                <div key={partner.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <div className={`p-2 rounded-lg ${getTypeColor(partner.type)}`}>
+                      {getPartnerIcon(partner.type)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 text-sm">{partner.name}</p>
+                      <p className="text-xs text-gray-600">{partner.location}</p>
+                    </div>
+                  </div>
+                  <Badge className={getStatusColor(partner.status)}>
+                    {partner.status}
+                  </Badge>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Revenue & Actions */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Revenue */}
+          <Card className="border-0 shadow-lg bg-white">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-green-600" />
+                Revenue Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
+                <div className="text-3xl font-bold text-green-600 mb-1">${subscriptionStats.revenueSnapshot.toLocaleString()}</div>
+                <div className="text-sm text-green-700 font-medium">Monthly Revenue</div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-200">
+                  <div className="text-xl font-bold text-blue-600 mb-1">{subscriptionStats.activeSubscriptions}</div>
+                  <div className="text-xs text-blue-700 font-medium">Active Plans</div>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-xl border border-purple-200">
+                  <div className="text-xl font-bold text-purple-600 mb-1">+{subscriptionStats.growthRate}%</div>
+                  <div className="text-xs text-purple-700 font-medium">Growth</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Notifications */}
-          <Card className="bg-white border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Bell className="h-5 w-5 text-orange-600" />
-                <span>Notifications</span>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Bell className="h-5 w-5 text-red-600" />
+                Notifications
               </CardTitle>
-              <CardDescription>Approvals, issues, expiring contracts</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 max-h-64 overflow-y-auto">
                 {notifications.map((notification) => (
-                  <div key={notification.id} className={`p-3 border rounded-lg ${getPriorityColor(notification.priority)}`}>
-                    <div className="flex items-start space-x-2">
-                      <Bell className="h-4 w-4 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{notification.message}</p>
-                        <p className="text-xs opacity-75">{notification.time}</p>
+                  <div key={notification.id} className={`p-3 rounded-lg border ${getPriorityColor(notification.priority)}`}>
+                    <div className="flex items-start space-x-3">
+                      <Bell className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{notification.message}</p>
+                        <p className="text-xs text-gray-600 mt-1">{notification.time}</p>
                       </div>
                     </div>
                   </div>
@@ -493,13 +525,12 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
           </Card>
 
           {/* Quick Actions */}
-          <Card className="bg-white border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Plus className="h-5 w-5 text-blue-600" />
-                <span>Quick Actions</span>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Zap className="h-5 w-5 text-yellow-600" />
+                Quick Actions
               </CardTitle>
-              <CardDescription>Common administrative tasks</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
@@ -507,8 +538,8 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
                   const Icon = action.icon
                   return (
                     <Link key={index} href={action.route}>
-                      <div className={`p-3 rounded-lg border-2 border-transparent ${action.bgColor} hover:border-blue-300 cursor-pointer transition-all duration-300`}>
-                        <Icon className={`h-5 w-5 ${action.color} mb-2`} />
+                      <div className={`p-4 rounded-xl border-2 border-transparent ${action.bgColor} hover:border-blue-300 cursor-pointer transition-all duration-300 hover:shadow-md`}>
+                        <Icon className={`h-6 w-6 ${action.color} mb-2`} />
                         <p className="text-xs font-medium text-gray-900">{action.name}</p>
                       </div>
                     </Link>

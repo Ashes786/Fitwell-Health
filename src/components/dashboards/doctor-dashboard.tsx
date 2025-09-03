@@ -29,7 +29,14 @@ import {
   Heart,
   Monitor,
   Settings,
-  LogOut
+  LogOut,
+  Zap,
+  Target,
+  Award,
+  Timer,
+  ChevronRight,
+  MapPin,
+  Mail
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -199,12 +206,12 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="animate-pulse">
-              <CardContent className="p-4">
-                <div className="h-20 bg-gray-200 rounded"></div>
+              <CardContent className="p-6">
+                <div className="h-24 bg-gray-200 rounded-lg"></div>
               </CardContent>
             </Card>
           ))}
@@ -214,129 +221,175 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
   }
 
   return (
-    <div className="space-y-6">
-      {/* Greeting & Profile Summary */}
-      <Card className="bg-gradient-to-r from-green-600 to-teal-600 text-white border-0 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Avatar className="h-16 w-16 border-2 border-white">
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <Avatar className="h-16 w-16 ring-4 ring-white shadow-lg">
                 <AvatarImage src={userImage} />
-                <AvatarFallback className="bg-white text-green-600 text-xl">
+                <AvatarFallback className="bg-gradient-to-br from-green-600 to-teal-600 text-white text-xl font-bold">
                   {userName?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <h1 className="text-2xl font-bold">Dr. {userName}</h1>
-                <p className="text-green-100">{specialization}</p>
-                <div className="flex items-center space-x-3 mt-2">
-                  <Badge className={`bg-white/20 text-white border-white/30 ${isAvailable ? 'bg-green-500/30' : 'bg-red-500/30'}`}>
-                    <div className={`w-2 h-2 rounded-full mr-2 ${isAvailable ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                    {isAvailable ? 'Available' : 'Busy'}
-                  </Badge>
-                  <span className="text-green-100 text-sm">
-                    Last updated: {lastRefresh.toLocaleTimeString()}
-                  </span>
-                </div>
-              </div>
+              <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
             </div>
-            <div className="text-right">
-              <Button 
-                variant="secondary" 
-                className={`mb-2 ${isAvailable ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
-                onClick={() => setIsAvailable(!isAvailable)}
-              >
-                {isAvailable ? 'Go Busy' : 'Go Available'}
-              </Button>
-              <div className="text-sm text-green-100">
-                {appointments.filter(a => a.status === 'confirmed' || a.status === 'in-progress').length} appointments today
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Dr. {userName}</h1>
+              <p className="text-gray-600 mt-1">{specialization}</p>
+              <div className="flex items-center space-x-4 mt-2">
+                <Badge variant="secondary" className={`${isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  <div className={`w-2 h-2 rounded-full mr-2 ${isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  {isAvailable ? 'Available' : 'Busy'}
+                </Badge>
+                <span className="text-sm text-gray-500">
+                  Updated {lastRefresh.toLocaleTimeString()}
+                </span>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <Button 
+            variant={isAvailable ? "destructive" : "default"}
+            className="gap-2"
+            onClick={() => setIsAvailable(!isAvailable)}
+          >
+            {isAvailable ? <LogOut className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+            {isAvailable ? 'Go Busy' : 'Go Available'}
+          </Button>
+        </div>
+      </div>
 
-      {/* KPIs at the top */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Today's Appointments</p>
-                <p className="text-2xl font-bold text-blue-600">{appointments.length}</p>
+      {/* Key Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">Today's Schedule</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{appointments.length}</p>
+                <div className="flex items-center space-x-2">
+                  <Timer className="h-4 w-4 text-blue-500" />
+                  <span className="text-sm text-blue-600">Appointments</span>
+                </div>
               </div>
-              <Calendar className="h-8 w-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
-        
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Weekly Revenue</p>
-                <p className="text-2xl font-bold text-green-600">${financials.weeklyRevenue.toLocaleString()}</p>
+
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <DollarSign className="h-5 w-5 text-green-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">Weekly Revenue</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">${financials.weeklyRevenue.toLocaleString()}</p>
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <span className="text-sm text-green-600">+12% from last week</span>
+                </div>
               </div>
-              <DollarSign className="h-8 w-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
-        
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Pending Items</p>
-                <p className="text-2xl font-bold text-orange-600">{pendingItems.length}</p>
+
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <AlertTriangle className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">Pending Items</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{pendingItems.length}</p>
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-orange-500" />
+                  <span className="text-sm text-orange-600">Require attention</span>
+                </div>
               </div>
-              <AlertTriangle className="h-8 w-8 text-orange-600" />
             </div>
           </CardContent>
         </Card>
-        
-        <Card className="bg-white border-0 shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Patient Satisfaction</p>
-                <p className="text-2xl font-bold text-purple-600">4.8</p>
+
+        <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Star className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">Satisfaction</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">4.8</p>
+                <div className="flex items-center space-x-2">
+                  <Award className="h-4 w-4 text-purple-500" />
+                  <span className="text-sm text-purple-600">Patient rating</span>
+                </div>
               </div>
-              <Star className="h-8 w-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Today's Appointments */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="bg-white border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Calendar className="h-5 w-5 text-blue-600" />
-                <span>Today's Appointments</span>
-              </CardTitle>
-              <CardDescription>Timeline view with patient names</CardDescription>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                  Today's Appointments
+                </CardTitle>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add New
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {appointments.map((appointment) => (
-                  <div key={appointment.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                  <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                     <div className="flex items-center space-x-4">
-                      <div className={`p-3 rounded-lg ${getTypeColor(appointment.type)}`}>
+                      <div className={`p-3 rounded-xl ${getTypeColor(appointment.type)}`}>
                         <Clock className="h-5 w-5" />
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{appointment.patientName}</p>
-                        <p className="text-sm text-gray-600">{appointment.time} • {appointment.duration}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <p className="font-medium text-gray-900">{appointment.patientName}</p>
+                          <Badge variant="outline" className="text-xs">
+                            {appointment.type}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <Timer className="h-3 w-3" />
+                            {appointment.time}
+                          </span>
+                          <span>{appointment.duration}</span>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Badge className={getStatusColor(appointment.status)}>
                         {appointment.status.replace('-', ' ')}
                       </Badge>
-                      <Button variant="ghost" size="sm">
-                        <User className="h-4 w-4" />
+                      <Button variant="ghost" size="sm" className="hover:bg-gray-200">
+                        <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -346,31 +399,40 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
           </Card>
 
           {/* Recent Patients */}
-          <Card className="bg-white border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Users className="h-5 w-5 text-purple-600" />
-                <span>Recent Patients</span>
-              </CardTitle>
-              <CardDescription>Last 5 patients with quick access to records</CardDescription>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Users className="h-5 w-5 text-purple-600" />
+                  Recent Patients
+                </CardTitle>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Users className="h-4 w-4" />
+                  View All
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {recentPatients.map((patient) => (
-                  <div key={patient.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                  <div key={patient.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                     <div className="flex items-center space-x-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback className="bg-purple-100 text-purple-600">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-purple-100 text-purple-600 font-bold">
                           {patient.name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="font-medium text-gray-900">{patient.name}</p>
-                        <p className="text-sm text-gray-600">{patient.age} years • {patient.condition}</p>
-                        <p className="text-xs text-gray-500">Last visit: {patient.lastVisit}</p>
+                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                          <span>{patient.age} years</span>
+                          <span>•</span>
+                          <span>{patient.condition}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Last visit: {patient.lastVisit}</p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" className="hover:bg-gray-200">
                       <FileText className="h-4 w-4" />
                     </Button>
                   </div>
@@ -383,34 +445,31 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
         {/* Right Column */}
         <div className="space-y-6">
           {/* Earnings & Finances */}
-          <Card className="bg-white border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-green-600" />
-                <span>Earnings & Finances</span>
+                Earnings Overview
               </CardTitle>
-              <CardDescription>Current week/month overview</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-600">This Week</p>
-                    <p className="text-lg font-bold text-green-600">${financials.weeklyRevenue.toLocaleString()}</p>
-                  </div>
-                  <TrendingUp className="h-5 w-5 text-green-600" />
-                </div>
+            <CardContent className="space-y-4">
+              <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
+                <div className="text-3xl font-bold text-green-600 mb-1">${financials.monthlyRevenue.toLocaleString()}</div>
+                <div className="text-sm text-green-700 font-medium">Monthly Revenue</div>
+              </div>
+
+              <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-600">This Month</p>
-                    <p className="text-lg font-bold text-blue-600">${financials.monthlyRevenue.toLocaleString()}</p>
+                  <div className="text-left">
+                    <p className="text-sm text-gray-600">This Week</p>
+                    <p className="text-lg font-semibold text-gray-900">${financials.weeklyRevenue.toLocaleString()}</p>
                   </div>
                   <TrendingUp className="h-5 w-5 text-blue-600" />
                 </div>
                 <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-600">Pending Payouts</p>
-                    <p className="text-lg font-bold text-orange-600">${financials.pendingPayouts.toLocaleString()}</p>
+                  <div className="text-left">
+                    <p className="text-sm text-gray-600">Pending</p>
+                    <p className="text-lg font-semibold text-gray-900">${financials.pendingPayouts.toLocaleString()}</p>
                   </div>
                   <Clock className="h-5 w-5 text-orange-600" />
                 </div>
@@ -419,26 +478,25 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
           </Card>
 
           {/* Pending Items */}
-          <Card className="bg-white border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-orange-600" />
-                <span>Pending Items</span>
+                Pending Items
               </CardTitle>
-              <CardDescription>Prescriptions and lab orders</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 max-h-64 overflow-y-auto">
                 {pendingItems.map((item) => (
-                  <div key={item.id} className={`p-3 border rounded-lg ${getPriorityColor(item.priority)}`}>
+                  <div key={item.id} className={`p-3 rounded-lg border ${getPriorityColor(item.priority)}`}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
+                        <div className="flex items-center space-x-2 mb-2">
                           {item.type === 'prescription' ? <Pill className="h-4 w-4" /> : <FlaskConical className="h-4 w-4" />}
                           <p className="font-medium text-sm">{item.patientName}</p>
                         </div>
-                        <p className="text-xs opacity-75">{item.details}</p>
-                        <p className="text-xs opacity-60 mt-1">{item.time}</p>
+                        <p className="text-xs text-gray-600">{item.details}</p>
+                        <p className="text-xs text-gray-500 mt-1">{item.time}</p>
                       </div>
                       <Badge variant="outline" className="text-xs">
                         {item.priority}
@@ -451,23 +509,22 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
           </Card>
 
           {/* Notifications */}
-          <Card className="bg-white border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Bell className="h-5 w-5 text-blue-600" />
-                <span>Notifications</span>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Bell className="h-5 w-5 text-red-600" />
+                Notifications
               </CardTitle>
-              <CardDescription>System updates and messages</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 max-h-48 overflow-y-auto">
                 {notifications.map((notification) => (
-                  <div key={notification.id} className={`p-3 border rounded-lg ${getPriorityColor(notification.priority)}`}>
-                    <div className="flex items-start space-x-2">
-                      <Bell className="h-4 w-4 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{notification.message}</p>
-                        <p className="text-xs opacity-75">{notification.time}</p>
+                  <div key={notification.id} className={`p-3 rounded-lg border ${getPriorityColor(notification.priority)}`}>
+                    <div className="flex items-start space-x-3">
+                      <Bell className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{notification.message}</p>
+                        <p className="text-xs text-gray-600 mt-1">{notification.time}</p>
                       </div>
                     </div>
                   </div>
@@ -477,22 +534,21 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
           </Card>
 
           {/* Quick Actions */}
-          <Card className="bg-white border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                <Plus className="h-5 w-5 text-blue-600" />
-                <span>Quick Actions</span>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Zap className="h-5 w-5 text-yellow-600" />
+                Quick Actions
               </CardTitle>
-              <CardDescription>Common tasks</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
                 {quickActions.map((action, index) => {
                   const Icon = action.icon
                   return (
-                    <div key={index} className="p-3 rounded-lg border-2 border-transparent bg-gray-50 hover:border-blue-300 cursor-pointer transition-all duration-300"
+                    <div key={index} className="p-4 rounded-xl border-2 border-transparent bg-gray-50 hover:border-blue-300 cursor-pointer transition-all duration-300 hover:shadow-md"
                       onClick={action.route ? () => {} : action.action}>
-                      <Icon className={`h-5 w-5 ${action.color} mb-2`} />
+                      <Icon className={`h-6 w-6 ${action.color} mb-2`} />
                       <p className="text-xs font-medium text-gray-900">{action.name}</p>
                     </div>
                   )
