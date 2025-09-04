@@ -161,7 +161,7 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
       {/* Sidebar */}
       <div className={cn(
         "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out flex-shrink-0",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:w-20"
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex flex-col h-full">
           {/* Logo and close button */}
@@ -242,7 +242,7 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
                 <Menu className="h-5 w-5" />
               </Button>
               <h1 className="text-xl font-semibold text-gray-900">
-                {userRole?.replace('_', ' ')} Dashboard
+                Welcome, {userName} - {userRole?.replace('_', ' ')} Dashboard
               </h1>
             </div>
             <div className="flex items-center space-x-4">
@@ -284,10 +284,10 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
 
         {/* Page content */}
         <main className={cn(
-          "flex-1 p-4 sm:p-6 lg:p-8 bg-gray-50 overflow-auto transition-all duration-300",
-          sidebarOpen ? "lg:ml-64" : "lg:ml-20"
+          "flex-1 p-2 sm:p-4 bg-gray-50 overflow-auto transition-all duration-300",
+          sidebarOpen ? "ml-64" : "ml-0"
         )}>
-          <div className="w-full max-w-7xl mx-auto">
+          <div className="w-full">
             {children}
           </div>
         </main>
