@@ -37,7 +37,6 @@ import {
   Timer,
   ChevronRight,
   Shield,
-  Pulse,
   Thermometer,
   Droplets,
   Ambulance,
@@ -70,7 +69,7 @@ import {
   CalendarDays,
   BarChart3,
   PieChart,
-  LineChart
+  Wind
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'

@@ -31,7 +31,6 @@ import {
   Wrench,
   Truck,
   Zap,
-  Activity,
   BarChart3
 } from 'lucide-react'
 import { toast } from 'sonner'

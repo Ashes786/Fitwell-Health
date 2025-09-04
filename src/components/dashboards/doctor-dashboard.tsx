@@ -67,7 +67,6 @@ import {
   FileChart,
   Report,
   Analytics,
-  TrendingDown,
   Wallet,
   CreditCard,
   Banknote,
