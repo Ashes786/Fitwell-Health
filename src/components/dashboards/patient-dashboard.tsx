@@ -9,8 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { 
   Heart, 
-  Calendar, 
-  Pill, 
+  Calendar,  
   FileText, 
   Bell, 
   TrendingUp, 
@@ -44,7 +43,6 @@ import {
   Scale,
   Bone,
   Eye,
-  Tooth,
   Brain,
   Dumbbell,
   Apple,
@@ -63,7 +61,7 @@ import {
   Microscope,
   TestTube,
   Bandage,
-  Capsule,
+  Pill,
   Hospital,
   ClipboardList,
   CalendarDays,
@@ -281,7 +279,7 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
     },
     { 
       name: 'Order Meds', 
-      icon: Capsule, 
+      icon: Pill, 
       color: 'text-teal-600',
       bgColor: 'bg-teal-50',
       route: '/dashboard/patient/prescriptions',
@@ -315,7 +313,7 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'pill': return <Capsule className="h-4 w-4" />
+      case 'pill': return <Pill className="h-4 w-4" />
       case 'hydration': return <Droplets className="h-4 w-4" />
       case 'lab': return <TestTube className="h-4 w-4" />
       case 'appointment': return <Calendar className="h-4 w-4" />
@@ -476,7 +474,7 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
                   <div className="p-2 bg-purple-100 rounded-lg">
-                    <Capsule className="h-5 w-5 text-purple-600" />
+                    <Pill className="h-5 w-5 text-purple-600" />
                   </div>
                   <p className="text-sm font-medium text-gray-600">Active</p>
                 </div>
@@ -743,7 +741,7 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
         <Card className="border-0 shadow-lg bg-white">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Capsule className="h-5 w-5 text-purple-600" />
+              <Pill className="h-5 w-5 text-purple-600" />
               Medication Adherence
             </CardTitle>
           </CardHeader>

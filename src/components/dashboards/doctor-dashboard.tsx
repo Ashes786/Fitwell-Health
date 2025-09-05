@@ -20,11 +20,9 @@ import {
   AlertTriangle,
   CheckCircle,
   Plus,
-  Video,
   MessageSquare,
   Pill,
   FlaskConical,
-  FileText,
   User,
   Phone,
   Star,
@@ -39,22 +37,20 @@ import {
   ChevronRight,
   MapPin,
   Mail,
-  BarChart3,
-  LineChart,
+  LineChartIcon,
   PieChart,
   UserPlus,
   UserCheck,
   CalendarDays,
   Clock1,
-  VideoCamera,
+  Video,
   PhoneCall,
   MessageCircle,
   Clipboard,
-  HeartPulse,
   Brain,
   Eye,
   Ear,
-  Tooth,
+  HeartPulse,
   Bone,
   Baby,
   Syringe,
@@ -64,16 +60,16 @@ import {
   Hospital,
   Ambulance,
   Shield,
-  FileChart,
-  Report,
-  Analytics,
+  FileBarChart,
+  FileText,
+  BarChart3,
   Wallet,
   CreditCard,
   Banknote,
   Building2,
   Wifi,
   Laptop,
-  Mobile,
+  Smartphone,
   Tablet,
   Watch,
   Headphones,
@@ -141,7 +137,7 @@ interface PendingItem {
   type: 'prescription' | 'lab-order' | 'referral' | 'surgery-schedule' | 'follow-up'
   patientName: string
   details: string
-  priority: 'high' | 'medium' | 'low'
+  priority: 'high' | 'medium' | 'low' | 'critical'
   time: string
   dueDate?: string
 }
@@ -274,7 +270,7 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
   const enhancedQuickActions = [
     { 
       name: 'Start Consultation', 
-      icon: VideoCamera, 
+      icon: Video, 
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       route: '/dashboard/doctor/consultation',
@@ -330,7 +326,7 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
     },
     { 
       name: 'Generate Reports', 
-      icon: FileChart, 
+      icon: FileBarChart, 
       color: 'text-pink-600',
       bgColor: 'bg-pink-50',
       route: '/dashboard/doctor/revenue',
@@ -734,7 +730,7 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
         <Card className="border-0 shadow-lg bg-white">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Analytics className="h-5 w-5 text-purple-600" />
+              <BarChart3 className="h-5 w-5 text-purple-600" />
               Performance Metrics
             </CardTitle>
           </CardHeader>
