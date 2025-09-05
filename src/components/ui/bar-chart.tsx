@@ -29,13 +29,53 @@ export function BarChart({
   className = '',
   title
 }: BarChartProps) {
-  const padding = { top: 40, right: 40, bottom: 60, left: 60 }
-  const chartWidth = width - padding.left - padding.right
-  const chartHeight = height - padding.top - padding.bottom
+  // Validate dimensions
+  const validWidth = typeof width === 'number' && !isNaN(width) && isFinite(width) && width > 0 ? width : 500
+  const validHeight = typeof height === 'number' && !isNaN(height) && isFinite(height) && height > 0 ? height : 300
   
-  const maxVal = maxValue || Math.max(...data.map(d => d.value))
-  const barWidth = chartWidth / data.length * 0.7
-  const barSpacing = chartWidth / data.length * 0.3
+  const padding = { top: 40, right: 40, bottom: 60, left: 60 }
+  const chartWidth = validWidth - padding.left - padding.right
+  const chartHeight = validHeight - padding.top - padding.bottom
+  
+  // Validate data and ensure we have valid numbers
+  const validData = data.filter(item => 
+    typeof item.value === 'number' && 
+    !isNaN(item.value) && 
+    isFinite(item.value) && 
+    typeof item.label === 'string' && 
+    item.label.trim() !== ''
+  )
+  
+  if (validData.length === 0) {
+    return (
+      <div className={className}>
+        {title && (
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">{title}</h3>
+        )}
+        <div className="flex items-center justify-center h-64 text-gray-500">
+          <p>No valid data to display</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // Ensure chart dimensions are positive
+  if (chartWidth <= 0 || chartHeight <= 0) {
+    return (
+      <div className={className}>
+        {title && (
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">{title}</h3>
+        )}
+        <div className="flex items-center justify-center h-64 text-gray-500">
+          <p>Invalid chart dimensions</p>
+        </div>
+      </div>
+    )
+  }
+  
+  const maxVal = maxValue || Math.max(...validData.map(d => d.value))
+  const barWidth = chartWidth / validData.length * 0.7
+  const barSpacing = chartWidth / validData.length * 0.3
 
   return (
     <div className={className}>
@@ -70,7 +110,7 @@ export function BarChart({
         
         {/* Bars */}
         <g transform={`translate(${padding.left}, ${padding.top})`}>
-          {data.map((item, index) => {
+          {validData.map((item, index) => {
             const barHeight = (item.value / maxVal) * chartHeight
             const x = index * (barWidth + barSpacing) + barSpacing / 2
             const y = chartHeight - barHeight

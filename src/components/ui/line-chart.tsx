@@ -38,16 +38,70 @@ export function LineChart({
   title,
   smooth = true
 }: LineChartProps) {
-  const padding = { top: 40, right: 40, bottom: 60, left: 60 }
-  const chartWidth = width - padding.left - padding.right
-  const chartHeight = height - padding.top - padding.bottom
+  // Validate dimensions
+  const validWidth = typeof width === 'number' && !isNaN(width) && isFinite(width) && width > 0 ? width : 500
+  const validHeight = typeof height === 'number' && !isNaN(height) && isFinite(height) && height > 0 ? height : 300
   
-  const maxVal = maxValue || Math.max(...data.map(d => d.value))
-  const xStep = chartWidth / (data.length - 1)
+  const padding = { top: 40, right: 40, bottom: 60, left: 60 }
+  const chartWidth = validWidth - padding.left - padding.right
+  const chartHeight = validHeight - padding.top - padding.bottom
+  
+  // Validate data and ensure we have valid numbers
+  const validData = data.filter(item => 
+    typeof item.value === 'number' && 
+    !isNaN(item.value) && 
+    isFinite(item.value) && 
+    typeof item.label === 'string' && 
+    item.label.trim() !== ''
+  )
+  
+  if (validData.length === 0) {
+    return (
+      <div className={className}>
+        {title && (
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">{title}</h3>
+        )}
+        <div className="flex items-center justify-center h-64 text-gray-500">
+          <p>No valid data to display</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // Ensure chart dimensions are positive
+  if (chartWidth <= 0 || chartHeight <= 0) {
+    return (
+      <div className={className}>
+        {title && (
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">{title}</h3>
+        )}
+        <div className="flex items-center justify-center h-64 text-gray-500">
+          <p>Invalid chart dimensions</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // Need at least 2 points for a line chart
+  if (validData.length < 2) {
+    return (
+      <div className={className}>
+        {title && (
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">{title}</h3>
+        )}
+        <div className="flex items-center justify-center h-64 text-gray-500">
+          <p>Need at least 2 data points for line chart</p>
+        </div>
+      </div>
+    )
+  }
+  
+  const maxVal = maxValue || Math.max(...validData.map(d => d.value))
+  const xStep = chartWidth / (validData.length - 1)
 
   // Generate path data
   const generatePath = () => {
-    const points = data.map((item, index) => {
+    const points = validData.map((item, index) => {
       const x = index * xStep
       const y = chartHeight - (item.value / maxVal) * chartHeight
       return `${x},${y}`
@@ -89,8 +143,8 @@ export function LineChart({
   // Generate area path
   const generateAreaPath = () => {
     const linePath = generatePath()
-    const lastPoint = data[data.length - 1]
-    const lastX = (data.length - 1) * xStep
+    const lastPoint = validData[validData.length - 1]
+    const lastX = (validData.length - 1) * xStep
     const lastY = chartHeight - (lastPoint.value / maxVal) * chartHeight
     
     return `${linePath} L ${lastX},${chartHeight} L 0,${chartHeight} Z`
@@ -171,7 +225,7 @@ export function LineChart({
           />
           
           {/* Data points */}
-          {showPoints && data.map((item, index) => {
+          {showPoints && validData.map((item, index) => {
             const x = index * xStep
             const y = chartHeight - (item.value / maxVal) * chartHeight
             

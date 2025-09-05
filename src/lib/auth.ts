@@ -1,9 +1,10 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { db } from "./db"
 import bcrypt from "bcryptjs"
 import { UserRole } from "@prisma/client"
+
+// Force reload comment - updated to remove PrismaAdapter import
 
 // Get the base URL from environment or fallback
 const getBaseUrl = () => {
@@ -16,7 +17,6 @@ const getBaseUrl = () => {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(db),
   debug: process.env.DEBUG_ENABLED === 'true', // Use environment variable for debug mode
   providers: [
     CredentialsProvider({

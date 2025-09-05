@@ -629,10 +629,8 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
             <CardContent>
               <div className="h-64">
                 <LineChart
-                  data={activityData}
-                  xAxis="date"
-                  yAxis="steps"
-                  color="#3B82F6"
+                  data={activityData.map(item => ({ label: item.date, value: item.steps }))}
+                  lineColor="#3B82F6"
                   title="Daily Steps"
                 />
               </div>

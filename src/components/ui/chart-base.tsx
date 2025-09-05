@@ -34,15 +34,21 @@ export function ChartGrid({ width, height, horizontalLines = 5, verticalLines = 
   const hLines: React.ReactElement[] = []
   const vLines: React.ReactElement[] = []
   
+  // Validate inputs to prevent NaN values
+  const validWidth = typeof width === 'number' && !isNaN(width) && isFinite(width) && width > 0 ? width : 0
+  const validHeight = typeof height === 'number' && !isNaN(height) && isFinite(height) && height > 0 ? height : 0
+  const validHorizontalLines = typeof horizontalLines === 'number' && !isNaN(horizontalLines) && isFinite(horizontalLines) && horizontalLines > 0 ? horizontalLines : 0
+  const validVerticalLines = typeof verticalLines === 'number' && !isNaN(verticalLines) && isFinite(verticalLines) && verticalLines > 0 ? verticalLines : 0
+  
   // Horizontal lines
-  for (let i = 0; i <= horizontalLines; i++) {
-    const y = (height / horizontalLines) * i
+  for (let i = 0; i <= validHorizontalLines; i++) {
+    const y = (validHeight / validHorizontalLines) * i
     hLines.push(
       <line
         key={`h-${i}`}
         x1="0"
         y1={y}
-        x2={width}
+        x2={validWidth}
         y2={y}
         stroke={color}
         strokeWidth="1"
@@ -51,21 +57,23 @@ export function ChartGrid({ width, height, horizontalLines = 5, verticalLines = 
     )
   }
   
-  // Vertical lines
-  for (let i = 0; i <= verticalLines; i++) {
-    const x = (width / verticalLines) * i
-    vLines.push(
-      <line
-        key={`v-${i}`}
-        x1={x}
-        y1="0"
-        x2={x}
-        y2={height}
-        stroke={color}
-        strokeWidth="1"
-        strokeDasharray="2,2"
-      />
-    )
+  // Vertical lines - only if we have valid vertical lines count
+  if (validVerticalLines > 0) {
+    for (let i = 0; i <= validVerticalLines; i++) {
+      const x = (validWidth / validVerticalLines) * i
+      vLines.push(
+        <line
+          key={`v-${i}`}
+          x1={x}
+          y1="0"
+          x2={x}
+          y2={validHeight}
+          stroke={color}
+          strokeWidth="1"
+          strokeDasharray="2,2"
+        />
+      )
+    }
   }
 
   return (
@@ -83,14 +91,18 @@ interface AxisProps {
 }
 
 export function ChartAxis({ width, height, color = '#374151' }: AxisProps) {
+  // Validate inputs to prevent NaN values
+  const validWidth = typeof width === 'number' && !isNaN(width) && isFinite(width) && width > 0 ? width : 0
+  const validHeight = typeof height === 'number' && !isNaN(height) && isFinite(height) && height > 0 ? height : 0
+  
   return (
     <g>
       {/* X-axis */}
       <line
         x1="0"
-        y1={height}
-        x2={width}
-        y2={height}
+        y1={validHeight}
+        x2={validWidth}
+        y2={validHeight}
         stroke={color}
         strokeWidth="2"
       />
@@ -99,7 +111,7 @@ export function ChartAxis({ width, height, color = '#374151' }: AxisProps) {
         x1="0"
         y1="0"
         x2="0"
-        y2={height}
+        y2={validHeight}
         stroke={color}
         strokeWidth="2"
       />

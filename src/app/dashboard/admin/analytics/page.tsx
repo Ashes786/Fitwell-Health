@@ -34,6 +34,8 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 
 interface AnalyticsData {
   overview: {
@@ -97,7 +99,7 @@ export default function AdminAnalytics() {
   
   useEffect(() => {
     if (isAuthorized) {
-      // Original fetch logic will be handled separately
+      fetchAnalytics()
     }
   }, [isAuthorized])
 
@@ -217,18 +219,38 @@ export default function AdminAnalytics() {
     fetchAnalytics()
   }
 
+  if (isUnauthorized) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
+          <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+          <Button onClick={() => router.push('/dashboard')} variant="outline">
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   if (isLoading || isDataLoading) {
     return (
-      
+      <DashboardLayout userRole="ADMIN" userName={session?.user?.name || "Admin"}>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
         </div>
-      
+      </DashboardLayout>
     )
   }
 
   if (!session || !analytics) {
-    return null
+    return (
+      <DashboardLayout userRole="ADMIN" userName={session?.user?.name || "Admin"}>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-600">No data available</p>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const renderMetricCard = (title: string, value: string | number, change?: number, icon?: React.ReactNode, color: string = "emerald") => {
@@ -292,7 +314,7 @@ export default function AdminAnalytics() {
   }
 
   return (
-    
+    <DashboardLayout userRole="ADMIN" userName={session?.user?.name || "Admin"}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -666,6 +688,6 @@ export default function AdminAnalytics() {
           </TabsContent>
         </Tabs>
       </div>
-    
+    </DashboardLayout>
   )
 }

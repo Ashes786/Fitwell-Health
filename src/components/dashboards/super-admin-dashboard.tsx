@@ -547,10 +547,8 @@ export function SuperAdminDashboard({ userName, userImage }: SuperAdminDashboard
             <CardContent>
               <div className="h-64">
                 <LineChart
-                  data={globalActivity}
-                  xAxis="date"
-                  yAxis="users"
-                  color="#3B82F6"
+                  data={globalActivity.map(item => ({ label: item.date, value: item.users }))}
+                  lineColor="#3B82F6"
                   title="Global User Activity Trends"
                 />
               </div>
@@ -568,10 +566,8 @@ export function SuperAdminDashboard({ userName, userImage }: SuperAdminDashboard
             <CardContent>
               <div className="h-64">
                 <BarChart
-                  data={regionalStats}
-                  xAxis="region"
-                  yAxis="revenue"
-                  color="#10B981"
+                  data={regionalStats.map(item => ({ label: item.region, value: item.revenue }))}
+                  barColor="#10B981"
                   title="Revenue by Region"
                 />
               </div>

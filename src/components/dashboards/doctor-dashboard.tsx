@@ -642,10 +642,8 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
             <CardContent>
               <div className="h-64">
                 <BarChart
-                  data={appointmentData}
-                  xAxis="date"
-                  yAxis="appointments"
-                  color="#3B82F6"
+                  data={appointmentData.map(item => ({ label: item.date, value: item.appointments }))}
+                  barColor="#3B82F6"
                   title="Daily Appointments"
                 />
               </div>
@@ -742,20 +740,23 @@ export function DoctorDashboard({ userName, userImage, specialization = 'General
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
-              {performanceMetrics.map((metric) => (
-                <div key={metric.name} className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <metric.icon className="h-4 w-4 text-gray-600" />
-                      <span className="text-sm font-medium text-gray-700">{metric.name}</span>
+              {performanceMetrics.map((metric) => {
+                const Icon = metric.icon;
+                return (
+                  <div key={metric.name} className="p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <Icon className="h-4 w-4 text-gray-600" />
+                        <span className="text-sm font-medium text-gray-700">{metric.name}</span>
+                      </div>
+                      {getTrendIcon(metric.trend)}
                     </div>
-                    {getTrendIcon(metric.trend)}
+                    <div className="text-lg font-bold text-gray-900">{metric.value}{metric.unit}</div>
+                    <div className="text-xs text-gray-500">Target: {metric.target}{metric.unit}</div>
+                    <Progress value={(metric.value / metric.target) * 100} className="h-2 mt-2" />
                   </div>
-                  <div className="text-lg font-bold text-gray-900">{metric.value}{metric.unit}</div>
-                  <div className="text-xs text-gray-500">Target: {metric.target}{metric.unit}</div>
-                  <Progress value={(metric.value / metric.target) * 100} className="h-2 mt-2" />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>

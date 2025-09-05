@@ -530,10 +530,8 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
             <CardContent>
               <div className="h-64">
                 <LineChart
-                  data={userActivity}
-                  xAxis="date"
-                  yAxis="patients"
-                  color="#3B82F6"
+                  data={userActivity.map(item => ({ label: item.date, value: item.patients }))}
+                  lineColor="#3B82F6"
                   title="Daily Patient Activity"
                 />
               </div>
@@ -551,10 +549,8 @@ export function AdminDashboard({ userName, userImage }: AdminDashboardProps) {
             <CardContent>
               <div className="h-64">
                 <BarChart
-                  data={revenueData}
-                  xAxis="month"
-                  yAxis="total"
-                  color="#10B981"
+                  data={revenueData.map(item => ({ label: item.month, value: item.total }))}
+                  barColor="#10B981"
                   title="Monthly Revenue Trend"
                 />
               </div>

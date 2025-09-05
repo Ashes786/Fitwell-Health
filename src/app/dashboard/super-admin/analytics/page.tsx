@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
 import { useRoleAuthorization } from "@/hooks/use-role-authorization"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -25,6 +26,8 @@ import {
 import { toast } from 'sonner'
 import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns'
 import { UserRole } from "@prisma/client"
+import { BarChart } from '@/components/ui/bar-chart'
+import { LineChart } from '@/components/ui/line-chart'
 
 interface AnalyticsData {
   totalUsers: number
@@ -126,7 +129,7 @@ export default function AnalyticsPage() {
   // Show unauthorized message if user doesn't have SUPER_ADMIN role
   if (isUnauthorized) {
     return (
-      
+      <DashboardLayout userRole="SUPER_ADMIN" userName={session?.user?.name || "Super Admin"}>
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
@@ -136,24 +139,19 @@ export default function AnalyticsPage() {
             </Button>
           </div>
         </div>
-      
+      </DashboardLayout>
     )
   }
 
   // Show loading state
   if (loading) {
     return (
-      
-        <div className="space-y-6 p-6">
+      <DashboardLayout userRole="SUPER_ADMIN" userName={session?.user?.name || "Super Admin"}>
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Button variant="ghost" onClick={() => router.back()} className="mr-4">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-                <p className="text-gray-600 mt-1">Comprehensive system analytics and insights</p>
-              </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+              <p className="text-gray-600 mt-1">Comprehensive system analytics and insights</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -167,7 +165,7 @@ export default function AnalyticsPage() {
             ))}
           </div>
         </div>
-      
+      </DashboardLayout>
     )
   }
 
@@ -188,20 +186,33 @@ export default function AnalyticsPage() {
     recentActivity: []
   }
 
+  // Mock chart data
+  const revenueData = [
+    { label: 'Jan', value: 98000 },
+    { label: 'Feb', value: 105000 },
+    { label: 'Mar', value: 112000 },
+    { label: 'Apr', value: 108000 },
+    { label: 'May', value: 115000 },
+    { label: 'Jun', value: 125000 }
+  ]
+
+  const userGrowthData = [
+    { label: 'Jan', value: 1200 },
+    { label: 'Feb', value: 1350 },
+    { label: 'Mar', value: 1420 },
+    { label: 'Apr', value: 1580 },
+    { label: 'May', value: 1720 },
+    { label: 'Jun', value: 1850 }
+  ]
+
   return (
-    
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="max-w-7xl mx-auto p-6">
+    <DashboardLayout userRole="SUPER_ADMIN" userName={session?.user?.name || "Super Admin"}>
+      <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
-            <Button variant="ghost" onClick={() => router.back()} className="mr-4">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-              <p className="text-gray-600 mt-1">Comprehensive system analytics and insights</p>
-            </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p className="text-gray-600 mt-1">Comprehensive system analytics and insights</p>
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -394,9 +405,13 @@ export default function AnalyticsPage() {
               <CardDescription>Monthly revenue trends and projections</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                <BarChart3 className="h-16 w-16 mr-4" />
-                <span>Revenue Chart Placeholder</span>
+              <div className="h-64">
+                <BarChart
+                  data={revenueData}
+                  barColor="#10B981"
+                  title="Monthly Revenue Trend"
+                  showValues={true}
+                />
               </div>
             </CardContent>
           </Card>
@@ -410,9 +425,16 @@ export default function AnalyticsPage() {
               <CardDescription>New user registrations over time</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                <TrendingUp className="h-16 w-16 mr-4" />
-                <span>Growth Chart Placeholder</span>
+              <div className="h-64">
+                <LineChart
+                  data={userGrowthData}
+                  lineColor="#3B82F6"
+                  pointColor="#3B82F6"
+                  title="User Growth Trend"
+                  showArea={true}
+                  showPoints={true}
+                  showValues={false}
+                />
               </div>
             </CardContent>
           </Card>
@@ -457,7 +479,6 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
-    
+    </DashboardLayout>
   )
 }
