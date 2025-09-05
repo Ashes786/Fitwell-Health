@@ -51,7 +51,7 @@ export default function PatientsDoctorPage() {
     <DashboardLayout 
       userRole={user.role} 
       userName={user.name || user.email} 
-      userImage={user.avatar}
+      userImage={user.image}
     >
       {getPatientsDoctorComponent()}
     </DashboardLayout>

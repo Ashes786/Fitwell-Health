@@ -24,7 +24,7 @@ export default function Dashboard() {
         return (
           <PatientDashboard 
             userName={user.name || user.email} 
-            userImage={user.avatar}
+            userImage={user.image}
             userEmail={user.email}
             userPhone={user.phone}
           />
@@ -33,7 +33,7 @@ export default function Dashboard() {
         return (
           <DoctorDashboard 
             userName={user.name || user.email} 
-            userImage={user.avatar}
+            userImage={user.image}
             specialization={user.specialization}
           />
         )
@@ -41,28 +41,28 @@ export default function Dashboard() {
         return (
           <AttendantDashboard 
             userName={user.name || user.email} 
-            userImage={user.avatar}
+            userImage={user.image}
           />
         )
       case 'CONTROL_ROOM':
         return (
           <ControlRoomDashboard 
             userName={user.name || user.email} 
-            userImage={user.avatar}
+            userImage={user.image}
           />
         )
       case 'ADMIN':
         return (
           <AdminDashboard 
             userName={user.name || user.email} 
-            userImage={user.avatar}
+            userImage={user.image}
           />
         )
       case 'SUPER_ADMIN':
         return (
           <SuperAdminDashboard 
             userName={user.name || user.email} 
-            userImage={user.avatar}
+            userImage={user.image}
           />
         )
       default:
@@ -105,7 +105,7 @@ export default function Dashboard() {
     <DashboardLayout 
       userRole={user.role} 
       userName={user.name || user.email} 
-      userImage={user.avatar}
+      userImage={user.image}
     >
       {getRoleDashboardContent()}
     </DashboardLayout>

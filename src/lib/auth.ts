@@ -80,7 +80,7 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             name: user.name,
             role: user.role,
-            image: user.avatar,
+            image: user.image,
           }
         } catch (error) {
           console.error('Authentication error:', error)

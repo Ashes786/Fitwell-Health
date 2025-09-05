@@ -51,7 +51,7 @@ export default function SystemStatusPage() {
     <DashboardLayout 
       userRole={user.role} 
       userName={user.name || user.email} 
-      userImage={user.avatar}
+      userImage={user.image}
     >
       {getSystemStatusComponent()}
     </DashboardLayout>

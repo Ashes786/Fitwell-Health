@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const formattedPrescriptions = prescriptions.map(prescription => ({
       id: prescription.id,
       patientName: prescription.patient?.user?.name || 'Unknown',
-      patientAvatar: prescription.patient?.user?.avatar,
+      patientAvatar: prescription.patient?.user?.image,
       medication: prescription.medication,
       dosage: prescription.dosage,
       frequency: prescription.frequency,

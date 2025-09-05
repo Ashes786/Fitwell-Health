@@ -34,9 +34,9 @@ export default function ControlRoomPage() {
   const getControlRoomComponent = () => {
     switch (user.role) {
       case 'CONTROL_ROOM':
-        return <ControlRoomDashboard userName={user.name || user.email} userImage={user.avatar} />
+        return <ControlRoomDashboard userName={user.name || user.email} userImage={user.image} />
       case 'ADMIN':
-        return <ControlRoomDashboard userName={user.name || user.email} userImage={user.avatar} />
+        return <ControlRoomDashboard userName={user.name || user.email} userImage={user.image} />
       default:
         return (
           <div className="flex flex-col items-center justify-center h-64 space-y-4">
@@ -53,7 +53,7 @@ export default function ControlRoomPage() {
     <DashboardLayout 
       userRole={user.role} 
       userName={user.name || user.email} 
-      userImage={user.avatar}
+      userImage={user.image}
     >
       {getControlRoomComponent()}
     </DashboardLayout>

@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     const todayAppointments = appointments.map(appointment => ({
       id: appointment.id,
       patientName: appointment.patient.user.name || '',
-      patientAvatar: appointment.patient.user.avatar || '',
+      patientAvatar: appointment.patient.user.image || '',
       doctorName: appointment.doctor?.user.name || 'Unassigned',
       time: appointment.scheduledAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       type: appointment.type,

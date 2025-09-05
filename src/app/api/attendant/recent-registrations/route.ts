@@ -34,7 +34,7 @@ export async function GET(request: Request) {
       id: user.id,
       name: user.name || '',
       email: user.email,
-      avatar: user.avatar || '',
+      avatar: user.image || '',
       status: user.patient ? 'completed' : 'pending',
       registrationDate: user.createdAt,
       nhrNumber: user.patient?.nhrNumber || null

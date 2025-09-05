@@ -30,7 +30,7 @@ const getHandler = async (request: NextRequest, auth: any) => {
     consultationFee: doctor.doctor?.consultationFee || 100,
     availableSlots: [], // This would be calculated based on doctor's availability
     city: doctor.doctor?.city || 'N/A',
-    avatar: doctor.avatar
+    avatar: doctor.image
   }))
 
   const { NextResponse } = await import('next/server')

@@ -17,7 +17,7 @@ model User {
   password    String
   name        String?
   phone       String?
-  avatar      String?
+  image       String?
   role        UserRole
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

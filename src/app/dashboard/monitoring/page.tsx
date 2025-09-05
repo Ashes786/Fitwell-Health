@@ -90,7 +90,7 @@ export default function MonitoringPage() {
     <DashboardLayout 
       userRole={user.role} 
       userName={user.name || user.email} 
-      userImage={user.avatar}
+      userImage={user.image}
     >
       {getMonitoringComponent()}
     </DashboardLayout>

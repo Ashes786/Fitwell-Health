@@ -46,7 +46,7 @@ export async function GET(request: Request) {
         status: doctor.isAvailable ? 'on-duty' : 'off-duty',
         shiftStart: '09:00', // Mock data
         shiftEnd: '17:00', // Mock data
-        avatar: doctor.user.avatar || ''
+        avatar: doctor.user.image || ''
       })),
       ...attendants.map(attendant => ({
         id: attendant.id,
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
         status: 'on-duty', // Mock data
         shiftStart: '08:00', // Mock data
         shiftEnd: '16:00', // Mock data
-        avatar: attendant.user.avatar || ''
+        avatar: attendant.user.image || ''
       })),
       ...controlRoomStaff.map(staff => ({
         id: staff.id,
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
         status: 'on-duty', // Mock data
         shiftStart: '00:00', // Mock data (24/7 operation)
         shiftEnd: '23:59', // Mock data
-        avatar: staff.user.avatar || ''
+        avatar: staff.user.image || ''
       }))
     ]
 

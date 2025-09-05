@@ -61,7 +61,7 @@ export default function SettingsPage() {
     <DashboardLayout 
       userRole={user.role} 
       userName={user.name || user.email} 
-      userImage={user.avatar}
+      userImage={user.image}
     >
       {getSettingsComponent()}
     </DashboardLayout>

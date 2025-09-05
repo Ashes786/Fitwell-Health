@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const patients = recentAppointments.map(appointment => ({
       id: appointment.patient?.id,
       name: appointment.patient?.user?.name || 'Unknown',
-      avatar: appointment.patient?.user?.avatar,
+      avatar: appointment.patient?.user?.image,
       lastVisit: appointment.scheduledAt.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',

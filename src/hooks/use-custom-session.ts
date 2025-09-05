@@ -7,6 +7,7 @@ interface User {
   email: string
   name?: string | null
   role: string
+  image?: string | null
 }
 
 interface Session {
@@ -34,7 +35,8 @@ export function useCustomSession(): Session {
       id: session.user.id,
       email: session.user.email || '',
       name: session.user.name,
-      role: session.user.role
+      role: session.user.role,
+      image: session.user.image
     } : null,
     loading: status === 'loading',
     refetch,

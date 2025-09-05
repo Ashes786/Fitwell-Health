@@ -246,7 +246,7 @@ export default function EmergencyAlertsPage() {
     <DashboardLayout 
       userRole={user.role} 
       userName={user.name || user.email} 
-      userImage={user.avatar}
+      userImage={user.image}
     >
       {getEmergencyAlertsComponent()}
     </DashboardLayout>

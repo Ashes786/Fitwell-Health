@@ -44,7 +44,7 @@ export async function GET(request: Request) {
       return {
         id: doctor.id,
         doctorName: doctor.user.name || '',
-        doctorAvatar: doctor.user.avatar || '',
+        doctorAvatar: doctor.user.image || '',
         department: doctor.specialization,
         status: doctor.isAvailable ? 'available' : 'unavailable',
         currentAssignment: nextAppointment ? `Appointment at ${nextAppointment.scheduledAt.toLocaleTimeString()}` : 'No appointments',

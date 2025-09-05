@@ -34,7 +34,7 @@ export default function ProfilePage() {
     <DashboardLayout 
       userRole={user.role} 
       userName={user.name || user.email} 
-      userImage={user.avatar}
+      userImage={user.image}
     >
       <div className="space-y-6">
         <div>

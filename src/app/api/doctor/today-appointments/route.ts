@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const formattedAppointments = appointments.map(appointment => ({
       id: appointment.id,
       patientName: appointment.patient?.user?.name || 'Unknown',
-      patientAvatar: appointment.patient?.user?.avatar,
+      patientAvatar: appointment.patient?.user?.image,
       time: appointment.scheduledAt.toLocaleTimeString('en-US', { 
         hour: '2-digit', 
         minute: '2-digit' 

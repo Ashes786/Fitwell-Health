@@ -255,7 +255,7 @@ export default function ReportsPage() {
     <DashboardLayout 
       userRole={user.role} 
       userName={user.name || user.email} 
-      userImage={user.avatar}
+      userImage={user.image}
     >
       {getReportsComponent()}
     </DashboardLayout>

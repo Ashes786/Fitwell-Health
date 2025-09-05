@@ -51,7 +51,7 @@ export default function CartPage() {
     <DashboardLayout 
       userRole={user.role} 
       userName={user.name || user.email} 
-      userImage={user.avatar}
+      userImage={user.image}
     >
       {getCartComponent()}
     </DashboardLayout>

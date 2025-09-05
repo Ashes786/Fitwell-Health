@@ -51,7 +51,7 @@ export default function AuditLogsPage() {
     <DashboardLayout 
       userRole={user.role} 
       userName={user.name || user.email} 
-      userImage={user.avatar}
+      userImage={user.image}
     >
       {getAuditLogsComponent()}
     </DashboardLayout>
