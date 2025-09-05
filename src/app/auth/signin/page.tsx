@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
@@ -26,7 +26,7 @@ import {
 import Link from "next/link"
 import { useCustomSession } from "@/hooks/use-custom-session"
 
-function SignInContent() {
+export default function SignIn() {
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -289,20 +289,5 @@ function SignInContent() {
         </div>
       </div>
     </div>
-  )
-}
-
-export default function SignIn() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    }>
-      <SignInContent />
-    </Suspense>
   )
 }

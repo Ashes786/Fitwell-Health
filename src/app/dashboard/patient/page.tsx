@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCustomSession } from '@/hooks/use-custom-session'
+import { PatientDashboard } from '@/components/dashboards/patient-dashboard'
 
-export default function PatientDashboard() {
+export default function PatientDashboardPage() {
   const { user, loading } = useCustomSession()
   const router = useRouter()
 
@@ -33,9 +34,11 @@ export default function PatientDashboard() {
   }
 
   return (
-    <div>
-      <h1>Patient Dashboard</h1>
-      <p>Welcome, {user?.name}</p>
-    </div>
+    <PatientDashboard 
+      userName={user?.name || 'Patient'} 
+      userImage={user?.image}
+      userEmail={user?.email}
+      userPhone={user?.phone}
+    />
   )
 }

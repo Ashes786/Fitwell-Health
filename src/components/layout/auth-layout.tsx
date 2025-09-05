@@ -1,6 +1,6 @@
 'use client'
 
-import { useSession } from "@/components/providers/session-provider"
+import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
 import { useEffect, ReactNode } from 'react'
 import { UserRole } from "@prisma/client"
@@ -34,8 +34,17 @@ export function AuthLayout({
   redirectTo = '/auth/signin',
   useDashboardLayout = false 
 }: AuthLayoutProps) {
-  const { user, loading } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
+
+  const user = session?.user ? {
+    id: session.user.id,
+    email: session.user.email || '',
+    name: session.user.name,
+    role: session.user.role
+  } : null
+
+  const loading = status === 'loading'
 
   useEffect(() => {
     // Only redirect if we're not loading and session is available but invalid

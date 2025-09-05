@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCustomSession } from '@/hooks/use-custom-session'
+import { DoctorDashboard } from '@/components/dashboards/doctor-dashboard'
 
-export default function DoctorDashboard() {
+export default function DoctorDashboardPage() {
   const { user, loading } = useCustomSession()
   const router = useRouter()
 
@@ -33,9 +34,10 @@ export default function DoctorDashboard() {
   }
 
   return (
-    <div>
-      <h1>Doctor Dashboard</h1>
-      <p>Welcome, Dr. {user?.name}</p>
-    </div>
+    <DoctorDashboard 
+      userName={user?.name || 'Doctor'} 
+      userImage={user?.image}
+      specialization={user?.specialization}
+    />
   )
 }

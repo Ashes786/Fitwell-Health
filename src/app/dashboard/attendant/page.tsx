@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCustomSession } from '@/hooks/use-custom-session'
+import { AttendantDashboard } from '@/components/dashboards/attendant-dashboard'
 
-export default function AttendantDashboard() {
+export default function AttendantDashboardPage() {
   const { user, loading } = useCustomSession()
   const router = useRouter()
 
@@ -33,9 +34,9 @@ export default function AttendantDashboard() {
   }
 
   return (
-    <div>
-      <h1>Attendant Dashboard</h1>
-      <p>Welcome, {user?.name}</p>
-    </div>
+    <AttendantDashboard 
+      userName={user?.name || 'Attendant'} 
+      userImage={user?.image}
+    />
   )
 }

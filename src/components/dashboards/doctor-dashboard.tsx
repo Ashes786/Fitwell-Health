@@ -46,7 +46,7 @@ import {
   UserCheck,
   CalendarDays,
   Clock1,
-  Video as VideoCamera,
+  VideoCamera,
   PhoneCall,
   MessageCircle,
   Clipboard,
@@ -64,9 +64,9 @@ import {
   Hospital,
   Ambulance,
   Shield,
-  FileChart as FileReport,
-  FileText as Report,
-  BarChart3 as Analytics,
+  FileChart,
+  Report,
+  Analytics,
   Wallet,
   CreditCard,
   Banknote,
@@ -80,7 +80,7 @@ import {
   CalendarClock,
   UserRound,
   UsersRound,
-  Stethoscope as StethoscopeIcon,
+  StethoscopeIcon,
   Thermometer,
   Scale,
   Dumbbell,
@@ -89,7 +89,7 @@ import {
   Sun,
   Droplets,
   Wind,
-  Zap as ZapIcon
+  ZapIcon
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'

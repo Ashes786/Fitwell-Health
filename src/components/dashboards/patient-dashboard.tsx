@@ -63,7 +63,7 @@ import {
   Microscope,
   TestTube,
   Bandage,
-  Pill as Capsule,
+  Capsule,
   Hospital,
   ClipboardList,
   CalendarDays,

@@ -4,7 +4,7 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { AdminControlRoom } from '@/app/dashboard/admin/control-room/page'
+import { ControlRoomDashboard } from '@/components/dashboards/control-room-dashboard'
 
 export default function ControlRoomPage() {
   const { user, loading } = useCustomSession()
@@ -33,8 +33,10 @@ export default function ControlRoomPage() {
 
   const getControlRoomComponent = () => {
     switch (user.role) {
+      case 'CONTROL_ROOM':
+        return <ControlRoomDashboard userName={user.name || user.email} userImage={user.avatar} />
       case 'ADMIN':
-        return <AdminControlRoom />
+        return <ControlRoomDashboard userName={user.name || user.email} userImage={user.avatar} />
       default:
         return (
           <div className="flex flex-col items-center justify-center h-64 space-y-4">
