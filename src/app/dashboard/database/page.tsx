@@ -4,9 +4,9 @@ import { useCustomSession } from '@/hooks/use-custom-session'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { SuperAdminSettings } from '@/app/dashboard/super-admin/settings/page'
+import { SuperAdminDatabase } from '@/app/dashboard/super-admin/database/page'
 
-export default function SettingsPage() {
+export default function DatabasePage() {
   const { user, loading } = useCustomSession()
   const router = useRouter()
 
@@ -21,7 +21,7 @@ export default function SettingsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-health-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading settings...</p>
+          <p className="text-gray-600">Loading database...</p>
         </div>
       </div>
     )
@@ -31,26 +31,16 @@ export default function SettingsPage() {
     return null // Will redirect to signin
   }
 
-  const getSettingsComponent = () => {
+  const getDatabaseComponent = () => {
     switch (user.role) {
       case 'SUPER_ADMIN':
-        return <SuperAdminSettings />
-      case 'ADMIN':
-        return (
-          <div className="flex flex-col items-center justify-center h-64 space-y-4">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Admin Settings</h2>
-              <p className="text-gray-600 mb-4">Settings management is available for Super Admin users only.</p>
-              <p className="text-sm text-gray-500">Please contact your Super Admin for system configuration changes.</p>
-            </div>
-          </div>
-        )
+        return <SuperAdminDatabase />
       default:
         return (
           <div className="flex flex-col items-center justify-center h-64 space-y-4">
             <div className="text-center">
               <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
-              <p className="text-gray-600 mb-4">You don't have permission to access settings.</p>
+              <p className="text-gray-600 mb-4">You don't have permission to access database.</p>
             </div>
           </div>
         )
@@ -63,7 +53,7 @@ export default function SettingsPage() {
       userName={user.name || user.email} 
       userImage={user.avatar}
     >
-      {getSettingsComponent()}
+      {getDatabaseComponent()}
     </DashboardLayout>
   )
 }

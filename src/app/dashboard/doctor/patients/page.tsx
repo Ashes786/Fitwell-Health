@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { 
   Users, 
   Search, 
@@ -77,11 +79,11 @@ export default function DoctorPatients() {
 
   if (authLoading) {
     return (
-      
+      <DashboardLayout userRole="DOCTOR" userName={session?.user?.name || "Doctor"}>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
         </div>
-      
+      </DashboardLayout>
     )
   }
 
@@ -92,7 +94,7 @@ export default function DoctorPatients() {
   // Show unauthorized message if user doesn't have DOCTOR role
   if (isUnauthorized) {
     return (
-      
+      <DashboardLayout userRole="DOCTOR" userName={session?.user?.name || "Doctor"}>
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Unauthorized Access</h2>
@@ -102,7 +104,7 @@ export default function DoctorPatients() {
             </Button>
           </div>
         </div>
-      
+      </DashboardLayout>
     )
   }
 
@@ -285,7 +287,7 @@ export default function DoctorPatients() {
   }
 
   return (
-    
+    <DashboardLayout userRole="DOCTOR" userName={session?.user?.name || "Doctor"}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -410,6 +412,6 @@ export default function DoctorPatients() {
           </TabsContent>
         </Tabs>
       </div>
-    
+    </DashboardLayout>
   )
 }
