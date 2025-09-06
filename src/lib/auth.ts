@@ -50,7 +50,7 @@ export const authOptions: NextAuthOptions = {
               name: true,
               role: true,
               isActive: true,
-              image: true
+              avatar: true
             }
           })
 

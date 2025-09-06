@@ -248,9 +248,6 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
               >
                 <Menu className="h-5 w-5" />
               </Button>
-              <h1 className="text-xl font-semibold text-gray-900">
-                Welcome, {userName} - {userRole?.replace('_', ' ')} Dashboard
-              </h1>
             </div>
             <div className="flex items-center space-x-4">
               {/* Notifications */}

@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { 
   CreditCard, 
   Search, 

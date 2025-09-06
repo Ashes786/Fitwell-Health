@@ -502,7 +502,7 @@ export default function PatientPrescriptions() {
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Pharmacy</p>
-                      <p className="font-medium">{prescription.pharmacy || 'Not specified'}</p>
+                      <p className="font-medium">{prescription.pharmacy}</p>
                     </div>
                   </div>
 
