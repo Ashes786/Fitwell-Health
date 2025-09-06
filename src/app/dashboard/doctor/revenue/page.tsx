@@ -23,7 +23,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart as PieChartComponent, Pie, Cell, Legend } from 'recharts'
 
 interface RevenueData {
@@ -139,10 +139,7 @@ export default function DoctorRevenue() {
       setConsultationTypeData(consultationTypeData)
     } catch (error) {
       console.error('Error fetching revenue data:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load revenue data'
-      })
+      toast.error('Failed to load revenue data')
       
       // Fallback to empty data
       setRevenueSummary({
@@ -237,10 +234,7 @@ export default function DoctorRevenue() {
     a.click()
     window.URL.revokeObjectURL(url)
     
-    toast({
-        title: "Success",
-        description: 'Revenue report downloaded successfully'
-      })
+    toast.success('Revenue report downloaded successfully')
   }
 
   if (isLoading) {

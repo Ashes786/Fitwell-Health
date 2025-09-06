@@ -33,7 +33,7 @@ import {
   Network,
   Server
 } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { UserRole } from "@prisma/client"
 
 interface SecurityLog {
@@ -54,7 +54,7 @@ interface SecurityMetric {
 }
 
 export default function SecurityPage() {
-  const { isUnauthorized, isLoading, userSession } = useRoleAuthorization({
+  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
     requiredRole: "SUPER_ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: false
@@ -105,10 +105,7 @@ export default function SecurityPage() {
       }
     } catch (error) {
       console.error('Error fetching security data:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to fetch security data'
-      })
+      toast.error('Failed to fetch security data')
     } finally {
       setLoading(false)
     }
@@ -131,22 +128,13 @@ export default function SecurityPage() {
       })
 
       if (response.ok) {
-        toast({
-        title: "Success",
-        description: 'Security settings saved successfully'
-      })
+        toast.success('Security settings saved successfully')
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to save security settings'
-      })
+        toast.error('Failed to save security settings')
       }
     } catch (error) {
       console.error('Error saving security settings:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to save security settings'
-      })
+      toast.error('Failed to save security settings')
     }
   }
 
@@ -163,22 +151,13 @@ export default function SecurityPage() {
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
-        toast({
-        title: "Success",
-        description: 'Security report generated successfully'
-      })
+        toast.success('Security report generated successfully')
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to generate security report'
-      })
+        toast.error('Failed to generate security report')
       }
     } catch (error) {
       console.error('Error generating security report:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to generate security report'
-      })
+      toast.error('Failed to generate security report')
     }
   }
 

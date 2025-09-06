@@ -33,7 +33,7 @@ import {
   Zap,
   BarChart3
 } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import { BarChart } from '@/components/ui/bar-chart'
 import { LineChart } from '@/components/ui/line-chart'
@@ -188,10 +188,7 @@ export function ControlRoomDashboard({ userName, userImage }: ControlRoomDashboa
       await new Promise(resolve => setTimeout(resolve, 1000))
       setLastRefresh(new Date())
     } catch (error) {
-      toast({
-        title: "Error",
-        description: 'Failed to load dashboard data'
-      })
+      toast.error('Failed to load dashboard data')
     } finally {
       setIsLoading(false)
     }

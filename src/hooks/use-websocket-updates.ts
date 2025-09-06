@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useSession } from "@/components/providers/session-provider"
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import io, { Socket } from 'socket.io-client'
 
 interface UseWebSocketUpdatesOptions {
@@ -22,7 +22,7 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
     onVitalUpdate 
   } = options
   
-  const { data: user } = useSession()
+  const { user } = useSession()
   const socketRef = useRef<Socket | null>(null)
   const reconnectAttempts = useRef(0)
   const maxReconnectAttempts = 5
@@ -77,19 +77,16 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
           
           // Show toast notification for important updates
           if (notification.priority === 'high' || notification.type === 'urgent') {
-            toast({
-              title: notification.title,
-              description: notification.message,
-              variant: "destructive",
+            toast.error(notification.message, {
+              description: notification.title,
               action: notification.actionUrl ? {
                 label: 'View Details',
                 onClick: () => window.location.href = notification.actionUrl
               } : undefined
             })
           } else if (notification.priority === 'medium') {
-            toast({
-              title: notification.title,
-              description: notification.message
+            toast.info(notification.message, {
+              description: notification.title
             })
           }
         })
@@ -99,9 +96,8 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
             onNotification(notification)
           }
           
-          toast({
-            title: "System Notification",
-            description: notification.message
+          toast.info(notification.message, {
+            description: `System: ${notification.type}`
           })
         })
 
@@ -120,9 +116,8 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
           }
           
           const message = statusMessages[appointment.status] || 'Appointment updated'
-          toast({
-            title: "Appointment Update",
-            description: message
+          toast.info(message, {
+            description: `Appointment with ${appointment.doctor?.user?.name || 'Doctor'}`
           })
         })
 
@@ -137,9 +132,8 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
             onVitalUpdate(data)
           }
           
-          toast({
-            title: "Vital Signs Updated",
-            description: 'New vital signs recorded'
+          toast.success('New vital signs recorded', {
+            description: `Patient: ${data.patient?.user?.name}`
           })
         })
 
@@ -148,9 +142,8 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
             onNotification(reminder)
           }
           
-          toast({
-            title: "Appointment Reminder",
-            description: reminder.message,
+          toast.warning(reminder.message, {
+            description: reminder.title,
             action: reminder.actionUrl ? {
               label: 'View Appointment',
               onClick: () => window.location.href = reminder.actionUrl
@@ -163,9 +156,12 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
             onNotification(update)
           }
           
-          toast({
-            title: "Prescription Update",
-            description: update.message
+          toast.info(update.message, {
+            description: update.title,
+            action: update.actionUrl ? {
+              label: 'View Prescription',
+              onClick: () => window.location.href = update.actionUrl
+            } : undefined
           })
         })
 
@@ -174,9 +170,12 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
             onNotification(notification)
           }
           
-          toast({
-            title: "Lab Results Ready",
-            description: notification.message
+          toast.success(notification.message, {
+            description: notification.title,
+            action: notification.actionUrl ? {
+              label: 'View Results',
+              onClick: () => window.location.href = notification.actionUrl
+            } : undefined
           })
         })
 
@@ -189,10 +188,7 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
           }
           
           const status = data.isAvailable ? 'available' : 'unavailable'
-          toast({
-            title: "Doctor Availability",
-            description: `Dr. ${data.doctor?.user?.name} is now ${status}`
-          })
+          toast.info(`Dr. ${data.doctor?.user?.name} is now ${status}`)
         })
 
         socket.on('super_admin_notification', (notification) => {
@@ -201,14 +197,12 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
           }
           
           if (notification.priority === 'high') {
-            toast({
-              title: "Critical Alert",
-              description: notification.message
+            toast.error(notification.message, {
+              description: notification.title
             })
           } else {
-            toast({
-              title: "Admin Notification",
-              description: notification.message
+            toast.info(notification.message, {
+              description: notification.title
             })
           }
         })
@@ -226,27 +220,18 @@ export function useWebSocketUpdates(options: UseWebSocketUpdatesOptions = {}) {
           reconnectAttempts.current++
           
           if (reconnectAttempts.current >= maxReconnectAttempts) {
-            toast({
-              title: "Connection Issue",
-              description: 'Real-time updates unavailable. Please refresh the page.'
-            })
+            toast.error('Real-time updates unavailable. Please refresh the page.')
           }
         })
 
         socket.on('error', (error) => {
           console.error('WebSocket error:', error)
-          toast({
-            title: "Error",
-            description: 'Real-time update error occurred'
-          })
+          toast.error('Real-time update error occurred')
         })
 
       } catch (error) {
         console.error('Failed to initialize WebSocket:', error)
-        toast({
-          title: "WebSocket Error",
-          description: 'Failed to connect to real-time updates'
-        })
+        toast.error('Failed to connect to real-time updates')
       }
     }
 

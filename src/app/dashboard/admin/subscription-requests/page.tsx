@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Info, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 
 export default function AdminSubscriptionRequests() {
   const router = useRouter()
@@ -26,10 +26,7 @@ export default function AdminSubscriptionRequests() {
       }
     } catch (error) {
       console.error('Error fetching data:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load subscription information'
-      })
+      toast.error('Failed to load subscription information')
     } finally {
       setLoading(false)
     }
@@ -98,10 +95,7 @@ export default function AdminSubscriptionRequests() {
                   variant="outline" 
                   onClick={() => {
                     // In a real app, this would open a contact modal or navigate to a contact page
-                    toast({
-        title: "Info",
-        description: 'Please contact your super-admin directly for subscription management.'
-      })
+                    toast.info('Please contact your super-admin directly for subscription management.')
                   }}
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />

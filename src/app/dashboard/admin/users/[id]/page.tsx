@@ -94,7 +94,7 @@ interface UserActivity {
 }
 
 export default function UserDetailPage() {
-  const { isAuthorized, isUnauthorized, isLoading, userSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -144,18 +144,12 @@ export default function UserDetailPage() {
           }
         ])
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to fetch user details'
-      })
+        toast.error('Failed to fetch user details')
         router.push('/dashboard/admin/users')
       }
     } catch (error) {
       console.error('Error fetching user details:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load user details'
-      })
+      toast.error('Failed to load user details')
       router.push('/dashboard/admin/users')
     }
   }
@@ -171,23 +165,14 @@ export default function UserDetailPage() {
       })
 
       if (response.ok) {
-        toast({
-        title: "Success",
-        description: 'User deleted successfully'
-      })
+        toast.success('User deleted successfully')
         router.push('/dashboard/admin/users')
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to delete user'
-      })
+        toast.error('Failed to delete user')
       }
     } catch (error) {
       console.error('Error deleting user:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to delete user'
-      })
+      toast.error('Failed to delete user')
     }
   }
 
@@ -202,23 +187,14 @@ export default function UserDetailPage() {
       })
 
       if (response.ok) {
-        toast({
-        title: "Success",
-        description: `User ${user?.isActive ? 'deactivated' : 'activated'} successfully`
-      })
+        toast.success(`User ${user?.isActive ? 'deactivated' : 'activated'} successfully`)
         fetchUserDetails()
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to update user status'
-      })
+        toast.error('Failed to update user status')
       }
     } catch (error) {
       console.error('Error updating user status:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to update user status'
-      })
+      toast.error('Failed to update user status')
     }
   }
 

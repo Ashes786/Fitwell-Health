@@ -33,7 +33,6 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Patient {
   id: string
@@ -82,7 +81,7 @@ export default function AdminPatients() {
     medicalHistory: ""
   })
 
-  const { isAuthorized, isUnauthorized, isLoading, authSession: authSessionVar } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -125,17 +124,11 @@ export default function AdminPatients() {
         }))
         setPatients(formattedPatients)
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to fetch patients'
-      })
+        toast.error('Failed to fetch patients')
       }
     } catch (error) {
       console.error('Error fetching patients:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load patients'
-      })
+      toast.error('Failed to load patients')
     } finally {
       setIsDataLoading(false)
     }
@@ -177,23 +170,14 @@ export default function AdminPatients() {
           medicalHistory: ""
         })
         setIsAddDialogOpen(false)
-        toast({
-        title: "Success",
-        description: 'Patient added successfully'
-      })
+        toast.success('Patient added successfully')
       } else {
         const errorData = await response.json()
-        toast({
-        title: "Error",
-        description: errorData.error || 'Failed to add patient'
-      })
+        toast.error(errorData.error || 'Failed to add patient')
       }
     } catch (error) {
       console.error('Error adding patient:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to add patient'
-      })
+      toast.error('Failed to add patient')
     }
   }
 
@@ -201,20 +185,14 @@ export default function AdminPatients() {
     const file = event.target.files?.[0]
     if (file) {
       // In real app, this would handle CSV/Excel file upload
-      toast({
-        title: "Success",
-        description: 'Bulk upload functionality would process the file'
-      })
+      toast.success('Bulk upload functionality would process the file')
       setIsBulkDialogOpen(false)
     }
   }
 
   const downloadTemplate = () => {
     // In real app, this would download a CSV template
-    toast({
-        title: "Success",
-        description: 'Template download started'
-      })
+    toast.success('Template download started')
   }
 
   if (isLoading || isDataLoading) {

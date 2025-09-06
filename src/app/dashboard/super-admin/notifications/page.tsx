@@ -34,7 +34,7 @@ import {
   Database,
   Server
 } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { 
   DropdownMenu,
@@ -65,7 +65,7 @@ interface SuperAdminNotification {
 }
 
 export default function SuperAdminNotificationsPage() {
-  const { isUnauthorized, isLoading, userSession } = useRoleAuthorization({
+  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
     requiredRole: "SUPER_ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: false
@@ -100,17 +100,11 @@ export default function SuperAdminNotificationsPage() {
         const data = await response.json()
         setNotifications(data)
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to fetch notifications'
-      })
+        toast.error('Failed to fetch notifications')
       }
     } catch (error) {
       console.error('Error fetching notifications:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to fetch notifications'
-      })
+      toast.error('Failed to fetch notifications')
     } finally {
       setLoading(false)
     }
@@ -207,22 +201,13 @@ export default function SuperAdminNotificationsPage() {
         setNotifications(notifications.map(n => 
           n.id === notificationId ? { ...n, status: 'READ' as const } : n
         ))
-        toast({
-        title: "Success",
-        description: 'Notification marked as read'
-      })
+        toast.success('Notification marked as read')
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to mark notification as read'
-      })
+        toast.error('Failed to mark notification as read')
       }
     } catch (error) {
       console.error('Error marking notification as read:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to mark notification as read'
-      })
+      toast.error('Failed to mark notification as read')
     }
   }
 
@@ -234,22 +219,13 @@ export default function SuperAdminNotificationsPage() {
 
       if (response.ok) {
         setNotifications(notifications.map(n => ({ ...n, status: 'READ' as const })))
-        toast({
-        title: "Success",
-        description: 'All notifications marked as read'
-      })
+        toast.success('All notifications marked as read')
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to mark all notifications as read'
-      })
+        toast.error('Failed to mark all notifications as read')
       }
     } catch (error) {
       console.error('Error marking all notifications as read:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to mark all notifications as read'
-      })
+      toast.error('Failed to mark all notifications as read')
     }
   }
 
@@ -267,22 +243,13 @@ export default function SuperAdminNotificationsPage() {
         setNotifications(notifications.map(n => 
           n.id === notificationId ? { ...n, status: 'ARCHIVED' as const } : n
         ))
-        toast({
-        title: "Success",
-        description: 'Notification archived'
-      })
+        toast.success('Notification archived')
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to archive notification'
-      })
+        toast.error('Failed to archive notification')
       }
     } catch (error) {
       console.error('Error archiving notification:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to archive notification'
-      })
+      toast.error('Failed to archive notification')
     }
   }
 
@@ -298,22 +265,13 @@ export default function SuperAdminNotificationsPage() {
 
       if (response.ok) {
         setNotifications(notifications.filter(n => n.id !== notificationId))
-        toast({
-        title: "Success",
-        description: 'Notification deleted'
-      })
+        toast.success('Notification deleted')
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to delete notification'
-      })
+        toast.error('Failed to delete notification')
       }
     } catch (error) {
       console.error('Error deleting notification:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to delete notification'
-      })
+      toast.error('Failed to delete notification')
     }
   }
 
@@ -330,22 +288,13 @@ export default function SuperAdminNotificationsPage() {
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
-        toast({
-        title: "Success",
-        description: 'Notifications exported successfully'
-      })
+        toast.success('Notifications exported successfully')
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to export notifications'
-      })
+        toast.error('Failed to export notifications')
       }
     } catch (error) {
       console.error('Error exporting notifications:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to export notifications'
-      })
+      toast.error('Failed to export notifications')
     }
   }
 

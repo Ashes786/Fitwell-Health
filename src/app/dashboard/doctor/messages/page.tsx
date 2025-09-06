@@ -24,7 +24,6 @@ import {
   MoreVertical
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Message {
   id: string
@@ -76,7 +75,7 @@ export default function DoctorMessages() {
   const [newMessage, setNewMessage] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
 
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, session: doctorSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "DOCTOR",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -158,7 +157,7 @@ export default function DoctorMessages() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 

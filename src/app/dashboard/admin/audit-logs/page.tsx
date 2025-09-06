@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -47,7 +46,7 @@ export default function AdminAuditLogsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL")
 
-  const { isAuthorized, isUnauthorized, isLoading, authSession: authSessionVar } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -156,10 +155,7 @@ export default function AdminAuditLogsPage() {
       setAuditLogs(mockAuditLogs)
     } catch (error) {
       console.error('Error fetching audit logs:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load audit logs'
-      })
+      toast.error('Failed to load audit logs')
     } finally {
       setIsDataLoading(false)
     }
@@ -215,10 +211,7 @@ export default function AdminAuditLogsPage() {
   }
 
   const handleExportLogs = () => {
-    toast({
-        title: "Info",
-        description: "Exporting audit logs..."
-      })
+    toast.info("Exporting audit logs...")
   }
 
   const categories = Array.from(new Set(auditLogs.map(log => log.category)))

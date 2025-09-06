@@ -8,7 +8,7 @@ export async function GET() {
     
     return NextResponse.json({
       message: 'Auth test endpoint',
-      authSession: authSessionVar,
+      session: session,
       timestamp: new Date().toISOString()
     })
   } catch (error) {

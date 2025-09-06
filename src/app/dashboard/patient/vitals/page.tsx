@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { 
   Heart, 
   Activity, 
@@ -25,7 +26,6 @@ import {
   Calendar
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Vital {
   id: string
@@ -49,7 +49,7 @@ const vitalTypes = [
 ]
 
 export default function PatientVitals() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

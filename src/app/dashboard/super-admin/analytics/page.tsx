@@ -23,7 +23,7 @@ import {
   Download,
   RefreshCw
 } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns'
 import { UserRole } from "@prisma/client"
 import { BarChart } from '@/components/ui/bar-chart'
@@ -50,7 +50,7 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
-  const { isUnauthorized, isLoading, userSession } = useRoleAuthorization({
+  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
     requiredRole: "SUPER_ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: false
@@ -80,17 +80,11 @@ export default function AnalyticsPage() {
         const data = await response.json()
         setAnalytics(data)
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to fetch analytics data'
-      })
+        toast.error('Failed to fetch analytics data')
       }
     } catch (error) {
       console.error('Error fetching analytics:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to fetch analytics data'
-      })
+      toast.error('Failed to fetch analytics data')
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -110,22 +104,13 @@ export default function AnalyticsPage() {
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
-        toast({
-        title: "Success",
-        description: 'Report exported successfully'
-      })
+        toast.success('Report exported successfully')
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to export report'
-      })
+        toast.error('Failed to export report')
       }
     } catch (error) {
       console.error('Error exporting report:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to export report'
-      })
+      toast.error('Failed to export report')
     }
   }
 

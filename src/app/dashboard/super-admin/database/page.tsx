@@ -24,7 +24,7 @@ import {
   Table,
   Settings
 } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 
 interface DatabaseStats {
   totalRecords: number
@@ -196,10 +196,7 @@ export default function SuperAdminDatabase() {
       setSelectedTable(mockTables[0])
     } catch (error) {
       console.error('Error fetching database data:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load database data'
-      })
+      toast.error('Failed to load database data')
     } finally {
       setIsLoading(false)
     }
@@ -207,45 +204,27 @@ export default function SuperAdminDatabase() {
 
   const handleCreateBackup = async () => {
     try {
-      toast({
-        title: "Info",
-        description: 'Creating backup...'
-      })
+      toast.info('Creating backup...')
       // Simulate backup creation
       setTimeout(() => {
-        toast({
-        title: "Success",
-        description: 'Backup created successfully'
-      })
+        toast.success('Backup created successfully')
         fetchDatabaseData()
       }, 3000)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: 'Failed to create backup'
-      })
+      toast.error('Failed to create backup')
     }
   }
 
   const handleOptimizeDatabase = async () => {
     try {
-      toast({
-        title: "Info",
-        description: 'Optimizing database...'
-      })
+      toast.info('Optimizing database...')
       // Simulate optimization
       setTimeout(() => {
-        toast({
-        title: "Success",
-        description: 'Database optimized successfully'
-      })
+        toast.success('Database optimized successfully')
         fetchDatabaseData()
       }, 5000)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: 'Failed to optimize database'
-      })
+      toast.error('Failed to optimize database')
     }
   }
 

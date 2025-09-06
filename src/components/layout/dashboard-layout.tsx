@@ -55,7 +55,7 @@ interface DashboardLayoutProps {
   children: React.ReactNode
   userRole: string
   userName: string
-  userImage?: string | null | undefined
+  userImage?: string
 }
 
 // Unified navigation items for all roles - simplified structure
@@ -273,7 +273,7 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
                   </Badge>
                 </div>
                 <Avatar className="h-8 w-8">
-                  {userImage && <AvatarImage src={userImage} />}
+                  <AvatarImage src={userImage} />
                   <AvatarFallback className="bg-health-primary text-white">{userName?.charAt(0)}</AvatarFallback>
                 </Avatar>
               </div>

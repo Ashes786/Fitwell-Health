@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { 
   CreditCard, 
   Search, 
@@ -26,7 +27,6 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Payment {
   id: string
@@ -61,7 +61,7 @@ interface Invoice {
 }
 
 export default function PatientBilling() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -189,10 +189,7 @@ export default function PatientBilling() {
       setIsLoading(false)
     } catch (error) {
       console.error('Error fetching billing data:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load billing information'
-      })
+      toast.error('Failed to load billing information')
       setIsLoading(false)
     }
   }
@@ -244,7 +241,7 @@ export default function PatientBilling() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 

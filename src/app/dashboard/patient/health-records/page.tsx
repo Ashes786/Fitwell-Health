@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { 
   FileText, 
   Search, 
@@ -27,7 +28,6 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface HealthRecord {
   id: string
@@ -44,7 +44,7 @@ interface HealthRecord {
 }
 
 export default function PatientHealthRecords() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -124,10 +124,7 @@ export default function PatientHealthRecords() {
       setIsLoading(false)
     } catch (error) {
       console.error('Error fetching health records:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load health records'
-      })
+      toast.error('Failed to load health records')
       setIsLoading(false)
     }
   }

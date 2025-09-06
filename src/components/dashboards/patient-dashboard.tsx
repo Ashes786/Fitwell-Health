@@ -69,7 +69,7 @@ import {
   PieChart,
   Wind
 } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import { LineChart } from '@/components/ui/line-chart'
 import { BarChart } from '@/components/ui/bar-chart'
@@ -230,10 +230,7 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
       await new Promise(resolve => setTimeout(resolve, 1000))
       setLastRefresh(new Date())
     } catch (error) {
-      toast({
-        title: "Error",
-        description: 'Failed to load dashboard data'
-      })
+      toast.error('Failed to load dashboard data')
     } finally {
       setIsLoading(false)
     }

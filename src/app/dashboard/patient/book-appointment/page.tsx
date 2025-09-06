@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { 
   Calendar, 
   Video, 
@@ -25,7 +26,6 @@ import {
   ArrowRight
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Doctor {
   id: string
@@ -46,7 +46,7 @@ interface TimeSlot {
 }
 
 export default function BookAppointment() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -138,7 +138,7 @@ export default function BookAppointment() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 

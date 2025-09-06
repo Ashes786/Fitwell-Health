@@ -91,7 +91,7 @@ export default function AdminAnalytics() {
   const [isDataLoading, setIsDataLoading] = useState(true)
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
 
-  const { isAuthorized, isUnauthorized, isLoading, authSession: authSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -209,10 +209,7 @@ export default function AdminAnalytics() {
       setIsDataLoading(false)
     } catch (error) {
       console.error('Error fetching analytics:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load analytics data'
-      })
+      toast.error('Failed to load analytics data')
       setIsDataLoading(false)
     }
   }

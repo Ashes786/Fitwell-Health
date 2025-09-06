@@ -25,7 +25,6 @@ import {
   Heart
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface FamilyMember {
   name: string
@@ -69,7 +68,7 @@ export default function RegisterPatient() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [success, setSuccess] = useState(false)
 
-  const { isAuthorized, isUnauthorized, isLoading, authSession: authSessionVar } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
     requiredRole: "ATTENDANT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

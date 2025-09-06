@@ -38,7 +38,6 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Hospital {
   id: string
@@ -98,7 +97,7 @@ export default function AdminHospitalTreatments() {
     specializations: [] as string[]
   })
 
-  const { isAuthorized, isUnauthorized, isLoading, authSession: authSessionVar } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -204,10 +203,7 @@ export default function AdminHospitalTreatments() {
       setIsDataLoading(false)
     } catch (error) {
       console.error('Error fetching treatments:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load hospital treatments'
-      })
+      toast.error('Failed to load hospital treatments')
       setIsDataLoading(false)
     }
   }
@@ -235,10 +231,7 @@ export default function AdminHospitalTreatments() {
       // In real app, this would be an API call
       const selectedHospital = hospitals.find(h => h.id === newTreatment.hospitalId)
       if (!selectedHospital) {
-        toast({
-        title: "Error",
-        description: 'Please select a hospital'
-      })
+        toast.error('Please select a hospital')
         return
       }
 
@@ -286,16 +279,10 @@ export default function AdminHospitalTreatments() {
         specializations: []
       })
       setIsAddDialogOpen(false)
-      toast({
-        title: "Success",
-        description: 'Hospital treatment added successfully'
-      })
+      toast.success('Hospital treatment added successfully')
     } catch (error) {
       console.error('Error adding treatment:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to add hospital treatment'
-      })
+      toast.error('Failed to add hospital treatment')
     }
   }
 

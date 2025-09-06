@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 import { 
   Brain, 
   Activity, 
@@ -25,7 +26,6 @@ import {
   Download
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface AIReport {
   id: string
@@ -46,7 +46,7 @@ interface VitalsData {
 }
 
 export default function PatientAIReports() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -74,7 +74,7 @@ export default function PatientAIReports() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 

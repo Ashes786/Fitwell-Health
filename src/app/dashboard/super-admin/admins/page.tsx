@@ -24,7 +24,7 @@ import {
   Edit,
   Trash2
 } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { 
   DropdownMenu,
@@ -53,7 +53,7 @@ interface Admin {
 }
 
 export default function AdminsPage() {
-  const { isUnauthorized, isLoading, userSession } = useRoleAuthorization({
+  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
     requiredRole: "SUPER_ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: false
@@ -78,17 +78,11 @@ export default function AdminsPage() {
           const data = await response.json()
           setAdmins(data)
         } else {
-          toast({
-        title: "Error",
-        description: 'Failed to fetch admins'
-      })
+          toast.error('Failed to fetch admins')
         }
       } catch (error) {
         console.error('Error fetching admins:', error)
-        toast({
-        title: "Error",
-        description: 'Failed to fetch admins'
-      })
+        toast.error('Failed to fetch admins')
       } finally {
         setLoading(false)
       }
@@ -157,25 +151,16 @@ export default function AdminsPage() {
       })
 
       if (response.ok) {
-        toast({
-        title: "Success",
-        description: `Admin ${!currentStatus ? 'activated' : 'deactivated'} successfully`
-      })
+        toast.success(`Admin ${!currentStatus ? 'activated' : 'deactivated'} successfully`)
         setAdmins(admins.map(admin => 
           admin.id === adminId ? { ...admin, isActive: !currentStatus } : admin
         ))
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to update admin status'
-      })
+        toast.error('Failed to update admin status')
       }
     } catch (error) {
       console.error('Error updating admin status:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to update admin status'
-      })
+      toast.error('Failed to update admin status')
     }
   }
 
@@ -190,23 +175,14 @@ export default function AdminsPage() {
       })
 
       if (response.ok) {
-        toast({
-        title: "Success",
-        description: 'Admin deleted successfully'
-      })
+        toast.success('Admin deleted successfully')
         setAdmins(admins.filter(admin => admin.id !== adminId))
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to delete admin'
-      })
+        toast.error('Failed to delete admin')
       }
     } catch (error) {
       console.error('Error deleting admin:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to delete admin'
-      })
+      toast.error('Failed to delete admin')
     }
   }
 

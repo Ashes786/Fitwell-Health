@@ -36,7 +36,6 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Partner {
   id: string
@@ -69,7 +68,7 @@ interface Partner {
 }
 
 export default function AdminPartners() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -140,17 +139,11 @@ export default function AdminPartners() {
         }))
         setPartners(formattedPartners)
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to fetch partners'
-      })
+        toast.error('Failed to fetch partners')
       }
     } catch (error) {
       console.error('Error fetching partners:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load partners'
-      })
+      toast.error('Failed to load partners')
     } finally {
       setIsLoading(false)
     }
@@ -217,23 +210,14 @@ export default function AdminPartners() {
           partnershipLevel: 'BASIC'
         })
         setIsAddDialogOpen(false)
-        toast({
-        title: "Success",
-        description: 'Partner added successfully'
-      })
+        toast.success('Partner added successfully')
       } else {
         const errorData = await response.json()
-        toast({
-        title: "Error",
-        description: errorData.error || 'Failed to add partner'
-      })
+        toast.error(errorData.error || 'Failed to add partner')
       }
     } catch (error) {
       console.error('Error adding partner:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to add partner'
-      })
+      toast.error('Failed to add partner')
     }
   }
 

@@ -34,7 +34,6 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface SubscriptionPlan {
   id: string
@@ -56,7 +55,7 @@ interface SubscriptionPlan {
 }
 
 export default function AdminSubscriptionPlans() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -113,17 +112,11 @@ export default function AdminSubscriptionPlans() {
         }))
         setPlans(formattedPlans)
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to fetch subscription plans'
-      })
+        toast.error('Failed to fetch subscription plans')
       }
     } catch (error) {
       console.error('Error fetching plans:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load subscription plans'
-      })
+      toast.error('Failed to load subscription plans')
     } finally {
       setIsLoading(false)
     }
@@ -176,23 +169,14 @@ export default function AdminSubscriptionPlans() {
           specializations: []
         })
         setIsAddDialogOpen(false)
-        toast({
-        title: "Success",
-        description: 'Subscription plan created successfully'
-      })
+        toast.success('Subscription plan created successfully')
       } else {
         const errorData = await response.json()
-        toast({
-        title: "Error",
-        description: errorData.error || 'Failed to create subscription plan'
-      })
+        toast.error(errorData.error || 'Failed to create subscription plan')
       }
     } catch (error) {
       console.error('Error adding plan:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to create subscription plan'
-      })
+      toast.error('Failed to create subscription plan')
     }
   }
 

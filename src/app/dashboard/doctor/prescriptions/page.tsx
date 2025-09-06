@@ -25,7 +25,6 @@ import {
   Edit
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
-import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Prescription {
   id: string
@@ -63,7 +62,7 @@ export default function DoctorPrescriptions() {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
     requiredRole: "DOCTOR",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -85,7 +84,7 @@ export default function DoctorPrescriptions() {
     )
   }
 
-  if (!session) {
+  if (!authSession) {
     return null
   }
 

@@ -52,7 +52,7 @@ interface User {
 }
 
 export default function AdminUsers() {
-  const { isAuthorized, isUnauthorized, isLoading, userSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -96,17 +96,11 @@ export default function AdminUsers() {
         }))
         setUsers(formattedUsers)
       } else {
-        toast({
-        title: "Error",
-        description: 'Failed to fetch users'
-      })
+        toast.error('Failed to fetch users')
       }
     } catch (error) {
       console.error('Error fetching users:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load users'
-      })
+      toast.error('Failed to load users')
     }
   }
 

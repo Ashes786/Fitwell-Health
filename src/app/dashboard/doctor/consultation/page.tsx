@@ -35,7 +35,7 @@ import {
   Weight,
   Ruler
 } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 
 interface Appointment {
   id: string
@@ -195,10 +195,7 @@ export default function DoctorConsultation() {
       }
     } catch (error) {
       console.error('Error fetching appointments:', error)
-      toast({
-        title: "Error",
-        description: 'Failed to load appointments'
-      })
+      toast.error('Failed to load appointments')
     } finally {
       setIsLoading(false)
     }
@@ -232,10 +229,7 @@ export default function DoctorConsultation() {
   const joinVideoConsultation = () => {
     if (currentAppointment?.joinUrl) {
       window.open(currentAppointment.joinUrl, '_blank')
-      toast({
-        title: "Success",
-        description: 'Opening video consultation...'
-      })
+      toast.success('Opening video consultation...')
     }
   }
 
@@ -245,10 +239,7 @@ export default function DoctorConsultation() {
       if (consultationData) {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000))
-        toast({
-        title: "Success",
-        description: 'Consultation completed and saved'
-      })
+        toast.success('Consultation completed and saved')
       }
       
       setIsConsultationActive(false)
@@ -256,10 +247,7 @@ export default function DoctorConsultation() {
       setConsultationData(null)
       fetchAppointments()
     } catch (error) {
-      toast({
-        title: "Error",
-        description: 'Failed to save consultation data'
-      })
+      toast.error('Failed to save consultation data')
     }
   }
 
@@ -295,10 +283,7 @@ export default function DoctorConsultation() {
           height: parseFloat(vitalSigns.height) || 0
         }
       })
-      toast({
-        title: "Success",
-        description: 'Vital signs updated'
-      })
+      toast.success('Vital signs updated')
     }
   }
 
@@ -320,10 +305,7 @@ export default function DoctorConsultation() {
         urgent: false
       })
       setIsReferralDialogOpen(false)
-      toast({
-        title: "Success",
-        description: 'Referral added'
-      })
+      toast.success('Referral added')
     }
   }
 
@@ -347,10 +329,7 @@ export default function DoctorConsultation() {
         instructions: ''
       })
       setIsPrescriptionDialogOpen(false)
-      toast({
-        title: "Success",
-        description: 'Prescription added'
-      })
+      toast.success('Prescription added')
     }
   }
 

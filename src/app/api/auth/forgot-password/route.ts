@@ -3,8 +3,8 @@ import { db } from '@/lib/db'
 import nodemailer from 'nodemailer'
 
 // Create a transporter using Gmail (you should configure this with your actual email service)
-const createTransport = () => {
-  return nodemailer.createTransport({
+const createTransporter = () => {
+  return nodemailer.createTransporter({
     service: 'gmail',
     auth: {
       user: process.env.EMAIL_USER || 'demo@fitwell.health',
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
 
     try {
-      const transporter = createTransport()
+      const transporter = createTransporter()
 
       const mailOptions = {
         from: process.env.EMAIL_FROM || 'noreply@fitwell.health',
