@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts'
 import { 
   Heart, 
   Calendar,  
@@ -162,6 +163,7 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
   const [isLoading, setIsLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [selectedTimeRange, setSelectedTimeRange] = useState('week')
+  const [selectedVitalType, setSelectedVitalType] = useState('')
 
   // Dynamic state for all data
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -214,7 +216,41 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
       // Process health stats data
       if (healthStatsRes.ok) {
         const healthStatsData = await healthStatsRes.json()
-        setHealthStats(healthStatsData)
+        console.log('Health Stats Data:', healthStatsData) // Debug log
+        
+        // Transform the API data to match expected format
+        const transformedHealthStats = {
+          score: Math.floor(Math.random() * 20) + 75, // Mock score between 75-95
+          message: 'Your health is being monitored closely',
+          trend: '+5% from last month',
+          ranking: 'Top 15% of patients',
+          status: 'Good Health',
+          totalAppointments: healthStatsData.totalAppointments || 0,
+          activePrescriptions: healthStatsData.activePrescriptions || 0,
+          recentLabTests: healthStatsData.recentLabTests || 0,
+          latestVitals: healthStatsData.latestVitals || [],
+          upcomingAppointments: healthStatsData.upcomingAppointments || 0,
+          completedAppointments: healthStatsData.completedAppointments || 0
+        }
+        
+        setHealthStats(transformedHealthStats)
+      } else {
+        console.log('Health Stats Response not OK:', healthStatsRes.status, healthStatsRes.statusText) // Debug log
+        
+        // Set default health stats if API fails
+        setHealthStats({
+          score: 85,
+          message: 'Your health is being monitored',
+          trend: 'Stable',
+          ranking: 'Good',
+          status: 'Health Score',
+          totalAppointments: 0,
+          activePrescriptions: 0,
+          recentLabTests: 0,
+          latestVitals: [],
+          upcomingAppointments: 0,
+          completedAppointments: 0
+        })
       }
 
       // Process upcoming appointments
@@ -272,129 +308,39 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
       }
 
       // Generate dynamic prescriptions based on health data
-      const dynamicPrescriptions = [
-        { 
-          id: '1', 
-          name: healthStats?.medications?.[0]?.name || 'Lisinopril', 
-          dosage: healthStats?.medications?.[0]?.dosage || '10mg', 
-          frequency: healthStats?.medications?.[0]?.frequency || 'Once daily', 
-          refills: healthStats?.medications?.[0]?.refills || 2, 
-          status: 'active' as const, 
-          adherence: healthStats?.medications?.[0]?.adherence || 95, 
-          nextDose: healthStats?.medications?.[0]?.nextDose || '8:00 PM', 
-          instructions: healthStats?.medications?.[0]?.instructions || 'Take with food' 
-        },
-        { 
-          id: '2', 
-          name: healthStats?.medications?.[1]?.name || 'Metformin', 
-          dosage: healthStats?.medications?.[1]?.dosage || '500mg', 
-          frequency: healthStats?.medications?.[1]?.frequency || 'Twice daily', 
-          refills: healthStats?.medications?.[1]?.refills || 1, 
-          status: 'active' as const, 
-          adherence: healthStats?.medications?.[1]?.adherence || 88, 
-          nextDose: healthStats?.medications?.[1]?.nextDose || '9:00 AM', 
-          instructions: healthStats?.medications?.[1]?.instructions || 'Take with meals' 
-        }
-      ]
+      const dynamicPrescriptions = healthStats?.medications?.map((med: any, index: number) => ({
+        id: med.id || `med-${index}`,
+        name: med.name || 'Medication',
+        dosage: med.dosage || 'N/A',
+        frequency: med.frequency || 'N/A',
+        refills: med.refills || 0,
+        status: med.status || 'active',
+        adherence: med.adherence || 0,
+        nextDose: med.nextDose || 'N/A',
+        instructions: med.instructions || ''
+      })) || []
       setPrescriptions(dynamicPrescriptions)
 
       // Generate dynamic health metrics based on health stats
-      const dynamicHealthMetrics = [
-        { 
-          name: 'Daily Steps', 
-          value: healthStats?.activity?.steps || Math.floor(Math.random() * 3000) + 7000, 
-          target: 10000, 
-          unit: 'steps', 
-          trend: (healthStats?.activity?.steps || 0) > 8000 ? 'improving' as const : 'stable' as const, 
-          icon: Dumbbell, 
-          color: 'blue' 
-        },
-        { 
-          name: 'Sleep Hours', 
-          value: healthStats?.activity?.sleep || Math.round((Math.random() * 2 + 6.5) * 10) / 10, 
-          target: 8, 
-          unit: 'hours', 
-          trend: (healthStats?.activity?.sleep || 0) > 7 ? 'stable' as const : 'declining' as const, 
-          icon: Moon, 
-          color: 'purple' 
-        },
-        { 
-          name: 'Water Intake', 
-          value: healthStats?.hydration?.glasses || Math.floor(Math.random() * 3) + 5, 
-          target: 8, 
-          unit: 'glasses', 
-          trend: (healthStats?.hydration?.glasses || 0) > 6 ? 'improving' as const : 'declining' as const, 
-          icon: Droplets, 
-          color: 'cyan' 
-        },
-        { 
-          name: 'Exercise Minutes', 
-          value: healthStats?.activity?.exercise || Math.floor(Math.random() * 30) + 30, 
-          target: 60, 
-          unit: 'min', 
-          trend: (healthStats?.activity?.exercise || 0) > 45 ? 'improving' as const : 'stable' as const, 
-          icon: Dumbbell, 
-          color: 'green' 
-        }
-      ]
+      const dynamicHealthMetrics = healthStats?.metrics?.map((metric: any) => ({
+        name: metric.name || 'Metric',
+        value: metric.value || 0,
+        target: metric.target || 0,
+        unit: metric.unit || '',
+        trend: metric.trend || 'stable',
+        icon: metric.icon || Activity,
+        color: metric.color || 'gray'
+      })) || []
       setHealthMetrics(dynamicHealthMetrics)
 
-      // Generate dynamic activity data based on health stats
-      const baseSteps = healthStats?.activity?.steps || Math.floor(Math.random() * 3000) + 7000
-      const baseExercise = healthStats?.activity?.exercise || Math.floor(Math.random() * 30) + 30
-      const baseSleep = healthStats?.activity?.sleep || Math.round((Math.random() * 2 + 6.5) * 10) / 10
-      
-      const dynamicActivityData = [
-        { 
-          date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], 
-          steps: Math.round(baseSteps * 0.85), 
-          exercise: Math.round(baseExercise * 0.67), 
-          sleep: Math.max(0, baseSleep - 0.3), 
-          calories: 2100 
-        },
-        { 
-          date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], 
-          steps: baseSteps, 
-          exercise: baseExercise, 
-          sleep: Math.max(0, baseSleep - 0.7), 
-          calories: 2300 
-        },
-        { 
-          date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], 
-          steps: Math.round(baseSteps * 1.08), 
-          exercise: Math.round(baseExercise * 1.33), 
-          sleep: baseSleep, 
-          calories: 2450 
-        },
-        { 
-          date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], 
-          steps: Math.round(baseSteps * 0.8), 
-          exercise: Math.round(baseExercise * 0.44), 
-          sleep: Math.min(10, baseSleep + 0.6), 
-          calories: 1950 
-        },
-        { 
-          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], 
-          steps: Math.round(baseSteps * 1.24), 
-          exercise: Math.round(baseExercise * 1.67), 
-          sleep: Math.max(0, baseSleep - 0.5), 
-          calories: 2600 
-        },
-        { 
-          date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], 
-          steps: Math.round(baseSteps * 1.05), 
-          exercise: Math.round(baseExercise * 1.11), 
-          sleep: Math.min(10, baseSleep + 0.3), 
-          calories: 2250 
-        },
-        { 
-          date: new Date().toISOString().split('T')[0], 
-          steps: Math.round(baseSteps * 0.89), 
-          exercise: Math.round(baseExercise * 0.78), 
-          sleep: Math.max(0, baseSleep - 1), 
-          calories: 2000 
-        }
-      ]
+      // Generate activity data based on health stats
+      const dynamicActivityData = healthStats?.activity?.history?.map((day: any) => ({
+        date: day.date || new Date().toISOString().split('T')[0],
+        steps: day.steps || 0,
+        exercise: day.exercise || 0,
+        sleep: day.sleep || 0,
+        calories: day.calories || 0
+      })) || []
       setActivityData(dynamicActivityData)
 
       setLastRefresh(new Date())
@@ -406,70 +352,64 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
     }
   }
 
+  // Function to transform vitals data for chart
+  const getVitalChartData = () => {
+    if (!selectedVitalType || vitals.length === 0) return []
+    
+    const filteredVitals = vitals
+      .filter(vital => vital.type === selectedVitalType)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(-7) // Show last 7 readings
+    
+    return filteredVitals.map((vital, index) => ({
+      label: new Date(vital.date).toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      }),
+      value: parseFloat(vital.value) || 0
+    }))
+  }
+
+  // Set default selected vital type when vitals are loaded
+  useEffect(() => {
+    if (vitals.length > 0 && !selectedVitalType) {
+      const vitalTypes = Array.from(new Set(vitals.map(v => v.type)))
+      setSelectedVitalType(vitalTypes[0] || '')
+    }
+  }, [vitals, selectedVitalType])
+
   const enhancedQuickActions = [
     { 
-      name: 'Book GP', 
+      name: 'Book Appointment', 
       icon: Stethoscope, 
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       route: '/dashboard/patient/book-appointment',
-      description: 'Schedule general practitioner'
+      description: 'Schedule appointment'
     },
     { 
-      name: 'Book Specialist', 
-      icon: User, 
+      name: 'Book Lab Test', 
+      icon: TestTube, 
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
-      route: '/dashboard/patient/book-appointment',
-      description: 'See a specialist doctor'
+      route: '/dashboard/patient/lab-tests',
+      description: 'Schedule lab test'
     },
     { 
-      name: 'Telehealth', 
-      icon: Video, 
+      name: 'Buy Medicine', 
+      icon: Pill, 
       color: 'text-green-600',
       bgColor: 'bg-green-50',
-      route: '/dashboard/patient/book-appointment',
-      description: 'Virtual consultation'
+      route: '/dashboard/patient/prescriptions',
+      description: 'Order medications'
     },
     { 
-      name: 'Emergency', 
-      icon: Ambulance, 
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      route: '/dashboard/patient/book-appointment',
-      description: 'Urgent care needed'
-    },
-    { 
-      name: 'Upload Record', 
+      name: 'EMR', 
       icon: FileText, 
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
       route: '/dashboard/patient/health-records',
-      description: 'Add medical documents'
-    },
-    { 
-      name: 'Order Meds', 
-      icon: Pill, 
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-50',
-      route: '/dashboard/patient/prescriptions',
-      description: 'Refill prescriptions'
-    },
-    { 
-      name: 'HealthPay', 
-      icon: CreditCard, 
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
-      route: '/dashboard/patient/health-card',
-      description: 'Manage health card'
-    },
-    { 
-      name: 'AI Reports', 
-      icon: Brain, 
-      color: 'text-pink-600',
-      bgColor: 'bg-pink-50',
-      route: '/dashboard/patient/ai-reports',
-      description: 'AI health analysis'
+      description: 'Medical records'
     }
   ]
 
@@ -556,7 +496,7 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
               <div className="mt-2 flex items-center space-x-2">
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                   <Shield className="h-3 w-3 mr-1" />
-                  NHR: {healthStats?.patientId || 'NHS-123456789'}
+                  NHR: {healthStats?.patientId || 'N/A'}
                 </Badge>
                 <Badge variant="outline" className="border-green-200 text-green-700">
                   <HeartPulse className="h-3 w-3 mr-1" />
@@ -579,43 +519,45 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
       </div>
 
       {/* Health Score Card */}
-      {healthStats && (
-        <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="p-4 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <Heart className="h-8 w-8" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold mb-1">Your Health Score</h2>
-                  <p className="text-blue-100">{healthStats.message || 'Your overall health is being tracked'}</p>
-                  <div className="flex items-center space-x-4 mt-2">
-                    <div className="flex items-center space-x-1">
-                      <TrendingUp className="h-4 w-4" />
-                      <span className="text-sm">+5% from last month</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Award className="h-4 w-4" />
-                      <span className="text-sm">Top 15% of patients</span>
-                    </div>
-                  </div>
-                </div>
+      <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-100 via-purple-100 to-indigo-100 text-gray-800 mb-8">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="p-4 bg-white/50 rounded-xl backdrop-blur-sm">
+                <Heart className="h-8 w-8 text-blue-600" />
               </div>
-              <div className="text-right">
-                <div className="text-6xl font-bold mb-2">{healthStats.score || 85}%</div>
-                <div className="flex items-center justify-end space-x-2 text-blue-100">
-                  <Star className="h-4 w-4 fill-current" />
-                  <span className="text-sm font-medium">Excellent Health</span>
+              <div>
+                <h2 className="text-2xl font-bold mb-1">Your Health Score</h2>
+                <p className="text-gray-700">{healthStats?.message || 'Your overall health is being tracked'}</p>
+                <div className="flex items-center space-x-4 mt-2">
+                  {healthStats?.trend && (
+                    <div className="flex items-center space-x-1">
+                      <TrendingUp className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700">{healthStats.trend}</span>
+                    </div>
+                  )}
+                  {healthStats?.ranking && (
+                    <div className="flex items-center space-x-1">
+                      <Award className="h-4 w-4 text-purple-600" />
+                      <span className="text-sm text-gray-700">{healthStats.ranking}</span>
+                    </div>
+                  )}
                 </div>
-                <Progress value={healthStats.score || 85} className="w-32 mt-2 bg-white/20" />
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div className="text-right">
+              <div className="text-6xl font-bold mb-2">{healthStats?.score ? `${healthStats.score}%` : 'Loading...'}</div>
+              <div className="flex items-center justify-end space-x-2 text-blue-600">
+                <Star className="h-4 w-4 fill-current" />
+                <span className="text-sm font-medium">{healthStats?.status || 'Health Score'}</span>
+              </div>
+              <Progress value={healthStats?.score || 0} className="w-32 mt-2 bg-white/50" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Key Metrics Grid */}
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
           <CardContent className="p-6">
@@ -631,12 +573,9 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
                 <div className="flex items-center space-x-2">
                   <Clock className="h-4 w-4 text-blue-500" />
                   <span className="text-sm text-blue-600">
-                    Next: {appointments.length > 0 ? appointments[0].date : 'None scheduled'}
+                    Next: {appointments.length > 0 ? appointments[0].date : 'N/A'}
                   </span>
                 </div>
-              </div>
-              <div className="h-12 w-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -660,9 +599,6 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
                   </span>
                 </div>
               </div>
-              <div className="h-12 w-12 bg-green-50 rounded-lg flex items-center justify-center">
-                <Pill className="h-6 w-6 text-green-600" />
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -682,9 +618,6 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
                   <AlertTriangle className="h-4 w-4 text-orange-500" />
                   <span className="text-sm text-orange-600">Reminders</span>
                 </div>
-              </div>
-              <div className="h-12 w-12 bg-orange-50 rounded-lg flex items-center justify-center">
-                <Bell className="h-6 w-6 text-orange-600" />
               </div>
             </div>
           </CardContent>
@@ -706,19 +639,16 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
                   <span className="text-sm text-purple-600">Recent updates</span>
                 </div>
               </div>
-              <div className="h-12 w-12 bg-purple-50 rounded-lg flex items-center justify-center">
-                <FileText className="h-6 w-6 text-purple-600" />
-              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-6 mb-8">
         {/* Left Column - Appointments */}
-        <div className="lg:col-span-2">
-          {appointments.length > 0 && (
+        {appointments.length > 0 && (
+          <div className="lg:col-span-2">
             <Card className="border-0 shadow-lg bg-white h-full mb-6">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
@@ -781,8 +711,8 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
                 </div>
               </CardContent>
             </Card>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Right Column - Quick Actions */}
         <div className="space-y-6">
@@ -794,20 +724,7 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                {enhancedQuickActions.slice(0, 4).map((action, index) => {
-                  const Icon = action.icon
-                  return (
-                    <Link key={index} href={action.route}>
-                      <div className={`p-3 rounded-xl border-2 border-transparent ${action.bgColor} hover:border-blue-300 cursor-pointer transition-all duration-300 hover:shadow-md h-full flex flex-col items-center justify-center`}>
-                        <Icon className={`h-5 w-5 ${action.color} mb-1`} />
-                        <p className="text-xs font-medium text-gray-900 text-center">{action.name}</p>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-              <div className="grid grid-cols-2 gap-3 mt-3">
-                {enhancedQuickActions.slice(4, 8).map((action, index) => {
+                {enhancedQuickActions.map((action, index) => {
                   const Icon = action.icon
                   return (
                     <Link key={index} href={action.route}>
@@ -855,9 +772,79 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
         </div>
       </div>
 
+      {/* Vitals Trends Chart */}
+      {vitals.length > 0 && (
+        <Card className="border-0 shadow-lg bg-white mb-8">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-semibold text-gray-900">
+                  Vitals Trends
+                </CardTitle>
+                <CardDescription className="text-sm text-gray-600 mt-1">
+                  Track your vital signs over time
+                </CardDescription>
+              </div>
+              <div className="flex items-center space-x-2">
+                <select 
+                  className="text-sm border border-gray-300 rounded-md px-3 py-1 bg-white"
+                  value={selectedVitalType}
+                  onChange={(e) => setSelectedVitalType(e.target.value)}
+                >
+                  {Array.from(new Set(vitals.map(v => v.type))).map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              {getVitalChartData().length > 1 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={getVitalChartData()}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis 
+                    dataKey="label" 
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip 
+                    content={({ active, payload, label }) => (
+                      <div className="bg-white p-2 border border-gray-200 rounded shadow">
+                        <p className="font-medium">{label}</p>
+                        <p className="text-sm text-gray-600">{payload?.[0]?.value} {selectedVitalType}</p>
+                      </div>
+                    )}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <p>Need more data to display chart</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Bottom Section - Vitals & Medication */}
       {(vitals.length > 0 || prescriptions.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 relative z-10">
+        <div className={`grid grid-cols-1 ${(vitals.length > 0 && prescriptions.length > 0) ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-6 mb-8 relative z-10`}>
           {/* Vitals Monitoring */}
           {vitals.length > 0 && (
             <Card className="border-0 shadow-lg bg-white relative z-20">
@@ -921,101 +908,43 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
       )}
 
       {/* Health Metrics Section */}
-      {(healthMetrics.length > 0 || healthStats) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      {healthMetrics.length > 0 && (
+        <div className="grid grid-cols-1 gap-6 mb-8">
           {/* Health Metrics */}
-          {healthMetrics.length > 0 && (
-            <Card className="border-0 shadow-lg bg-white">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-gray-900">
-                    Health Metrics
-                  </CardTitle>
-                  <Tabs value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="week">Week</TabsTrigger>
-                      <TabsTrigger value="month">Month</TabsTrigger>
-                      <TabsTrigger value="year">Year</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  {healthMetrics.map((metric) => (
-                    <div key={metric.name} className="p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <metric.icon className={`h-4 w-4 text-${metric.color}-600`} />
-                          <span className="text-sm font-medium text-gray-700">{metric.name}</span>
-                        </div>
-                        {getTrendIcon(metric.trend)}
-                      </div>
-                      <div className="text-lg font-bold text-gray-900">{metric.value}{metric.unit}</div>
-                      <div className="text-xs text-gray-500">Target: {metric.target}{metric.unit}</div>
-                      <Progress value={(metric.value / metric.target) * 100} className="w-full mt-2" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* AI Health Insights */}
-          {healthStats && (
-            <Card className="border-0 shadow-lg bg-gradient-to-r from-green-50 to-blue-50">
-              <CardHeader className="pb-4">
+          <Card className="border-0 shadow-lg bg-white">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold text-gray-900">
-                  AI Health Insights
+                  Health Metrics
                 </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-green-600 mb-2">{healthStats.score || 85}%</div>
-                    <p className="text-sm text-gray-600 font-medium">Health Score</p>
-                    <Progress value={healthStats.score || 85} className="w-full mt-2" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <p className="text-gray-900 mb-4 text-base">{healthStats.message || 'Your health is being monitored closely.'}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">Recommendations:</p>
-                        <ul className="text-sm text-gray-600 space-y-1">
-                          {(healthStats.recommendations || [
-                            'Continue current medications',
-                            'Increase water intake',
-                            'Schedule next checkup',
-                            'Add 15 minutes to daily exercise'
-                          ]).slice(0, 4).map((rec, index) => (
-                            <li key={index} className="flex items-center space-x-2">
-                              <CheckCircle className="h-3 w-3 text-green-600" />
-                              <span>{rec}</span>
-                            </li>
-                          ))}
-                        </ul>
+                <Tabs value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="week">Week</TabsTrigger>
+                    <TabsTrigger value="month">Month</TabsTrigger>
+                    <TabsTrigger value="year">Year</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                {healthMetrics.map((metric) => (
+                  <div key={metric.name} className="p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <metric.icon className={`h-4 w-4 text-${metric.color}-600`} />
+                        <span className="text-sm font-medium text-gray-700">{metric.name}</span>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">Strengths:</p>
-                        <ul className="text-sm text-gray-600 space-y-1">
-                          {(healthStats.strengths || [
-                            'Excellent medication adherence',
-                            'Consistent exercise routine',
-                            'Good vital signs'
-                          ]).slice(0, 3).map((strength, index) => (
-                            <li key={index} className="flex items-center space-x-2">
-                              <Star className="h-3 w-3 text-yellow-500" />
-                              <span>{strength}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                      {getTrendIcon(metric.trend)}
                     </div>
+                    <div className="text-lg font-bold text-gray-900">{metric.value}{metric.unit}</div>
+                    <div className="text-xs text-gray-500">Target: {metric.target}{metric.unit}</div>
+                    <Progress value={(metric.value / metric.target) * 100} className="w-full mt-2" />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
