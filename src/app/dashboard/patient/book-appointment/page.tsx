@@ -46,7 +46,7 @@ interface TimeSlot {
 }
 
 export default function BookAppointment() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

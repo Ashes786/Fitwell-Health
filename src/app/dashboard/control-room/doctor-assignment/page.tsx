@@ -76,7 +76,7 @@ export default function DoctorAssignment() {
   const [searchTerm, setSearchTerm] = useState("")
   const [assignmentNotes, setAssignmentNotes] = useState("")
 
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
     requiredRole: "CONTROL_ROOM",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

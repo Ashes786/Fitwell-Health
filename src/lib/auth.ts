@@ -50,7 +50,7 @@ export const authOptions: NextAuthOptions = {
               name: true,
               role: true,
               isActive: true,
-              avatar: true
+              image: true
             }
           })
 
@@ -107,7 +107,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.email = token.email as string
         session.user.name = token.name as string
-        session.user.role = token.role as string
+        session.user.role = token.role as UserRole
       }
       return session
     }

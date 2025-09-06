@@ -49,7 +49,7 @@ const vitalTypes = [
 ]
 
 export default function PatientVitals() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

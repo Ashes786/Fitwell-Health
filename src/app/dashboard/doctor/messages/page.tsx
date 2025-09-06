@@ -76,7 +76,7 @@ export default function DoctorMessages() {
   const [newMessage, setNewMessage] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
 
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session: doctorSession } = useRoleAuthorization({
     requiredRole: "DOCTOR",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

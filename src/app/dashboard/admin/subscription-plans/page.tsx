@@ -56,7 +56,7 @@ interface SubscriptionPlan {
 }
 
 export default function AdminSubscriptionPlans() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

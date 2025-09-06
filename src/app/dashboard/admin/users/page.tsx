@@ -52,7 +52,7 @@ interface User {
 }
 
 export default function AdminUsers() {
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, userSession } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

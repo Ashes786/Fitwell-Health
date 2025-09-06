@@ -54,7 +54,7 @@ interface SecurityMetric {
 }
 
 export default function SecurityPage() {
-  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isUnauthorized, isLoading, userSession } = useRoleAuthorization({
     requiredRole: "SUPER_ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: false

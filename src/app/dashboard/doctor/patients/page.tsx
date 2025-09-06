@@ -65,7 +65,7 @@ export default function DoctorPatients() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
 
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session: doctorSession } = useRoleAuthorization({
     requiredRole: "DOCTOR",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

@@ -67,7 +67,7 @@ interface SubscriptionRequest {
 }
 
 export default function SubscriptionRequestsPage() {
-  const { isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isUnauthorized, isLoading, userSession } = useRoleAuthorization({
     requiredRole: "SUPER_ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: false

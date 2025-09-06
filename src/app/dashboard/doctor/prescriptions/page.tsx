@@ -63,7 +63,7 @@ export default function DoctorPrescriptions() {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, userSession } = useRoleAuthorization({
     requiredRole: "DOCTOR",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

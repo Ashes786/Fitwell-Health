@@ -58,7 +58,7 @@ interface SubscriptionPlan {
 }
 
 export default function SubscriptionPlansPage() {
-  const { isAuthorized, isUnauthorized, isLoading, session } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, userSession } = useRoleAuthorization({
     requiredRole: "SUPER_ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

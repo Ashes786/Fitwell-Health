@@ -38,7 +38,6 @@ interface OrganizationFormData {
   email?: string
   website?: string
   isActive: boolean
-  logo?: string
 }
 
 interface BulkPatientData {
@@ -67,8 +66,7 @@ export default function OrganizationsPage() {
     phone: '',
     email: '',
     website: '',
-    isActive: true,
-    logo: ''
+    isActive: true
   })
   const [bulkPatientData, setBulkPatientData] = useState<BulkPatientData>({
     organizationId: '',
@@ -109,27 +107,7 @@ export default function OrganizationsPage() {
     }
   }
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast({
-          title: "Error",
-          description: "Logo file size must be less than 5MB",
-          variant: "destructive"
-        })
-        return
-      }
-
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const result = e.target?.result as string
-        setLogoPreview(result)
-        setFormData({ ...formData, logo: result })
-      }
-      reader.readAsDataURL(file)
-    }
-  }
+  // Logo upload removed - Organizations model doesn't have logo field
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -198,8 +176,7 @@ export default function OrganizationsPage() {
       const headers = lines[0].split(',').map(h => h.trim())
       
       const patients = lines.slice(1).map((line, index) => {
-        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, '
-      })
+        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''))
         
         if (values.length < headers.length) {
           throw new Error(`Invalid data at line ${index + 2}`)
@@ -277,10 +254,9 @@ Jane Smith,jane@example.com,+1234567891,1992-05-15,Female,456 Oak Ave`
       phone: organization.phone || '',
       email: organization.email || '',
       website: organization.website || '',
-      isActive: organization.isActive,
-      logo: organization.logo || ''
+      isActive: organization.isActive
     })
-    setLogoPreview(organization.logo || null)
+    setLogoPreview(null)
     setIsDialogOpen(true)
   }
 
@@ -326,8 +302,7 @@ Jane Smith,jane@example.com,+1234567891,1992-05-15,Female,456 Oak Ave`
       phone: '',
       email: '',
       website: '',
-      isActive: true,
-      logo: ''
+      isActive: true
     })
     setLogoPreview(null)
   }
@@ -489,36 +464,7 @@ Jane Smith,jane@example.com,+1234567891,1992-05-15,Female,456 Oak Ave`
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="logo" className="text-right">
-                      Logo
-                    </Label>
-                    <div className="col-span-3">
-                      <div className="flex items-center space-x-3">
-                        {logoPreview && (
-                          <div className="w-12 h-12 rounded-lg border border-gray-200 overflow-hidden">
-                            <img
-                              src={logoPreview}
-                              alt="Logo preview"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="flex-1">
-                          <Input
-                            id="logo"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleLogoUpload}
-                            className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-health-primary file:text-white hover:file:bg-health-dark"
-                          />
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Max file size: 5MB. Supported formats: JPG, PNG, GIF
-                      </p>
-                    </div>
-                  </div>
+                  {/* Logo upload removed - Organizations model doesn't have logo field */}
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="address" className="text-right">
                       Address
@@ -623,19 +569,9 @@ Jane Smith,jane@example.com,+1234567891,1992-05-15,Female,456 Oak Ave`
               {filteredOrganizations.map((organization) => (
                 <TableRow key={organization.id}>
                   <TableCell>
-                    {organization.logo ? (
-                      <div className="w-10 h-10 rounded-lg border border-gray-200 overflow-hidden">
-                        <img
-                          src={organization.logo}
-                          alt={`${organization.name} logo`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-gray-400" />
-                      </div>
-                    )}
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <Building2 className="h-5 w-5 text-gray-400" />
+                    </div>
                   </TableCell>
                   <TableCell className="font-medium">{organization.name}</TableCell>
                   <TableCell>
