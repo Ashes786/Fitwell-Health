@@ -29,7 +29,7 @@ import {
   Phone,
   Mail
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 
 interface ControlRoomUser {
   id: string
@@ -144,7 +144,10 @@ export default function AdminControlRoom() {
       setControlRoomUsers(mockUsers)
     } catch (error) {
       console.error('Error fetching control room users:', error)
-      toast.error('Failed to load control room users')
+      toast({
+        title: "Error",
+        description: 'Failed to load control room users'
+      })
     } finally {
       setIsLoading(false)
     }
@@ -169,7 +172,10 @@ export default function AdminControlRoom() {
       resetForm()
       fetchControlRoomUsers()
     } catch (error) {
-      toast.error('Failed to save control room user')
+      toast({
+        title: "Error",
+        description: 'Failed to save control room user'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -205,7 +211,10 @@ export default function AdminControlRoom() {
       
       fetchControlRoomUsers()
     } catch (error) {
-      toast.error('Failed to delete control room user')
+      toast({
+        title: "Error",
+        description: 'Failed to delete control room user'
+      })
     }
   }
 
@@ -223,7 +232,10 @@ export default function AdminControlRoom() {
       
       fetchControlRoomUsers()
     } catch (error) {
-      toast.error('Failed to update user status')
+      toast({
+        title: "Error",
+        description: 'Failed to update user status'
+      })
     }
   }
 

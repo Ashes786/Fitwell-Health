@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Plus, Edit, Trash2, Settings, Check, X } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 
 interface Admin {
   id: string
@@ -78,7 +78,10 @@ export default function FeatureManagement() {
       }
     } catch (error) {
       console.error('Error fetching data:', error)
-      toast.error('Failed to load feature management data')
+      toast({
+        title: "Error",
+        description: 'Failed to load feature management data'
+      })
     } finally {
       setLoading(false)
     }
@@ -86,7 +89,10 @@ export default function FeatureManagement() {
 
   const handleAssignFeatures = async () => {
     if (!selectedAdmin || selectedFeatures.length === 0) {
-      toast.error('Please select an admin and at least one feature')
+      toast({
+        title: "Error",
+        description: 'Please select an admin and at least one feature'
+      })
       return
     }
 
@@ -104,18 +110,27 @@ export default function FeatureManagement() {
       })
 
       if (response.ok) {
-        toast.success('Features assigned successfully')
+        toast({
+        title: "Success",
+        description: 'Features assigned successfully'
+      })
         setIsDialogOpen(false)
         setSelectedAdmin('')
         setSelectedFeatures([])
         setExpiresAt('')
         fetchData()
       } else {
-        toast.error('Failed to assign features')
+        toast({
+        title: "Error",
+        description: 'Failed to assign features'
+      })
       }
     } catch (error) {
       console.error('Error assigning features:', error)
-      toast.error('An error occurred while assigning features')
+      toast({
+        title: "Error",
+        description: 'An error occurred while assigning features'
+      })
     }
   }
 
@@ -130,14 +145,23 @@ export default function FeatureManagement() {
       })
 
       if (response.ok) {
-        toast.success(`Feature ${isActive ? 'activated' : 'deactivated'} successfully`)
+        toast({
+        title: "Success",
+        description: `Feature ${isActive ? 'activated' : 'deactivated'} successfully`
+      })
         fetchData()
       } else {
-        toast.error('Failed to update feature status')
+        toast({
+        title: "Error",
+        description: 'Failed to update feature status'
+      })
       }
     } catch (error) {
       console.error('Error updating feature status:', error)
-      toast.error('An error occurred while updating feature status')
+      toast({
+        title: "Error",
+        description: 'An error occurred while updating feature status'
+      })
     }
   }
 
@@ -152,14 +176,23 @@ export default function FeatureManagement() {
       })
 
       if (response.ok) {
-        toast.success('Feature assignment removed successfully')
+        toast({
+        title: "Success",
+        description: 'Feature assignment removed successfully'
+      })
         fetchData()
       } else {
-        toast.error('Failed to remove feature assignment')
+        toast({
+        title: "Error",
+        description: 'Failed to remove feature assignment'
+      })
       }
     } catch (error) {
       console.error('Error removing feature assignment:', error)
-      toast.error('An error occurred while removing feature assignment')
+      toast({
+        title: "Error",
+        description: 'An error occurred while removing feature assignment'
+      })
     }
   }
 

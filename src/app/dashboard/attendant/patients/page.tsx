@@ -64,7 +64,7 @@ export default function AttendantPatients() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
-  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, authSession: authSessionVar } = useRoleAuthorization({
     requiredRole: "ATTENDANT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

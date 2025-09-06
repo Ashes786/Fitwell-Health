@@ -30,7 +30,7 @@ import {
   Building,
   Star
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 
 interface AttendantUser {
   id: string
@@ -156,7 +156,10 @@ export default function AdminAttendants() {
       setAttendants(mockAttendants)
     } catch (error) {
       console.error('Error fetching attendants:', error)
-      toast.error('Failed to load attendants')
+      toast({
+        title: "Error",
+        description: 'Failed to load attendants'
+      })
     } finally {
       setIsLoading(false)
     }
@@ -198,7 +201,10 @@ export default function AdminAttendants() {
       resetForm()
       fetchAttendants()
     } catch (error) {
-      toast.error('Failed to save attendant')
+      toast({
+        title: "Error",
+        description: 'Failed to save attendant'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -234,7 +240,10 @@ export default function AdminAttendants() {
       
       fetchAttendants()
     } catch (error) {
-      toast.error('Failed to delete attendant')
+      toast({
+        title: "Error",
+        description: 'Failed to delete attendant'
+      })
     }
   }
 
@@ -252,7 +261,10 @@ export default function AdminAttendants() {
       
       fetchAttendants()
     } catch (error) {
-      toast.error('Failed to update attendant status')
+      toast({
+        title: "Error",
+        description: 'Failed to update attendant status'
+      })
     }
   }
 

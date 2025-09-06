@@ -22,7 +22,7 @@ import {
   Filter,
   Search
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 
 interface NetworkData {
@@ -152,7 +152,10 @@ export default function SuperAdminNetworks() {
       setConsultationData(mockConsultationData)
     } catch (error) {
       console.error('Error fetching networks data:', error)
-      toast.error('Failed to load networks data')
+      toast({
+        title: "Error",
+        description: 'Failed to load networks data'
+      })
     } finally {
       setIsLoading(false)
     }

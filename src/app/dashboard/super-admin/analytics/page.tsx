@@ -23,7 +23,7 @@ import {
   Download,
   RefreshCw
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns'
 import { UserRole } from "@prisma/client"
 import { BarChart } from '@/components/ui/bar-chart'
@@ -80,11 +80,17 @@ export default function AnalyticsPage() {
         const data = await response.json()
         setAnalytics(data)
       } else {
-        toast.error('Failed to fetch analytics data')
+        toast({
+        title: "Error",
+        description: 'Failed to fetch analytics data'
+      })
       }
     } catch (error) {
       console.error('Error fetching analytics:', error)
-      toast.error('Failed to fetch analytics data')
+      toast({
+        title: "Error",
+        description: 'Failed to fetch analytics data'
+      })
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -104,13 +110,22 @@ export default function AnalyticsPage() {
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
-        toast.success('Report exported successfully')
+        toast({
+        title: "Success",
+        description: 'Report exported successfully'
+      })
       } else {
-        toast.error('Failed to export report')
+        toast({
+        title: "Error",
+        description: 'Failed to export report'
+      })
       }
     } catch (error) {
       console.error('Error exporting report:', error)
-      toast.error('Failed to export report')
+      toast({
+        title: "Error",
+        description: 'Failed to export report'
+      })
     }
   }
 

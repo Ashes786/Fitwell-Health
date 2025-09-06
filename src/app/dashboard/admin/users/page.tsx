@@ -96,11 +96,17 @@ export default function AdminUsers() {
         }))
         setUsers(formattedUsers)
       } else {
-        toast.error('Failed to fetch users')
+        toast({
+        title: "Error",
+        description: 'Failed to fetch users'
+      })
       }
     } catch (error) {
       console.error('Error fetching users:', error)
-      toast.error('Failed to load users')
+      toast({
+        title: "Error",
+        description: 'Failed to load users'
+      })
     }
   }
 

@@ -34,6 +34,7 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface SubscriptionPlan {
   id: string
@@ -112,11 +113,17 @@ export default function AdminSubscriptionPlans() {
         }))
         setPlans(formattedPlans)
       } else {
-        toast.error('Failed to fetch subscription plans')
+        toast({
+        title: "Error",
+        description: 'Failed to fetch subscription plans'
+      })
       }
     } catch (error) {
       console.error('Error fetching plans:', error)
-      toast.error('Failed to load subscription plans')
+      toast({
+        title: "Error",
+        description: 'Failed to load subscription plans'
+      })
     } finally {
       setIsLoading(false)
     }
@@ -169,14 +176,23 @@ export default function AdminSubscriptionPlans() {
           specializations: []
         })
         setIsAddDialogOpen(false)
-        toast.success('Subscription plan created successfully')
+        toast({
+        title: "Success",
+        description: 'Subscription plan created successfully'
+      })
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to create subscription plan')
+        toast({
+        title: "Error",
+        description: errorData.error || 'Failed to create subscription plan'
+      })
       }
     } catch (error) {
       console.error('Error adding plan:', error)
-      toast.error('Failed to create subscription plan')
+      toast({
+        title: "Error",
+        description: 'Failed to create subscription plan'
+      })
     }
   }
 

@@ -26,6 +26,7 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Payment {
   id: string
@@ -60,7 +61,7 @@ interface Invoice {
 }
 
 export default function PatientBilling() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -188,7 +189,10 @@ export default function PatientBilling() {
       setIsLoading(false)
     } catch (error) {
       console.error('Error fetching billing data:', error)
-      toast.error('Failed to load billing information')
+      toast({
+        title: "Error",
+        description: 'Failed to load billing information'
+      })
       setIsLoading(false)
     }
   }
@@ -240,7 +244,7 @@ export default function PatientBilling() {
     )
   }
 
-  if (!authSession) {
+  if (!session) {
     return null
   }
 

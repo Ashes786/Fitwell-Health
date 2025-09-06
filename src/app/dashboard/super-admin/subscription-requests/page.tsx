@@ -30,7 +30,7 @@ import {
   MapPin,
   Star
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { 
   DropdownMenu,
@@ -100,11 +100,17 @@ export default function SubscriptionRequestsPage() {
         const data = await response.json()
         setRequests(data)
       } else {
-        toast.error('Failed to fetch subscription requests')
+        toast({
+        title: "Error",
+        description: 'Failed to fetch subscription requests'
+      })
       }
     } catch (error) {
       console.error('Error fetching subscription requests:', error)
-      toast.error('Failed to fetch subscription requests')
+      toast({
+        title: "Error",
+        description: 'Failed to fetch subscription requests'
+      })
     } finally {
       setLoading(false)
     }
@@ -153,15 +159,24 @@ export default function SubscriptionRequestsPage() {
       })
 
       if (response.ok) {
-        toast.success(`Subscription request ${action}d successfully`)
+        toast({
+        title: "Success",
+        description: `Subscription request ${action}d successfully`
+      })
         fetchRequests()
         setRejectionReason('')
       } else {
-        toast.error(`Failed to ${action} subscription request`)
+        toast({
+        title: "Error",
+        description: `Failed to ${action} subscription request`
+      })
       }
     } catch (error) {
       console.error('Error handling subscription request:', error)
-      toast.error('An error occurred while processing the request')
+      toast({
+        title: "Error",
+        description: 'An error occurred while processing the request'
+      })
     } finally {
       setProcessingId(null)
     }

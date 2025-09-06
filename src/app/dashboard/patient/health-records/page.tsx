@@ -27,6 +27,7 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface HealthRecord {
   id: string
@@ -123,7 +124,10 @@ export default function PatientHealthRecords() {
       setIsLoading(false)
     } catch (error) {
       console.error('Error fetching health records:', error)
-      toast.error('Failed to load health records')
+      toast({
+        title: "Error",
+        description: 'Failed to load health records'
+      })
       setIsLoading(false)
     }
   }

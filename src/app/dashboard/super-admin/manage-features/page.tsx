@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowLeft, Settings, Plus, X, Save } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 
 interface Admin {
   id: string
@@ -111,7 +111,10 @@ export default function ManageFeatures() {
       })
 
       if (response.ok) {
-        toast.success('Features updated successfully')
+        toast({
+        title: "Success",
+        description: 'Features updated successfully'
+      })
         router.push('/dashboard/super-admin')
       } else {
         const errorData = await response.json()

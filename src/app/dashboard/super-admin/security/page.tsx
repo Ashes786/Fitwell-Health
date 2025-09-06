@@ -33,7 +33,7 @@ import {
   Network,
   Server
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import { UserRole } from "@prisma/client"
 
 interface SecurityLog {
@@ -105,7 +105,10 @@ export default function SecurityPage() {
       }
     } catch (error) {
       console.error('Error fetching security data:', error)
-      toast.error('Failed to fetch security data')
+      toast({
+        title: "Error",
+        description: 'Failed to fetch security data'
+      })
     } finally {
       setLoading(false)
     }
@@ -128,13 +131,22 @@ export default function SecurityPage() {
       })
 
       if (response.ok) {
-        toast.success('Security settings saved successfully')
+        toast({
+        title: "Success",
+        description: 'Security settings saved successfully'
+      })
       } else {
-        toast.error('Failed to save security settings')
+        toast({
+        title: "Error",
+        description: 'Failed to save security settings'
+      })
       }
     } catch (error) {
       console.error('Error saving security settings:', error)
-      toast.error('Failed to save security settings')
+      toast({
+        title: "Error",
+        description: 'Failed to save security settings'
+      })
     }
   }
 
@@ -151,13 +163,22 @@ export default function SecurityPage() {
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
-        toast.success('Security report generated successfully')
+        toast({
+        title: "Success",
+        description: 'Security report generated successfully'
+      })
       } else {
-        toast.error('Failed to generate security report')
+        toast({
+        title: "Error",
+        description: 'Failed to generate security report'
+      })
       }
     } catch (error) {
       console.error('Error generating security report:', error)
-      toast.error('Failed to generate security report')
+      toast({
+        title: "Error",
+        description: 'Failed to generate security report'
+      })
     }
   }
 

@@ -25,6 +25,7 @@ import {
   Calendar
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Vital {
   id: string

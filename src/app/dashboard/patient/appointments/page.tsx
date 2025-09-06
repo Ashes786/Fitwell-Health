@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { useRealTimeAppointments } from "@/hooks/useWebSocket"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Appointment {
   id: string
@@ -39,7 +40,7 @@ interface Appointment {
 }
 
 export default function PatientAppointments() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -93,7 +94,7 @@ export default function PatientAppointments() {
     )
   }
 
-  if (!authSession) {
+  if (!session) {
     return null
   }
 

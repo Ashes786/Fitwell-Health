@@ -32,7 +32,7 @@ import {
   Users,
   Star
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 
 interface Partner {
@@ -118,12 +118,18 @@ export default function PartnersPage() {
         setFilteredPartners(data)
       } else {
         setError('Failed to fetch partners')
-        toast.error('Failed to fetch partners')
+        toast({
+        title: "Error",
+        description: 'Failed to fetch partners'
+      })
       }
     } catch (error) {
       console.error('Error fetching partners:', error)
       setError('Failed to fetch partners')
-      toast.error('Failed to fetch partners')
+      toast({
+        title: "Error",
+        description: 'Failed to fetch partners'
+      })
     } finally {
       setLoading(false)
     }
@@ -179,17 +185,26 @@ export default function PartnersPage() {
       })
 
       if (response.ok) {
-        toast.success('Partner created successfully')
+        toast({
+        title: "Success",
+        description: 'Partner created successfully'
+      })
         setIsCreateDialogOpen(false)
         resetForm()
         fetchPartners()
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to create partner')
+        toast({
+        title: "Error",
+        description: errorData.error || 'Failed to create partner'
+      })
       }
     } catch (error) {
       console.error('Error creating partner:', error)
-      toast.error('Failed to create partner')
+      toast({
+        title: "Error",
+        description: 'Failed to create partner'
+      })
     }
   }
 
@@ -210,17 +225,26 @@ export default function PartnersPage() {
       })
 
       if (response.ok) {
-        toast.success('Partner updated successfully')
+        toast({
+        title: "Success",
+        description: 'Partner updated successfully'
+      })
         setEditingPartner(null)
         resetForm()
         fetchPartners()
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to update partner')
+        toast({
+        title: "Error",
+        description: errorData.error || 'Failed to update partner'
+      })
       }
     } catch (error) {
       console.error('Error updating partner:', error)
-      toast.error('Failed to update partner')
+      toast({
+        title: "Error",
+        description: 'Failed to update partner'
+      })
     }
   }
 
@@ -233,15 +257,24 @@ export default function PartnersPage() {
       })
 
       if (response.ok) {
-        toast.success('Partner deleted successfully')
+        toast({
+        title: "Success",
+        description: 'Partner deleted successfully'
+      })
         fetchPartners()
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to delete partner')
+        toast({
+        title: "Error",
+        description: errorData.error || 'Failed to delete partner'
+      })
       }
     } catch (error) {
       console.error('Error deleting partner:', error)
-      toast.error('Failed to delete partner')
+      toast({
+        title: "Error",
+        description: 'Failed to delete partner'
+      })
     }
   }
 
@@ -256,15 +289,24 @@ export default function PartnersPage() {
       })
 
       if (response.ok) {
-        toast.success(`Partner ${!currentStatus ? 'activated' : 'deactivated'} successfully`)
+        toast({
+        title: "Success",
+        description: `Partner ${!currentStatus ? 'activated' : 'deactivated'} successfully`
+      })
         fetchPartners()
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to update partner status')
+        toast({
+        title: "Error",
+        description: errorData.error || 'Failed to update partner status'
+      })
       }
     } catch (error) {
       console.error('Error updating partner status:', error)
-      toast.error('Failed to update partner status')
+      toast({
+        title: "Error",
+        description: 'Failed to update partner status'
+      })
     }
   }
 

@@ -25,7 +25,7 @@ import {
   Plus,
   Trash2
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import { UserRole } from "@prisma/client"
 
 interface Permission {
@@ -98,15 +98,24 @@ export default function CreateAdminPage() {
       })
 
       if (response.ok) {
-        toast.success('Admin created successfully')
+        toast({
+        title: "Success",
+        description: 'Admin created successfully'
+      })
         router.push('/dashboard/super-admin/admins')
       } else {
         const error = await response.json()
-        toast.error(error.message || 'Failed to create admin')
+        toast({
+        title: "Error",
+        description: error.message || 'Failed to create admin'
+      })
       }
     } catch (error) {
       console.error('Error creating admin:', error)
-      toast.error('An error occurred while creating admin')
+      toast({
+        title: "Error",
+        description: 'An error occurred while creating admin'
+      })
     } finally {
       setLoading(false)
     }

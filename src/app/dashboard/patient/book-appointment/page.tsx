@@ -25,6 +25,7 @@ import {
   ArrowRight
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Doctor {
   id: string
@@ -45,7 +46,7 @@ interface TimeSlot {
 }
 
 export default function BookAppointment() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -137,7 +138,7 @@ export default function BookAppointment() {
     )
   }
 
-  if (!authSession) {
+  if (!session) {
     return null
   }
 

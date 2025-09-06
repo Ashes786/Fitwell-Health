@@ -24,7 +24,7 @@ import {
   Edit,
   Trash2
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { 
   DropdownMenu,
@@ -78,11 +78,17 @@ export default function AdminsPage() {
           const data = await response.json()
           setAdmins(data)
         } else {
-          toast.error('Failed to fetch admins')
+          toast({
+        title: "Error",
+        description: 'Failed to fetch admins'
+      })
         }
       } catch (error) {
         console.error('Error fetching admins:', error)
-        toast.error('Failed to fetch admins')
+        toast({
+        title: "Error",
+        description: 'Failed to fetch admins'
+      })
       } finally {
         setLoading(false)
       }
@@ -151,16 +157,25 @@ export default function AdminsPage() {
       })
 
       if (response.ok) {
-        toast.success(`Admin ${!currentStatus ? 'activated' : 'deactivated'} successfully`)
+        toast({
+        title: "Success",
+        description: `Admin ${!currentStatus ? 'activated' : 'deactivated'} successfully`
+      })
         setAdmins(admins.map(admin => 
           admin.id === adminId ? { ...admin, isActive: !currentStatus } : admin
         ))
       } else {
-        toast.error('Failed to update admin status')
+        toast({
+        title: "Error",
+        description: 'Failed to update admin status'
+      })
       }
     } catch (error) {
       console.error('Error updating admin status:', error)
-      toast.error('Failed to update admin status')
+      toast({
+        title: "Error",
+        description: 'Failed to update admin status'
+      })
     }
   }
 
@@ -175,14 +190,23 @@ export default function AdminsPage() {
       })
 
       if (response.ok) {
-        toast.success('Admin deleted successfully')
+        toast({
+        title: "Success",
+        description: 'Admin deleted successfully'
+      })
         setAdmins(admins.filter(admin => admin.id !== adminId))
       } else {
-        toast.error('Failed to delete admin')
+        toast({
+        title: "Error",
+        description: 'Failed to delete admin'
+      })
       }
     } catch (error) {
       console.error('Error deleting admin:', error)
-      toast.error('Failed to delete admin')
+      toast({
+        title: "Error",
+        description: 'Failed to delete admin'
+      })
     }
   }
 

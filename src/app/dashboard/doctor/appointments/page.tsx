@@ -23,6 +23,7 @@ import {
   MessageSquare
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Appointment {
   id: string
@@ -46,7 +47,7 @@ export default function DoctorAppointments() {
   const [isLoading, setIsLoading] = useState(true)
   const [appointments, setAppointments] = useState<Appointment[]>([])
 
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
     requiredRole: "DOCTOR",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -68,7 +69,7 @@ export default function DoctorAppointments() {
     )
   }
 
-  if (!authSession) {
+  if (!session) {
     return null
   }
 

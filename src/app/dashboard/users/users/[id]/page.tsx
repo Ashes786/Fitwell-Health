@@ -144,12 +144,18 @@ export default function UserDetailPage() {
           }
         ])
       } else {
-        toast.error('Failed to fetch user details')
+        toast({
+        title: "Error",
+        description: 'Failed to fetch user details'
+      })
         router.push('/dashboard/admin/users')
       }
     } catch (error) {
       console.error('Error fetching user details:', error)
-      toast.error('Failed to load user details')
+      toast({
+        title: "Error",
+        description: 'Failed to load user details'
+      })
       router.push('/dashboard/admin/users')
     }
   }
@@ -165,14 +171,23 @@ export default function UserDetailPage() {
       })
 
       if (response.ok) {
-        toast.success('User deleted successfully')
+        toast({
+        title: "Success",
+        description: 'User deleted successfully'
+      })
         router.push('/dashboard/admin/users')
       } else {
-        toast.error('Failed to delete user')
+        toast({
+        title: "Error",
+        description: 'Failed to delete user'
+      })
       }
     } catch (error) {
       console.error('Error deleting user:', error)
-      toast.error('Failed to delete user')
+      toast({
+        title: "Error",
+        description: 'Failed to delete user'
+      })
     }
   }
 
@@ -187,14 +202,23 @@ export default function UserDetailPage() {
       })
 
       if (response.ok) {
-        toast.success(`User ${user?.isActive ? 'deactivated' : 'activated'} successfully`)
+        toast({
+        title: "Success",
+        description: `User ${user?.isActive ? 'deactivated' : 'activated'} successfully`
+      })
         fetchUserDetails()
       } else {
-        toast.error('Failed to update user status')
+        toast({
+        title: "Error",
+        description: 'Failed to update user status'
+      })
       }
     } catch (error) {
       console.error('Error updating user status:', error)
-      toast.error('Failed to update user status')
+      toast({
+        title: "Error",
+        description: 'Failed to update user status'
+      })
     }
   }
 

@@ -33,7 +33,7 @@ import {
   Zap,
   PieChart
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import Link from 'next/link'
 import { BarChart } from '@/components/ui/bar-chart'
 import { LineChart } from '@/components/ui/line-chart'
@@ -167,7 +167,10 @@ export function AttendantDashboard({ userName, userImage }: AttendantDashboardPr
       await new Promise(resolve => setTimeout(resolve, 1000))
       setLastRefresh(new Date())
     } catch (error) {
-      toast.error('Failed to load dashboard data')
+      toast({
+        title: "Error",
+        description: 'Failed to load dashboard data'
+      })
     } finally {
       setIsLoading(false)
     }

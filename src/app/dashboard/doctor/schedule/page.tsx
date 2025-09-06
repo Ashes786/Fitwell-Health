@@ -26,6 +26,7 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface AvailabilitySlot {
   id: string
@@ -49,7 +50,7 @@ interface Appointment {
 }
 
 export default function DoctorSchedule() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
     requiredRole: "DOCTOR",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -151,7 +152,10 @@ export default function DoctorSchedule() {
       setIsLoading(false)
     } catch (error) {
       console.error('Error fetching schedule data:', error)
-      toast.error('Failed to load schedule information')
+      toast({
+        title: "Error",
+        description: 'Failed to load schedule information'
+      })
       setIsLoading(false)
     }
   }
@@ -220,7 +224,7 @@ export default function DoctorSchedule() {
     )
   }
 
-  if (!authSession) {
+  if (!session) {
     return null
   }
 

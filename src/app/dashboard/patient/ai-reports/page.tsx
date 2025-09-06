@@ -25,6 +25,7 @@ import {
   Download
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface AIReport {
   id: string
@@ -45,7 +46,7 @@ interface VitalsData {
 }
 
 export default function PatientAIReports() {
-  const { isAuthorized, isUnauthorized, isLoading: authLoading, authSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading: authLoading, session } = useRoleAuthorization({
     requiredRole: "PATIENT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -73,7 +74,7 @@ export default function PatientAIReports() {
     )
   }
 
-  if (!authSession) {
+  if (!session) {
     return null
   }
 

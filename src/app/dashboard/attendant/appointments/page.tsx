@@ -64,7 +64,7 @@ export default function AttendantAppointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [searchTerm, setSearchTerm] = useState("")
 
-  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, authSession: authSessionVar } = useRoleAuthorization({
     requiredRole: "ATTENDANT",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true

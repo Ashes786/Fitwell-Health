@@ -27,7 +27,7 @@ import {
   Mail,
   CreditCard
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { UserRole } from "@prisma/client"
 
@@ -91,7 +91,10 @@ export default function SystemStatusPage() {
       }
     } catch (error) {
       console.error('Error fetching system data:', error)
-      toast.error('Failed to fetch system data')
+      toast({
+        title: "Error",
+        description: 'Failed to fetch system data'
+      })
     } finally {
       setLoading(false)
     }
@@ -107,13 +110,22 @@ export default function SystemStatusPage() {
       if (response.ok) {
         const statusData = await response.json()
         setSystemStatus(statusData)
-        toast.success('All services checked successfully')
+        toast({
+        title: "Success",
+        description: 'All services checked successfully'
+      })
       } else {
-        toast.error('Failed to check all services')
+        toast({
+        title: "Error",
+        description: 'Failed to check all services'
+      })
       }
     } catch (error) {
       console.error('Error checking all services:', error)
-      toast.error('Failed to check all services')
+      toast({
+        title: "Error",
+        description: 'Failed to check all services'
+      })
     } finally {
       setCheckingAll(false)
     }
@@ -130,13 +142,22 @@ export default function SystemStatusPage() {
         setSystemStatus(prev => 
           prev.map(s => s.serviceName === serviceName ? serviceData : s)
         )
-        toast.success(`${serviceName} checked successfully`)
+        toast({
+        title: "Success",
+        description: `${serviceName} checked successfully`
+      })
       } else {
-        toast.error(`Failed to check ${serviceName}`)
+        toast({
+        title: "Error",
+        description: `Failed to check ${serviceName}`
+      })
       }
     } catch (error) {
       console.error('Error checking service:', error)
-      toast.error(`Failed to check ${serviceName}`)
+      toast({
+        title: "Error",
+        description: `Failed to check ${serviceName}`
+      })
     }
   }
 

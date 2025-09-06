@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Notification {
   id: string
@@ -49,7 +50,7 @@ export default function AdminNotificationsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
   const [typeFilter, setTypeFilter] = useState<string>("ALL")
 
-  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, authSession: authSessionVar } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -167,7 +168,10 @@ export default function AdminNotificationsPage() {
       setNotifications(mockNotifications)
     } catch (error) {
       console.error('Error fetching notifications:', error)
-      toast.error('Failed to load notifications')
+      toast({
+        title: "Error",
+        description: 'Failed to load notifications'
+      })
     } finally {
       setIsDataLoading(false)
     }
@@ -250,15 +254,24 @@ export default function AdminNotificationsPage() {
   }
 
   const handleSendNotification = () => {
-    toast.info("Opening notification composer...")
+    toast({
+        title: "Info",
+        description: "Opening notification composer..."
+      })
   }
 
   const handleViewNotification = (id: string) => {
-    toast.info(`Viewing notification ${id}`)
+    toast({
+        title: "Info",
+        description: `Viewing notification ${id}`
+      })
   }
 
   const handleDeleteNotification = (id: string) => {
-    toast.info(`Deleting notification ${id}`)
+    toast({
+        title: "Info",
+        description: `Deleting notification ${id}`
+      })
   }
 
   const notificationTypes = Array.from(new Set(notifications.map(n => n.type)))

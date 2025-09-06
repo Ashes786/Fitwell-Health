@@ -29,7 +29,7 @@ import {
   Search,
   Filter
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 
 interface SubscriptionPlan {
@@ -102,12 +102,18 @@ export default function SubscriptionPlansPage() {
         setFilteredPlans(data)
       } else {
         setError('Failed to fetch subscription plans')
-        toast.error('Failed to fetch subscription plans')
+        toast({
+        title: "Error",
+        description: 'Failed to fetch subscription plans'
+      })
       }
     } catch (error) {
       console.error('Error fetching plans:', error)
       setError('Failed to fetch subscription plans')
-      toast.error('Failed to fetch subscription plans')
+      toast({
+        title: "Error",
+        description: 'Failed to fetch subscription plans'
+      })
     } finally {
       setLoading(false)
     }
@@ -159,17 +165,26 @@ export default function SubscriptionPlansPage() {
       })
 
       if (response.ok) {
-        toast.success('Subscription plan created successfully')
+        toast({
+        title: "Success",
+        description: 'Subscription plan created successfully'
+      })
         setIsCreateDialogOpen(false)
         resetForm()
         fetchPlans()
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to create subscription plan')
+        toast({
+        title: "Error",
+        description: errorData.error || 'Failed to create subscription plan'
+      })
       }
     } catch (error) {
       console.error('Error creating plan:', error)
-      toast.error('Failed to create subscription plan')
+      toast({
+        title: "Error",
+        description: 'Failed to create subscription plan'
+      })
     }
   }
 
@@ -193,17 +208,26 @@ export default function SubscriptionPlansPage() {
       })
 
       if (response.ok) {
-        toast.success('Subscription plan updated successfully')
+        toast({
+        title: "Success",
+        description: 'Subscription plan updated successfully'
+      })
         setEditingPlan(null)
         resetForm()
         fetchPlans()
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to update subscription plan')
+        toast({
+        title: "Error",
+        description: errorData.error || 'Failed to update subscription plan'
+      })
       }
     } catch (error) {
       console.error('Error updating plan:', error)
-      toast.error('Failed to update subscription plan')
+      toast({
+        title: "Error",
+        description: 'Failed to update subscription plan'
+      })
     }
   }
 
@@ -216,15 +240,24 @@ export default function SubscriptionPlansPage() {
       })
 
       if (response.ok) {
-        toast.success('Subscription plan deleted successfully')
+        toast({
+        title: "Success",
+        description: 'Subscription plan deleted successfully'
+      })
         fetchPlans()
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to delete subscription plan')
+        toast({
+        title: "Error",
+        description: errorData.error || 'Failed to delete subscription plan'
+      })
       }
     } catch (error) {
       console.error('Error deleting plan:', error)
-      toast.error('Failed to delete subscription plan')
+      toast({
+        title: "Error",
+        description: 'Failed to delete subscription plan'
+      })
     }
   }
 
@@ -239,15 +272,24 @@ export default function SubscriptionPlansPage() {
       })
 
       if (response.ok) {
-        toast.success(`Subscription plan ${!currentStatus ? 'activated' : 'deactivated'} successfully`)
+        toast({
+        title: "Success",
+        description: `Subscription plan ${!currentStatus ? 'activated' : 'deactivated'} successfully`
+      })
         fetchPlans()
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to update plan status')
+        toast({
+        title: "Error",
+        description: errorData.error || 'Failed to update plan status'
+      })
       }
     } catch (error) {
       console.error('Error updating plan status:', error)
-      toast.error('Failed to update plan status')
+      toast({
+        title: "Error",
+        description: 'Failed to update plan status'
+      })
     }
   }
 

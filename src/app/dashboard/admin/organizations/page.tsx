@@ -198,7 +198,8 @@ export default function OrganizationsPage() {
       const headers = lines[0].split(',').map(h => h.trim())
       
       const patients = lines.slice(1).map((line, index) => {
-        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''))
+        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, '
+      })
         
         if (values.length < headers.length) {
           throw new Error(`Invalid data at line ${index + 2}`)

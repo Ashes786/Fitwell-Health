@@ -32,7 +32,7 @@ import {
   Users,
   Activity
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import { UserRole } from "@prisma/client"
 
 interface SystemSettings {
@@ -115,10 +115,16 @@ export default function SettingsPage() {
       // In a real application, this would make an API call to save settings
       console.log('Saving system settings:', settings)
       
-      toast.success('Settings saved successfully')
+      toast({
+        title: "Success",
+        description: 'Settings saved successfully'
+      })
     } catch (error) {
       console.error('Error saving settings:', error)
-      toast.error('Failed to save settings')
+      toast({
+        title: "Error",
+        description: 'Failed to save settings'
+      })
     } finally {
       setSaving(false)
     }
@@ -152,14 +158,20 @@ export default function SettingsPage() {
         analyticsEnabled: true,
         loggingLevel: 'info'
       })
-      toast.success('Settings reset to defaults')
+      toast({
+        title: "Success",
+        description: 'Settings reset to defaults'
+      })
     }
   }
 
   const exportSettings = async () => {
     try {
       if (typeof window === 'undefined') {
-        toast.error('Export not available on server')
+        toast({
+        title: "Error",
+        description: 'Export not available on server'
+      })
         return
       }
 
@@ -182,10 +194,16 @@ export default function SettingsPage() {
       document.body.removeChild(a)
       window.URL.revokeObjectURL(url)
       
-      toast.success('Settings exported successfully')
+      toast({
+        title: "Success",
+        description: 'Settings exported successfully'
+      })
     } catch (error) {
       console.error('Error exporting settings:', error)
-      toast.error('Failed to export settings')
+      toast({
+        title: "Error",
+        description: 'Failed to export settings'
+      })
     }
   }
 

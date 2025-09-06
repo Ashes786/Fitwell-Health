@@ -37,6 +37,7 @@ import {
 } from "lucide-react"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
+import { useRoleAuthorization } from "@/hooks/use-role-authorization"
 
 interface Permission {
   id: string
@@ -95,7 +96,7 @@ export default function AdminRoles() {
     expiresAt: ""
   })
 
-  const { isAuthorized, isUnauthorized, isLoading, session: authSession } = useRoleAuthorization({
+  const { isAuthorized, isUnauthorized, isLoading, authSession: authSessionVar } = useRoleAuthorization({
     requiredRole: "ADMIN",
     redirectTo: "/auth/signin",
     showUnauthorizedMessage: true
@@ -161,7 +162,10 @@ export default function AdminRoles() {
       setRoles(mockRoles)
     } catch (error) {
       console.error('Error fetching roles:', error)
-      toast.error('Failed to load roles')
+      toast({
+        title: "Error",
+        description: 'Failed to load roles'
+      })
     }
   }
 
@@ -222,7 +226,10 @@ export default function AdminRoles() {
       setUserAssignments(mockAssignments)
     } catch (error) {
       console.error('Error fetching user assignments:', error)
-      toast.error('Failed to load user assignments')
+      toast({
+        title: "Error",
+        description: 'Failed to load user assignments'
+      })
     }
   }
 
@@ -272,10 +279,16 @@ export default function AdminRoles() {
         isActive: true
       })
       setIsAddRoleDialogOpen(false)
-      toast.success('Role created successfully')
+      toast({
+        title: "Success",
+        description: 'Role created successfully'
+      })
     } catch (error) {
       console.error('Error adding role:', error)
-      toast.error('Failed to create role')
+      toast({
+        title: "Error",
+        description: 'Failed to create role'
+      })
     }
   }
 
@@ -284,7 +297,10 @@ export default function AdminRoles() {
       // In real app, this would be an API call
       const selectedRole = roles.find(r => r.id === newAssignment.roleId)
       if (!selectedRole) {
-        toast.error('Please select a role')
+        toast({
+        title: "Error",
+        description: 'Please select a role'
+      })
         return
       }
 
@@ -311,10 +327,16 @@ export default function AdminRoles() {
         expiresAt: ""
       })
       setIsAssignDialogOpen(false)
-      toast.success('Role assigned successfully')
+      toast({
+        title: "Success",
+        description: 'Role assigned successfully'
+      })
     } catch (error) {
       console.error('Error assigning role:', error)
-      toast.error('Failed to assign role')
+      toast({
+        title: "Error",
+        description: 'Failed to assign role'
+      })
     }
   }
 
