@@ -218,38 +218,33 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
         const healthStatsData = await healthStatsRes.json()
         console.log('Health Stats Data:', healthStatsData) // Debug log
         
-        // Transform the API data to match expected format
+        // Use the actual API data without any mock values
         const transformedHealthStats = {
-          score: Math.floor(Math.random() * 20) + 75, // Mock score between 75-95
+          ...healthStatsData,
           message: 'Your health is being monitored closely',
-          trend: '+5% from last month',
-          ranking: 'Top 15% of patients',
-          status: 'Good Health',
-          totalAppointments: healthStatsData.totalAppointments || 0,
-          activePrescriptions: healthStatsData.activePrescriptions || 0,
-          recentLabTests: healthStatsData.recentLabTests || 0,
-          latestVitals: healthStatsData.latestVitals || [],
-          upcomingAppointments: healthStatsData.upcomingAppointments || 0,
-          completedAppointments: healthStatsData.completedAppointments || 0
+          trend: 'Stable',
+          ranking: 'Active Patient',
+          status: 'Health Monitoring',
+          patientId: patient?.nhrNumber || 'N/A'
         }
         
         setHealthStats(transformedHealthStats)
       } else {
         console.log('Health Stats Response not OK:', healthStatsRes.status, healthStatsRes.statusText) // Debug log
         
-        // Set default health stats if API fails
+        // Set minimal health stats if API fails - no mock scores
         setHealthStats({
-          score: 85,
-          message: 'Your health is being monitored',
-          trend: 'Stable',
-          ranking: 'Good',
-          status: 'Health Score',
           totalAppointments: 0,
           activePrescriptions: 0,
           recentLabTests: 0,
           latestVitals: [],
           upcomingAppointments: 0,
-          completedAppointments: 0
+          completedAppointments: 0,
+          message: 'Health data unavailable',
+          trend: 'Unknown',
+          ranking: 'Unknown',
+          status: 'Data Error',
+          patientId: 'N/A'
         })
       }
 
@@ -471,38 +466,27 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
       {/* Header Section */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Avatar className="h-16 w-16 ring-4 ring-white shadow-lg">
-                <AvatarImage src={userImage} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white text-xl font-bold">
-                  {userName?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Welcome back, {userName}</h1>
+            <div className="flex items-center space-x-4 mt-2 text-gray-600">
+              <div className="flex items-center space-x-1">
+                <Mail className="h-4 w-4" />
+                <span className="text-sm">{userEmail}</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <PhoneCall className="h-4 w-4" />
+                <span className="text-sm">{userPhone}</span>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Welcome back, {userName}</h1>
-              <div className="flex items-center space-x-4 mt-2 text-gray-600">
-                <div className="flex items-center space-x-1">
-                  <Mail className="h-4 w-4" />
-                  <span className="text-sm">{userEmail}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <PhoneCall className="h-4 w-4" />
-                  <span className="text-sm">{userPhone}</span>
-                </div>
-              </div>
-              <div className="mt-2 flex items-center space-x-2">
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                  <Shield className="h-3 w-3 mr-1" />
-                  NHR: {healthStats?.patientId || 'N/A'}
-                </Badge>
-                <Badge variant="outline" className="border-green-200 text-green-700">
-                  <HeartPulse className="h-3 w-3 mr-1" />
-                  {healthStats?.status || 'Active Patient'}
-                </Badge>
-              </div>
+            <div className="mt-2 flex items-center space-x-2">
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                <Shield className="h-3 w-3 mr-1" />
+                NHR: {healthStats?.patientId || 'N/A'}
+              </Badge>
+              <Badge variant="outline" className="border-green-200 text-green-700">
+                <HeartPulse className="h-3 w-3 mr-1" />
+                {healthStats?.status || 'Active Patient'}
+              </Badge>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -546,12 +530,14 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
               </div>
             </div>
             <div className="text-right">
-              <div className="text-6xl font-bold mb-2">{healthStats?.score ? `${healthStats.score}%` : 'Loading...'}</div>
+              <div className="text-6xl font-bold mb-2">{healthStats?.healthScore || 0}</div>
               <div className="flex items-center justify-end space-x-2 text-blue-600">
-                <Star className="h-4 w-4 fill-current" />
-                <span className="text-sm font-medium">{healthStats?.status || 'Health Score'}</span>
+                <Heart className="h-4 w-4" />
+                <span className="text-sm font-medium">Health Score</span>
               </div>
-              <Progress value={healthStats?.score || 0} className="w-32 mt-2 bg-white/50" />
+              <div className="text-sm text-gray-600 mt-2">
+                {healthStats?.status || 'Calculating...'}
+              </div>
             </div>
           </div>
         </CardContent>

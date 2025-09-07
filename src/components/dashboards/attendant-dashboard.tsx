@@ -284,25 +284,17 @@ export function AttendantDashboard({ userName, userImage }: AttendantDashboardPr
       <Card className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 shadow-lg">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Avatar className="h-16 w-16 border-2 border-white">
-                <AvatarImage src={userImage} />
-                <AvatarFallback className="bg-white text-purple-600 text-xl">
-                  {userName?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h1 className="text-2xl font-bold">Welcome back, {userName}!</h1>
-                <p className="text-purple-100">Patient Attendant</p>
-                <div className="flex items-center space-x-3 mt-2">
-                  <Badge className="bg-white/20 text-white border-white/30">
-                    <div className="w-2 h-2 rounded-full mr-2 bg-green-400"></div>
-                    Active
-                  </Badge>
-                  <span className="text-purple-100 text-sm">
-                    Last updated: {lastRefresh.toLocaleTimeString()}
-                  </span>
-                </div>
+            <div>
+              <h1 className="text-2xl font-bold">Welcome back, {userName}!</h1>
+              <p className="text-purple-100">Patient Attendant</p>
+              <div className="flex items-center space-x-3 mt-2">
+                <Badge className="bg-white/20 text-white border-white/30">
+                  <div className="w-2 h-2 rounded-full mr-2 bg-green-400"></div>
+                  Active
+                </Badge>
+                <span className="text-purple-100 text-sm">
+                  Last updated: {lastRefresh.toLocaleTimeString()}
+                </span>
               </div>
             </div>
             <div className="text-right">

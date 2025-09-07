@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { useCustomSignOut } from '@/hooks/use-custom-signout'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { 
   LayoutDashboard, 
   Users, 
@@ -251,33 +259,66 @@ export function DashboardLayout({ children, userRole, userName, userImage }: Das
             </div>
             <div className="flex items-center space-x-4">
               {/* Notifications */}
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 relative">
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 relative p-2">
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
               </Button>
               
-              {/* Help */}
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-                <HelpCircle className="h-5 w-5" />
-              </Button>
-              
-              {/* User info */}
-              <div className="flex items-center space-x-3">
-                <div className="hidden sm:block text-right">
-                  <p className="text-sm font-medium text-gray-900">{userName}</p>
-                  <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
-                    {userRole?.replace('_', ' ')}
-                  </Badge>
-                </div>
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={userImage} />
-                  <AvatarFallback className="bg-health-primary text-white">{userName?.charAt(0)}</AvatarFallback>
-                </Avatar>
-              </div>
+              {/* User Profile Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={userImage} alt={userName} />
+                      <AvatarFallback className="bg-health-primary text-white text-sm">{userName?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{userName}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {userRole?.replace('_', ' ')}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/profile" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings" className="flex items-center">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/billing" className="flex items-center">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      <span>Billing</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/help" className="flex items-center">
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      <span>Help & Support</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="flex items-center">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               {/* Cart for patients */}
               {userRole === 'PATIENT' && (
-                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 relative">
+                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 relative p-2">
                   <ShoppingCart className="h-5 w-5" />
                   <span className="absolute -top-1 -right-1 bg-health-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
                 </Button>

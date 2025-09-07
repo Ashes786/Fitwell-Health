@@ -399,36 +399,25 @@ export function SuperAdminDashboard({ userName, userImage }: SuperAdminDashboard
       {/* Header Section */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Avatar className="h-16 w-16 ring-4 ring-white shadow-lg">
-                <AvatarImage src={userImage} />
-                <AvatarFallback className="bg-gradient-to-br from-purple-600 to-pink-600 text-white text-xl font-bold">
-                  {userName?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Welcome back, {userName}</h1>
-              <p className="text-gray-600 mt-1">Super Administrator</p>
-              <div className="flex items-center space-x-4 mt-2">
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  <div className="w-2 h-2 rounded-full mr-2 bg-green-500"></div>
-                  System Operational
-                </Badge>
-                <Badge variant="outline" className="border-purple-200 text-purple-700">
-                  <Shield className="h-3 w-3 mr-1" />
-                  Super Admin Access
-                </Badge>
-                <Badge variant="outline" className="border-blue-200 text-blue-700">
-                  <Globe className="h-3 w-3 mr-1" />
-                  Global Scope
-                </Badge>
-                <span className="text-sm text-gray-500">
-                  Updated {lastRefresh.toLocaleTimeString()}
-                </span>
-              </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Welcome back, {userName}</h1>
+            <p className="text-gray-600 mt-1">Super Administrator</p>
+            <div className="flex items-center space-x-4 mt-2">
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <div className="w-2 h-2 rounded-full mr-2 bg-green-500"></div>
+                System Operational
+              </Badge>
+              <Badge variant="outline" className="border-purple-200 text-purple-700">
+                <Shield className="h-3 w-3 mr-1" />
+                Super Admin Access
+              </Badge>
+              <Badge variant="outline" className="border-blue-200 text-blue-700">
+                <Globe className="h-3 w-3 mr-1" />
+                Global Scope
+              </Badge>
+              <span className="text-sm text-gray-500">
+                Updated {lastRefresh.toLocaleTimeString()}
+              </span>
             </div>
           </div>
           <div className="flex items-center space-x-2">
