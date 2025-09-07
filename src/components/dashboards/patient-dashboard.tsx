@@ -179,6 +179,15 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
     loadDashboardData()
   }, [])
 
+  // Auto-refresh functionality
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      loadDashboardData()
+    }, 30000) // Refresh every 30 seconds
+
+    return () => clearInterval(intervalId) // Cleanup on component unmount
+  }, [])
+
   const loadDashboardData = async () => {
     setIsLoading(true)
     try {
@@ -934,10 +943,7 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
         </div>
       )}
 
-      {/* Last Updated */}
-      <div className="text-center text-sm text-gray-500 mb-4">
-        Last updated: {lastRefresh.toLocaleString()}
-      </div>
+  
 
       {/* No Data Message */}
       {!isLoading && 
@@ -982,6 +988,11 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
           </CardContent>
         </Card>
       )}
+
+      {/* Last Updated */}
+      <div className="text-center text-sm text-gray-500 mt-8">
+        Last updated: {lastRefresh.toLocaleString()}
+      </div>
     </div>
   )
 }
