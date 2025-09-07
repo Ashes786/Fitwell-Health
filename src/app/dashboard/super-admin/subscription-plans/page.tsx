@@ -40,6 +40,7 @@ interface SubscriptionPlan {
   duration: number
   durationUnit: 'DAYS' | 'MONTHS' | 'YEARS'
   category: 'BASIC' | 'PREMIUM' | 'ENTERPRISE'
+  type: 'PUBLIC' | 'PRIVATE'
   maxConsultations?: number
   maxFamilyMembers?: number
   discountPercentage?: number
@@ -80,6 +81,7 @@ export default function SubscriptionPlansPage() {
     duration: 30,
     durationUnit: 'DAYS' as 'DAYS' | 'MONTHS' | 'YEARS',
     category: 'BASIC' as 'BASIC' | 'PREMIUM' | 'ENTERPRISE',
+    type: 'PUBLIC' as 'PUBLIC' | 'PRIVATE',
     maxConsultations: '',
     maxFamilyMembers: '',
     discountPercentage: '',
@@ -259,6 +261,7 @@ export default function SubscriptionPlansPage() {
       duration: 30,
       durationUnit: 'DAYS',
       category: 'BASIC',
+      type: 'PUBLIC',
       maxConsultations: '',
       maxFamilyMembers: '',
       discountPercentage: '',
@@ -277,6 +280,7 @@ export default function SubscriptionPlansPage() {
       duration: plan.duration,
       durationUnit: plan.durationUnit,
       category: plan.category,
+      type: plan.type,
       maxConsultations: plan.maxConsultations?.toString() || '',
       maxFamilyMembers: plan.maxFamilyMembers?.toString() || '',
       discountPercentage: plan.discountPercentage?.toString() || '',
@@ -304,6 +308,19 @@ export default function SubscriptionPlansPage() {
     return (
       <Badge variant="secondary" className={variants[category as keyof typeof variants] || ''}>
         {category}
+      </Badge>
+    )
+  }
+
+  const getTypeBadge = (type: string) => {
+    const variants = {
+      'PUBLIC': 'bg-green-100 text-green-800',
+      'PRIVATE': 'bg-red-100 text-red-800'
+    }
+    
+    return (
+      <Badge variant="secondary" className={variants[type as keyof typeof variants] || ''}>
+        {type}
       </Badge>
     )
   }
@@ -382,6 +399,18 @@ export default function SubscriptionPlansPage() {
                         <SelectItem value="BASIC">Basic</SelectItem>
                         <SelectItem value="PREMIUM">Premium</SelectItem>
                         <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="type">Type</Label>
+                    <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value as any})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PUBLIC">Public</SelectItem>
+                        <SelectItem value="PRIVATE">Private</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -517,6 +546,13 @@ export default function SubscriptionPlansPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          <Button 
+            variant="outline"
+            onClick={() => router.push('/dashboard/super-admin/organization-subscriptions')}
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            Manage Organization Subscriptions
+          </Button>
         </div>
       </div>
 
@@ -580,6 +616,7 @@ export default function SubscriptionPlansPage() {
                 <TableRow>
                   <TableHead>Plan Name</TableHead>
                   <TableHead>Category</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Duration</TableHead>
                   <TableHead>Features</TableHead>
@@ -591,7 +628,7 @@ export default function SubscriptionPlansPage() {
               <TableBody>
                 {filteredPlans.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={9} className="text-center py-8">
                       <p className="text-gray-500">No subscription plans found</p>
                     </TableCell>
                   </TableRow>
@@ -605,6 +642,7 @@ export default function SubscriptionPlansPage() {
                         </div>
                       </TableCell>
                       <TableCell>{getCategoryBadge(plan.category)}</TableCell>
+                      <TableCell>{getTypeBadge(plan.type)}</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-1">
                           <DollarSign className="h-4 w-4 text-gray-400" />

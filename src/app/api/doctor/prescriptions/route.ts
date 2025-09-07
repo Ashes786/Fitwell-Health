@@ -121,6 +121,36 @@ export async function POST(request: Request) {
       }
     })
 
+    // Update subscription usage for prescription
+    try {
+      const patient = await db.patient.findUnique({
+        where: { id: patientId },
+        include: {
+          user: true
+        }
+      })
+
+      if (patient) {
+        // Create a server-side call to update usage
+        // Note: This would normally be done with a direct database call in a real implementation
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/patient/subscription/usage/update`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.INTERNAL_API_KEY || 'internal-key'}`
+          },
+          body: JSON.stringify({
+            serviceType: 'PRESCRIPTION',
+            increment: 1,
+            userId: patient.user.id
+          }),
+        })
+      }
+    } catch (error) {
+      console.error('Failed to update subscription usage:', error)
+      // Don't fail the prescription creation if usage tracking fails
+    }
+
     return NextResponse.json(prescription)
   } catch (error) {
     console.error('Error creating prescription:', error)

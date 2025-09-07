@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
           duration: true,
           durationUnit: true,
           category: true,
+          type: true,
           isActive: true,
           createdAt: true,
           updatedAt: true,
@@ -105,6 +106,7 @@ export async function POST(request: NextRequest) {
       duration,
       durationUnit,
       category,
+      type,
       maxConsultations,
       maxFamilyMembers,
       discountPercentage,
@@ -113,7 +115,7 @@ export async function POST(request: NextRequest) {
       adminId
     } = body
 
-    if (!name || !price || !duration || !adminId) {
+    if (!name || !price || !duration || !adminId || !type) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -144,6 +146,7 @@ export async function POST(request: NextRequest) {
         duration: parseInt(duration),
         durationUnit,
         category,
+        type,
         maxConsultations: maxConsultations ? parseInt(maxConsultations) : null,
         maxFamilyMembers: maxFamilyMembers ? parseInt(maxFamilyMembers) : null,
         discountPercentage: discountPercentage ? parseFloat(discountPercentage) : null,
