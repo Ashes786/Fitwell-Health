@@ -234,7 +234,7 @@ export function PatientDashboard({ userName, userImage, userEmail, userPhone }: 
           trend: 'Stable',
           ranking: 'Active Patient',
           status: 'Health Monitoring',
-          patientId: patient?.nhrNumber || 'N/A'
+          patientId: healthStatsData.patientId || 'N/A'
         }
         
         setHealthStats(transformedHealthStats)

@@ -83,23 +83,6 @@ export async function POST(request: Request) {
           status: 'CONFIRMED'
         }
       })
-
-      // Update subscription usage for consultation
-      try {
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/patient/subscription/usage/update`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            serviceType: 'CONSULTATION',
-            increment: 1
-          }),
-        })
-      } catch (error) {
-        console.error('Failed to update subscription usage:', error)
-        // Don't fail the appointment creation if usage tracking fails
-      }
     }
 
     return NextResponse.json({

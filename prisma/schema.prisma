@@ -81,11 +81,13 @@ model Patient {
   state           String?
   country         String?
   postalCode      String?
+  organizationId  String?  // Organization this patient belongs to
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   // Relations
   user            User           @relation(fields: [userId], references: [id])
+  organization    Organization? @relation(fields: [organizationId], references: [id])
   familyMembers   FamilyMember[]
   appointments    Appointment[]
   healthRecords   HealthRecord[]
@@ -459,12 +461,14 @@ model Organization {
   phone       String?
   email       String?
   website     String?
+  branding    String?  // JSON string of branding configuration
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  organizationSubscriptions OrganizationSubscription[]
-  
+  // Relations
+  patients    Patient[]
+
   @@map("organizations")
 }
 
@@ -485,11 +489,6 @@ model UserSubscription {
   startDate     DateTime
   endDate       DateTime
   isActive      Boolean  @default(true)
-  consultationsUsed Int @default(0)
-  familyMembersUsed Int @default(0)
-  labTestsUsed     Int @default(0)
-  prescriptionsUsed Int @default(0)
-  aiReportsUsed    Int @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -498,24 +497,6 @@ model UserSubscription {
   
   @@unique([userId, subscriptionPlanId])
   @@map("user_subscriptions")
-}
-
-// Organization Subscriptions (for private plans)
-model OrganizationSubscription {
-  id                  String   @id @default(cuid())
-  organizationId      String
-  subscriptionPlanId  String
-  assignedAt         DateTime @default(now())
-  assignedBy         String   // Admin ID
-  isActive           Boolean  @default(true)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  organization        Organization      @relation(fields: [organizationId], references: [id])
-  subscriptionPlan   SubscriptionPlan  @relation(fields: [subscriptionPlanId], references: [id])
-  
-  @@unique([organizationId, subscriptionPlanId])
-  @@map("organization_subscriptions")
 }
 
 // Chat/Messaging system
@@ -594,12 +575,6 @@ enum Gender {
   PREFER_NOT_TO_SAY
 }
 
-// Subscription Type enum
-enum SubscriptionType {
-  PUBLIC
-  PRIVATE
-}
-
 // Super Admin
 model SuperAdmin {
   id          String   @id @default(cuid())
@@ -622,6 +597,7 @@ model Admin {
   permissions String   // JSON string of permissions
   isActive    Boolean  @default(true)
   createdBy   String   // Super Admin ID
+  branding    String?  // JSON string of branding configuration
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -644,7 +620,6 @@ model SubscriptionPlan {
   duration    Int      // in days
   durationUnit String   // DAYS, MONTHS, YEARS
   category    String   // BASIC, PREMIUM, ENTERPRISE, CUSTOM
-  type        SubscriptionType // PUBLIC or PRIVATE
   maxConsultations Int? // Maximum number of consultations
   maxFamilyMembers Int? // Maximum number of family members
   discountPercentage Float? // Discount percentage
@@ -656,7 +631,6 @@ model SubscriptionPlan {
 
   admin       Admin                    @relation(fields: [adminId], references: [id])
   userSubscriptions UserSubscription[]
-  organizationSubscriptions OrganizationSubscription[]
   
   @@map("subscription_plans")
 }

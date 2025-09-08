@@ -58,8 +58,8 @@ interface SubscriptionPlan {
 interface ServiceUsage {
   type: string
   used: number
-  total: number | null
-  icon: string
+  total: number
+  icon: any
   color: string
   description: string
 }
@@ -81,11 +81,9 @@ export default function PatientSubscription() {
   })
   
   const router = useRouter()
-  const [subscription, setSubscription] = useState<any>(null)
-  const [serviceUsage, setServiceUsage] = useState<any[]>([])
+  const [subscription, setSubscription] = useState<SubscriptionPlan | null>(null)
+  const [serviceUsage, setServiceUsage] = useState<ServiceUsage[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [availablePlans, setAvailablePlans] = useState<any[]>([])
-  const [daysRemaining, setDaysRemaining] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -97,23 +95,85 @@ export default function PatientSubscription() {
   const fetchSubscriptionData = async () => {
     setLoading(true)
     try {
-      // Fetch subscription usage data
-      const usageResponse = await fetch('/api/patient/subscription/usage')
-      if (usageResponse.ok) {
-        const usageData = await usageResponse.json()
-        setSubscription(usageData.subscription)
-        setServiceUsage(usageData.usageData)
-        setDaysRemaining(usageData.daysRemaining)
+      // Mock subscription data
+      const mockSubscription: SubscriptionPlan = {
+        id: "1",
+        name: "Premium Health Plan",
+        description: "Comprehensive healthcare coverage with unlimited consultations and family members",
+        price: 299.99,
+        duration: 30,
+        durationUnit: "DAYS",
+        category: "PREMIUM",
+        maxConsultations: 20,
+        maxFamilyMembers: 5,
+        discountPercentage: 15,
+        features: [
+          "Unlimited GP consultations",
+          "Specialist consultations",
+          "Lab test discounts",
+          "Pharmacy discounts",
+          "Health card benefits",
+          "AI health reports",
+          "Priority appointments",
+          "24/7 support"
+        ],
+        specializations: ["General Practice", "Cardiology", "Dermatology", "Pediatrics"],
+        isActive: true,
+        startDate: "2024-01-01",
+        endDate: "2024-01-31"
       }
 
-      // Fetch available subscription plans
-      const plansResponse = await fetch('/api/patient/subscription?type=PUBLIC')
-      if (plansResponse.ok) {
-        const plansData = await plansResponse.json()
-        setAvailablePlans(plansData.plans)
-      }
+      const mockServiceUsage: ServiceUsage[] = [
+        {
+          type: "GP Consultations",
+          used: 8,
+          total: 15,
+          icon: Stethoscope,
+          color: "bg-blue-500",
+          description: "General practitioner visits"
+        },
+        {
+          type: "Specialist Consultations",
+          used: 3,
+          total: 10,
+          icon: Users,
+          color: "bg-purple-500",
+          description: "Specialist doctor visits"
+        },
+        {
+          type: "Lab Tests",
+          used: 5,
+          total: 12,
+          icon: FlaskConical,
+          color: "bg-green-500",
+          description: "Laboratory tests and diagnostics"
+        },
+        {
+          type: "Prescriptions",
+          used: 12,
+          total: 20,
+          icon: Pill,
+          color: "bg-orange-500",
+          description: "Prescription medications"
+        },
+        {
+          type: "Family Members",
+          used: 2,
+          total: 5,
+          icon: Users,
+          color: "bg-pink-500",
+          description: "Family member coverage"
+        },
+        {
+          type: "AI Reports",
+          used: 4,
+          total: 8,
+          icon: Activity,
+          color: "bg-cyan-500",
+          description: "AI-generated health reports"
+        }
+      ]
 
-      // Mock transactions for now (can be replaced with real transaction API later)
       const mockTransactions: Transaction[] = [
         {
           id: "1",
@@ -149,6 +209,8 @@ export default function PatientSubscription() {
         }
       ]
 
+      setSubscription(mockSubscription)
+      setServiceUsage(mockServiceUsage)
       setTransactions(mockTransactions)
     } catch (error) {
       console.error('Error fetching subscription data:', error)
@@ -157,8 +219,8 @@ export default function PatientSubscription() {
     }
   }
 
-  const getUsagePercentage = (used: number, total: number | null) => {
-    return total && total > 0 ? Math.round((used / total) * 100) : 0
+  const getUsagePercentage = (used: number, total: number) => {
+    return total > 0 ? Math.round((used / total) * 100) : 0
   }
 
   const getUsageColor = (percentage: number) => {
@@ -171,17 +233,6 @@ export default function PatientSubscription() {
     if (percentage >= 90) return "bg-red-500"
     if (percentage >= 70) return "bg-yellow-500"
     return "bg-green-500"
-  }
-
-  const getIconComponent = (iconName: string) => {
-    switch (iconName) {
-      case 'stethoscope': return Stethoscope
-      case 'users': return Users
-      case 'flask': return FlaskConical
-      case 'pill': return Pill
-      case 'activity': return Activity
-      default: return Stethoscope
-    }
   }
 
   const getTransactionIcon = (type: string) => {
@@ -201,6 +252,9 @@ export default function PatientSubscription() {
       default: return "text-gray-600"
     }
   }
+
+  const daysRemaining = subscription ? 
+    Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
 
   if (isLoading) {
     return (
@@ -241,10 +295,7 @@ export default function PatientSubscription() {
             <CreditCard className="mr-2 h-4 w-4" />
             Health Card
           </Button>
-          <Button 
-            className="bg-emerald-600 hover:bg-emerald-700"
-            onClick={() => router.push('/dashboard/patient/subscription/upgrade')}
-          >
+          <Button className="bg-emerald-600 hover:bg-emerald-700">
             <Plus className="mr-2 h-4 w-4" />
             Upgrade Plan
           </Button>
@@ -339,7 +390,7 @@ export default function PatientSubscription() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {serviceUsage.map((service) => {
               const percentage = getUsagePercentage(service.used, service.total)
-              const Icon = getIconComponent(service.icon)
+              const Icon = service.icon
               
               return (
                 <Card key={service.type} className="border-gray-200">
@@ -354,40 +405,24 @@ export default function PatientSubscription() {
                       </div>
                     </div>
                     
-                    {service.total !== null && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Usage</span>
-                          <span className={`font-medium ${getUsageColor(percentage)}`}>
-                            {service.used}/{service.total}
-                          </span>
-                        </div>
-                        <Progress 
-                          value={percentage} 
-                          className="h-2"
-                        />
-                        <div className="flex items-center justify-between text-xs text-gray-500">
-                          <span>{percentage}% used</span>
-                          <span>{service.total - service.used} remaining</span>
-                        </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Usage</span>
+                        <span className={`font-medium ${getUsageColor(percentage)}`}>
+                          {service.used}/{service.total}
+                        </span>
                       </div>
-                    )}
-
-                    {service.total === null && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Usage</span>
-                          <span className="font-medium text-green-600">
-                            {service.used} used
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Unlimited usage
-                        </div>
+                      <Progress 
+                        value={percentage} 
+                        className="h-2"
+                      />
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{percentage}% used</span>
+                        <span>{service.total - service.used} remaining</span>
                       </div>
-                    )}
+                    </div>
 
-                    {service.total !== null && percentage >= 80 && (
+                    {percentage >= 80 && (
                       <div className="flex items-center space-x-2 mt-3 p-2 bg-yellow-50 rounded-lg">
                         <AlertTriangle className="h-4 w-4 text-yellow-600" />
                         <span className="text-xs text-yellow-800">Running low on this service</span>
