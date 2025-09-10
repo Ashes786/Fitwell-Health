@@ -40,21 +40,28 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, type, address, phone, email, website } = body
+    const { name, type, address, phone, email, website, branding } = body
 
     if (!name || !type) {
       return NextResponse.json({ error: 'Name and type are required' }, { status: 400 })
     }
 
+    const createData: any = {
+      name,
+      type,
+      address,
+      phone,
+      email,
+      website
+    }
+
+    // Add branding if provided
+    if (branding) {
+      createData.branding = JSON.stringify(branding)
+    }
+
     const organization = await db.organization.create({
-      data: {
-        name,
-        type,
-        address,
-        phone,
-        email,
-        website
-      }
+      data: createData
     })
 
     return NextResponse.json(organization, { status: 201 })

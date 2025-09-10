@@ -46,8 +46,7 @@ interface SubscriptionPlan {
   price: number
   duration: number
   durationUnit: 'DAYS' | 'MONTHS' | 'YEARS'
-  category: 'BASIC' | 'PREMIUM' | 'ENTERPRISE'
-  type: 'PUBLIC' | 'PRIVATE'
+  category: 'BASIC' | 'PREMIUM' | 'ENTERPRISE' | 'CUSTOM'
   maxConsultations?: number
   maxFamilyMembers?: number
   discountPercentage?: number
@@ -160,25 +159,13 @@ export default function SubscriptionUpgrade() {
     const variants = {
       'BASIC': 'bg-blue-100 text-blue-800',
       'PREMIUM': 'bg-purple-100 text-purple-800',
-      'ENTERPRISE': 'bg-orange-100 text-orange-800'
+      'ENTERPRISE': 'bg-orange-100 text-orange-800',
+      'CUSTOM': 'bg-red-100 text-red-800'
     }
     
     return (
       <Badge variant="secondary" className={variants[category as keyof typeof variants] || ''}>
         {category}
-      </Badge>
-    )
-  }
-
-  const getTypeBadge = (type: string) => {
-    const variants = {
-      'PUBLIC': 'bg-green-100 text-green-800',
-      'PRIVATE': 'bg-red-100 text-red-800'
-    }
-    
-    return (
-      <Badge variant="secondary" className={variants[type as keyof typeof variants] || ''}>
-        {type}
       </Badge>
     )
   }
@@ -300,7 +287,6 @@ export default function SubscriptionUpgrade() {
                 </CardTitle>
                 <div className="flex items-center space-x-2">
                   {getCategoryBadge(plan.category)}
-                  {getTypeBadge(plan.type)}
                 </div>
               </div>
               <CardDescription>{plan.description}</CardDescription>
@@ -368,7 +354,6 @@ export default function SubscriptionUpgrade() {
                     <div className="space-y-2 text-sm text-gray-600">
                       <div><strong>Duration:</strong> {plan.duration} {plan.durationUnit.toLowerCase()}</div>
                       <div><strong>Category:</strong> {plan.category}</div>
-                      <div><strong>Type:</strong> {plan.type}</div>
                       {plan.specializations && plan.specializations.length > 0 && (
                         <div>
                           <strong>Specializations:</strong> {plan.specializations.join(', ')}

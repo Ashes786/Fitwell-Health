@@ -17,8 +17,9 @@ export async function GET(request: NextRequest) {
     // Build where clause for subscription plans
     const where: any = { isActive: true }
     
+    // If user is requesting only public plans, filter out custom plans
     if (type === 'PUBLIC') {
-      where.type = 'PUBLIC'
+      where.category = { not: 'CUSTOM' }
     }
 
     // Get available subscription plans
@@ -33,7 +34,6 @@ export async function GET(request: NextRequest) {
         duration: true,
         durationUnit: true,
         category: true,
-        type: true,
         maxConsultations: true,
         maxFamilyMembers: true,
         discountPercentage: true,
@@ -55,20 +55,19 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // If user is requesting ALL plans, filter private plans based on organization access
+    // If user is requesting ALL plans, filter custom plans based on organization access
     if (type === 'ALL' || !type) {
       // Get user's organization (if any)
-      const userOrganizations = await db.networkUser.findMany({
-        where: {
-          userId: session.user.id,
-          userType: 'PATIENT'
-        },
+      const userWithOrg = await db.user.findUnique({
+        where: { id: session.user.id },
         include: {
-          admin: {
-            include: {
-              organizationSubscriptions: {
-                include: {
-                  subscriptionPlan: true
+          patient: {
+            select: {
+              organizationId: true,
+              organization: {
+                select: {
+                  id: true,
+                  name: true
                 }
               }
             }
@@ -76,19 +75,30 @@ export async function GET(request: NextRequest) {
         }
       })
 
-      // Get private plans accessible through user's organizations
-      const accessiblePrivatePlanIds = new Set<string>()
-      userOrganizations.forEach(networkUser => {
-        networkUser.admin.organizationSubscriptions.forEach(orgSub => {
-          if (orgSub.subscriptionPlan.type === 'PRIVATE') {
-            accessiblePrivatePlanIds.add(orgSub.subscriptionPlan.id)
+      // Get custom plans that belong to organizations the user has access to
+      let accessibleCustomPlanIds = new Set<string>()
+      
+      if (userWithOrg?.patient?.organizationId) {
+        // Get organization subscriptions for the user's organization
+        const orgSubscriptions = await db.organizationSubscription.findMany({
+          where: {
+            organizationId: userWithOrg.patient.organizationId,
+            isActive: true
+          },
+          select: {
+            subscriptionPlanId: true
           }
         })
-      })
+        
+        // Add the custom plan IDs to the accessible set
+        orgSubscriptions.forEach(orgSub => {
+          accessibleCustomPlanIds.add(orgSub.subscriptionPlanId)
+        })
+      }
 
-      // Filter plans: keep all public plans + private plans accessible through organizations
+      // Filter plans: keep all non-custom plans + custom plans accessible through organizations
       plans = plans.filter(plan => 
-        plan.type === 'PUBLIC' || accessiblePrivatePlanIds.has(plan.id)
+        plan.category !== 'CUSTOM' || accessibleCustomPlanIds.has(plan.id)
       )
     }
 
@@ -108,7 +118,6 @@ export async function GET(request: NextRequest) {
             duration: true,
             durationUnit: true,
             category: true,
-            type: true,
             maxConsultations: true,
             maxFamilyMembers: true,
             discountPercentage: true,
@@ -197,12 +206,7 @@ export async function POST(request: NextRequest) {
         subscriptionPlanId,
         startDate,
         endDate,
-        isActive: true,
-        consultationsUsed: 0,
-        familyMembersUsed: 0,
-        labTestsUsed: 0,
-        prescriptionsUsed: 0,
-        aiReportsUsed: 0
+        isActive: true
       },
       include: {
         subscriptionPlan: {
@@ -214,7 +218,6 @@ export async function POST(request: NextRequest) {
             duration: true,
             durationUnit: true,
             category: true,
-            type: true,
             maxConsultations: true,
             maxFamilyMembers: true,
             discountPercentage: true,

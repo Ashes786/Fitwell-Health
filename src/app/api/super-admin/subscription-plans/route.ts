@@ -110,6 +110,9 @@ export async function POST(request: NextRequest) {
       discountPercentage,
       features,
       specializations,
+      specialistConsultations,
+      labTestDiscounts,
+      pharmacyDiscounts,
       adminId
     } = body
 
@@ -147,8 +150,11 @@ export async function POST(request: NextRequest) {
         maxConsultations: maxConsultations ? parseInt(maxConsultations) : null,
         maxFamilyMembers: maxFamilyMembers ? parseInt(maxFamilyMembers) : null,
         discountPercentage: discountPercentage ? parseFloat(discountPercentage) : null,
-        features: features || [],
-        specializations: specializations || [],
+        features: features && features.length > 0 ? JSON.stringify(features) : null,
+        specializations: specializations && specializations.length > 0 ? JSON.stringify(specializations) : null,
+        specialistConsultations: specialistConsultations && specialistConsultations.length > 0 ? JSON.stringify(specialistConsultations) : null,
+        labTestDiscounts: labTestDiscounts && labTestDiscounts.length > 0 ? JSON.stringify(labTestDiscounts) : null,
+        pharmacyDiscounts: pharmacyDiscounts && pharmacyDiscounts.length > 0 ? JSON.stringify(pharmacyDiscounts) : null,
         isActive: true
       },
       include: {

@@ -44,7 +44,6 @@ export async function GET(request: NextRequest) {
               id: true,
               name: true,
               category: true,
-              type: true,
               price: true,
               duration: true,
               durationUnit: true
@@ -119,8 +118,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Subscription plan not found' }, { status: 404 })
     }
 
-    if (subscriptionPlan.type !== 'PRIVATE') {
-      return NextResponse.json({ error: 'Only private subscription plans can be assigned to organizations' }, { status: 400 })
+    if (subscriptionPlan.category !== 'CUSTOM') {
+      return NextResponse.json({ error: 'Only custom subscription plans can be assigned to organizations' }, { status: 400 })
     }
 
     // Verify admin exists
@@ -166,7 +165,6 @@ export async function POST(request: NextRequest) {
             id: true,
             name: true,
             category: true,
-            type: true,
             price: true,
             duration: true,
             durationUnit: true

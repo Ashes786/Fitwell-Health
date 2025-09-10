@@ -468,6 +468,7 @@ model Organization {
 
   // Relations
   patients    Patient[]
+  organizationSubscriptions OrganizationSubscription[]
 
   @@map("organizations")
 }
@@ -497,6 +498,23 @@ model UserSubscription {
   
   @@unique([userId, subscriptionPlanId])
   @@map("user_subscriptions")
+}
+
+// Organization Subscriptions (for assigning subscription plans to organizations)
+model OrganizationSubscription {
+  id            String   @id @default(cuid())
+  organizationId String
+  subscriptionPlanId String
+  assignedBy    String   // Admin ID
+  assignedAt    DateTime @default(now())
+  isActive      Boolean  @default(true)
+
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  subscriptionPlan SubscriptionPlan @relation(fields: [subscriptionPlanId], references: [id])
+  assignedByAdmin Admin           @relation(fields: [assignedBy], references: [id])
+  
+  @@unique([organizationId, subscriptionPlanId])
+  @@map("organization_subscriptions")
 }
 
 // Chat/Messaging system
@@ -606,6 +624,7 @@ model Admin {
   subscriptionPlans SubscriptionPlan[]
   networkUsers NetworkUser[]
   networkPartners NetworkPartner[]
+  organizationSubscriptions OrganizationSubscription[]
   
   @@map("admins")
 }
@@ -625,12 +644,16 @@ model SubscriptionPlan {
   discountPercentage Float? // Discount percentage
   features    String? // JSON string of features
   specializations String? // JSON string of specializations
+  specialistConsultations String? // JSON string of specialist consultation limits
+  labTestDiscounts String? // JSON string of lab test discounts
+  pharmacyDiscounts String? // JSON string of pharmacy discounts
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   admin       Admin                    @relation(fields: [adminId], references: [id])
   userSubscriptions UserSubscription[]
+  organizationSubscriptions OrganizationSubscription[]
   
   @@map("subscription_plans")
 }

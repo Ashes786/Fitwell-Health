@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { 
   Plus, 
   Edit, 
@@ -27,7 +28,13 @@ import {
   XCircle,
   RefreshCw,
   Search,
-  Filter
+  Filter,
+  Building2,
+  Stethoscope,
+  FlaskConical,
+  Pill,
+  ChevronDown,
+  Info
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -39,12 +46,15 @@ interface SubscriptionPlan {
   price: number
   duration: number
   durationUnit: 'DAYS' | 'MONTHS' | 'YEARS'
-  category: 'BASIC' | 'PREMIUM' | 'ENTERPRISE'
+  category: 'BASIC' | 'PREMIUM' | 'ENTERPRISE' | 'CUSTOM'
   maxConsultations?: number
   maxFamilyMembers?: number
   discountPercentage?: number
   features: string[]
   specializations?: string[]
+  specialistConsultations?: string[]
+  labTestDiscounts?: string[]
+  pharmacyDiscounts?: string[]
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -79,14 +89,33 @@ export default function SubscriptionPlansPage() {
     price: 0,
     duration: 30,
     durationUnit: 'DAYS' as 'DAYS' | 'MONTHS' | 'YEARS',
-    category: 'BASIC' as 'BASIC' | 'PREMIUM' | 'ENTERPRISE',
+    category: 'BASIC' as 'BASIC' | 'PREMIUM' | 'ENTERPRISE' | 'CUSTOM',
     maxConsultations: '',
     maxFamilyMembers: '',
     discountPercentage: '',
     features: '',
     specializations: '',
-    isActive: true
+    specialistConsultations: '',
+    labTestDiscounts: '',
+    pharmacyDiscounts: '',
+    isActive: true,
+    adminId: ''
   })
+
+  const [admins, setAdmins] = useState<Array<{id: string, networkName: string, user: {name: string, email: string}}>>([])
+  const [showAdvancedFeatures, setShowAdvancedFeatures] = useState(false)
+
+  const fetchAdmins = async () => {
+    try {
+      const response = await fetch('/api/super-admin/admins')
+      if (response.ok) {
+        const data = await response.json()
+        setAdmins(data.admins || [])
+      }
+    } catch (error) {
+      console.error('Error fetching admins:', error)
+    }
+  }
 
   const fetchPlans = async () => {
     setLoading(true)
@@ -98,8 +127,8 @@ export default function SubscriptionPlansPage() {
       
       if (response.ok) {
         const data = await response.json()
-        setPlans(data)
-        setFilteredPlans(data)
+        setPlans(data.plans || data)
+        setFilteredPlans(data.plans || data)
       } else {
         setError('Failed to fetch subscription plans')
         toast.error('Failed to fetch subscription plans')
@@ -118,6 +147,7 @@ export default function SubscriptionPlansPage() {
     if (!session) return
 
     fetchPlans()
+    fetchAdmins()
   }, [session, isLoading])
 
   useEffect(() => {
@@ -142,6 +172,11 @@ export default function SubscriptionPlansPage() {
   }, [plans, searchTerm, statusFilter])
 
   const handleCreatePlan = async () => {
+    if (!formData.adminId) {
+      toast.error('Please select an admin for this subscription plan')
+      return
+    }
+
     try {
       const response = await fetch('/api/super-admin/subscription-plans', {
         method: 'POST',
@@ -150,11 +185,15 @@ export default function SubscriptionPlansPage() {
         },
         body: JSON.stringify({
           ...formData,
+          adminId: formData.adminId,
           maxConsultations: formData.maxConsultations ? parseInt(formData.maxConsultations) : null,
           maxFamilyMembers: formData.maxFamilyMembers ? parseInt(formData.maxFamilyMembers) : null,
           discountPercentage: formData.discountPercentage ? parseFloat(formData.discountPercentage) : null,
-          features: formData.features.split(',').map(f => f.trim()).filter(f => f),
-          specializations: formData.specializations.split(',').map(s => s.trim()).filter(s => s)
+          features: formData.features ? formData.features.split(',').map(f => f.trim()).filter(f => f) : [],
+          specializations: formData.specializations ? formData.specializations.split(',').map(s => s.trim()).filter(s => s) : [],
+          specialistConsultations: formData.specialistConsultations ? formData.specialistConsultations.split(',').map(s => s.trim()).filter(s => s) : [],
+          labTestDiscounts: formData.labTestDiscounts ? formData.labTestDiscounts.split(',').map(l => l.trim()).filter(l => l) : [],
+          pharmacyDiscounts: formData.pharmacyDiscounts ? formData.pharmacyDiscounts.split(',').map(p => p.trim()).filter(p => p) : []
         }),
       })
 
@@ -264,7 +303,11 @@ export default function SubscriptionPlansPage() {
       discountPercentage: '',
       features: '',
       specializations: '',
-      isActive: true
+      specialistConsultations: '',
+      labTestDiscounts: '',
+      pharmacyDiscounts: '',
+      isActive: true,
+      adminId: ''
     })
   }
 
@@ -364,13 +407,19 @@ export default function SubscriptionPlansPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Plan Name</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      placeholder="e.g., Premium Health Plan"
-                    />
+                    <Label htmlFor="admin">Admin Network</Label>
+                    <Select value={formData.adminId} onValueChange={(value) => setFormData({...formData, adminId: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an admin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {admins.map((admin) => (
+                          <SelectItem key={admin.id} value={admin.id}>
+                            {admin.networkName} ({admin.user.name})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="category">Category</Label>
@@ -382,8 +431,32 @@ export default function SubscriptionPlansPage() {
                         <SelectItem value="BASIC">Basic</SelectItem>
                         <SelectItem value="PREMIUM">Premium</SelectItem>
                         <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+                        <SelectItem value="CUSTOM">Custom</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Plan Name</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      placeholder="e.g., Premium Health Plan"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Price ($)</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
+                      min="0"
+                      step="0.01"
+                    />
                   </div>
                 </div>
 
@@ -492,6 +565,74 @@ export default function SubscriptionPlansPage() {
                     rows={2}
                   />
                 </div>
+
+                {/* Advanced Features */}
+                <Collapsible open={showAdvancedFeatures} onOpenChange={setShowAdvancedFeatures}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" type="button" className="w-full justify-between">
+                      <span className="flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Advanced Features
+                      </span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${showAdvancedFeatures ? 'rotate-180' : ''}`} />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 mt-4">
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <h4 className="font-medium text-gray-900 mb-4 flex items-center">
+                        <Stethoscope className="mr-2 h-4 w-4" />
+                        Specialist Consultations
+                      </h4>
+                      <div className="space-y-2">
+                        <Label htmlFor="specialistConsultations">Specialist Consultations (comma-separated: specialization:free_limit)</Label>
+                        <Textarea
+                          id="specialistConsultations"
+                          value={formData.specialistConsultations}
+                          onChange={(e) => setFormData({...formData, specialistConsultations: e.target.value})}
+                          placeholder="e.g., cardiology:5, dermatology:3, pediatrics:unlimited"
+                          rows={2}
+                        />
+                        <p className="text-xs text-gray-500">Format: specialization:free_limit (use "unlimited" for no limit)</p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-blue-50 rounded-lg">
+                      <h4 className="font-medium text-gray-900 mb-4 flex items-center">
+                        <FlaskConical className="mr-2 h-4 w-4" />
+                        Lab Test Discounts
+                      </h4>
+                      <div className="space-y-2">
+                        <Label htmlFor="labTestDiscounts">Lab Test Discounts (comma-separated: test_type:discount%)</Label>
+                        <Textarea
+                          id="labTestDiscounts"
+                          value={formData.labTestDiscounts}
+                          onChange={(e) => setFormData({...formData, labTestDiscounts: e.target.value})}
+                          placeholder="e.g., blood_test:15, xray:20, mri:10, all:5"
+                          rows={2}
+                        />
+                        <p className="text-xs text-gray-500">Format: test_type:discount% (use "all" for all tests)</p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <h4 className="font-medium text-gray-900 mb-4 flex items-center">
+                        <Pill className="mr-2 h-4 w-4" />
+                        Pharmacy Medicine Discounts
+                      </h4>
+                      <div className="space-y-2">
+                        <Label htmlFor="pharmacyDiscounts">Pharmacy Medicine Discounts (comma-separated: medicine_type:discount%)</Label>
+                        <Textarea
+                          id="pharmacyDiscounts"
+                          value={formData.pharmacyDiscounts}
+                          onChange={(e) => setFormData({...formData, pharmacyDiscounts: e.target.value})}
+                          placeholder="e.g., generic:20, branded:10, chronic:15, all:5"
+                          rows={2}
+                        />
+                        <p className="text-xs text-gray-500">Format: medicine_type:discount% (use "all" for all medicines)</p>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
 
                 <div className="flex items-center space-x-2">
                   <Switch

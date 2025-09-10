@@ -21,19 +21,26 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { name, type, address, phone, email, website, isActive } = body
+    const { name, type, address, phone, email, website, isActive, branding } = body
+
+    const updateData: any = {
+      name,
+      type,
+      address,
+      phone,
+      email,
+      website,
+      isActive
+    }
+
+    // Add branding if provided
+    if (branding) {
+      updateData.branding = JSON.stringify(branding)
+    }
 
     const organization = await db.organization.update({
       where: { id: params.id },
-      data: {
-        name,
-        type,
-        address,
-        phone,
-        email,
-        website,
-        isActive
-      }
+      data: updateData
     })
 
     return NextResponse.json(organization)

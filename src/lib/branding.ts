@@ -95,8 +95,31 @@ export async function getUserBranding(userId: string, userRole: UserRole): Promi
 
     // Check if user belongs to an organization (for patients)
     if (user.patient) {
-      // TODO: Implement organization branding when organization relation is added to patient
-      // For now, return default branding
+      if (user.patient.organizationId) {
+        // Get organization branding
+        const organization = await db.organization.findUnique({
+          where: { id: user.patient.organizationId }
+        })
+        
+        if (organization?.branding) {
+          try {
+            const orgBranding = JSON.parse(organization.branding) as Branding
+            return {
+              ...defaultBranding,
+              ...orgBranding
+            }
+          } catch (error) {
+            console.error('Error parsing organization branding:', error)
+          }
+        }
+        
+        // Return organization-based branding
+        return {
+          ...defaultBranding,
+          companyName: organization.name || defaultBranding.companyName,
+          tagline: `${organization.name} Healthcare Organization`
+        }
+      }
     }
 
     return defaultBranding

@@ -90,7 +90,10 @@ export async function POST(request: NextRequest) {
       maxFamilyMembers,
       discountPercentage,
       features,
-      specializations
+      specializations,
+      specialistConsultations,
+      labTestDiscounts,
+      pharmacyDiscounts
     } = body
 
     // Get admin ID from session
@@ -108,15 +111,18 @@ export async function POST(request: NextRequest) {
         adminId: admin.id,
         name,
         description,
-        price,
-        duration,
+        price: parseFloat(price),
+        duration: parseInt(duration),
         durationUnit,
         category,
-        maxConsultations,
-        maxFamilyMembers,
-        discountPercentage,
-        features,
-        specializations,
+        maxConsultations: maxConsultations ? parseInt(maxConsultations) : null,
+        maxFamilyMembers: maxFamilyMembers ? parseInt(maxFamilyMembers) : null,
+        discountPercentage: discountPercentage ? parseFloat(discountPercentage) : null,
+        features: features && features.length > 0 ? JSON.stringify(features) : null,
+        specializations: specializations && specializations.length > 0 ? JSON.stringify(specializations) : null,
+        specialistConsultations: specialistConsultations && specialistConsultations.length > 0 ? JSON.stringify(specialistConsultations) : null,
+        labTestDiscounts: labTestDiscounts && labTestDiscounts.length > 0 ? JSON.stringify(labTestDiscounts) : null,
+        pharmacyDiscounts: pharmacyDiscounts && pharmacyDiscounts.length > 0 ? JSON.stringify(pharmacyDiscounts) : null,
         isActive: true
       }
     })
