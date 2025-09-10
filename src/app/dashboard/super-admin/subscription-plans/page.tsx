@@ -52,9 +52,26 @@ interface SubscriptionPlan {
   discountPercentage?: number
   features: string[]
   specializations?: string[]
-  specialistConsultations?: string[]
-  labTestDiscounts?: string[]
-  pharmacyDiscounts?: string[]
+  consultations?: Array<{
+    id: string
+    specialty: string
+    number: string
+    price: number
+    priceBeyondLimit: number
+    isUnlimited: boolean
+  }>
+  labTests?: Array<{
+    id: string
+    test: string
+    discountPercentage: number
+  }>
+  medicines?: Array<{
+    id: string
+    provider: string
+    category: string
+    discountPercentage: number
+    isUpTo: boolean
+  }>
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -87,7 +104,7 @@ export default function SubscriptionPlansPage() {
     name: '',
     description: '',
     price: 0,
-    duration: 30,
+    duration: 30 as number | string,
     durationUnit: 'DAYS' as 'DAYS' | 'MONTHS' | 'YEARS',
     category: 'BASIC' as 'BASIC' | 'PREMIUM' | 'ENTERPRISE' | 'CUSTOM',
     maxConsultations: '',
@@ -95,15 +112,56 @@ export default function SubscriptionPlansPage() {
     discountPercentage: '',
     features: '',
     specializations: '',
-    specialistConsultations: '',
-    labTestDiscounts: '',
-    pharmacyDiscounts: '',
+    consultations: [],
+    labTests: [],
+    medicines: [],
     isActive: true,
     adminId: ''
   })
 
   const [admins, setAdmins] = useState<Array<{id: string, networkName: string, user: {name: string, email: string}}>>([])
   const [showAdvancedFeatures, setShowAdvancedFeatures] = useState(false)
+  
+  // State for CRUD operations
+  const [consultations, setConsultations] = useState<Array<{
+    id: string
+    specialty: string
+    number: string
+    price: number
+    priceBeyondLimit: number
+    isUnlimited: boolean
+  }>>([])
+  const [labTests, setLabTests] = useState<Array<{
+    id: string
+    test: string
+    discountPercentage: number
+  }>>([])
+  const [medicines, setMedicines] = useState<Array<{
+    id: string
+    provider: string
+    category: string
+    discountPercentage: number
+    isUpTo: boolean
+  }>>([])
+  
+  // Form states for new entries
+  const [newConsultation, setNewConsultation] = useState({
+    specialty: '',
+    number: '',
+    price: 0,
+    priceBeyondLimit: 0,
+    isUnlimited: false
+  })
+  const [newLabTest, setNewLabTest] = useState({
+    test: '',
+    discountPercentage: 0
+  })
+  const [newMedicine, setNewMedicine] = useState({
+    provider: '',
+    category: '',
+    discountPercentage: 0,
+    isUpTo: true
+  })
 
   const fetchAdmins = async () => {
     try {
@@ -178,23 +236,28 @@ export default function SubscriptionPlansPage() {
     }
 
     try {
+      const payload = {
+        ...formData,
+        adminId: formData.adminId,
+        duration: formData.duration === 'unlimited' ? 365 : parseInt(formData.duration as string) || 30,
+        maxConsultations: formData.maxConsultations === 'unlimited' ? null : parseInt(formData.maxConsultations) || null,
+        maxFamilyMembers: formData.maxFamilyMembers === 'unlimited' ? null : parseInt(formData.maxFamilyMembers) || null,
+        discountPercentage: formData.discountPercentage ? parseFloat(formData.discountPercentage) : null,
+        features: formData.features ? formData.features.split(',').map(f => f.trim()).filter(f => f) : [],
+        specializations: formData.specializations ? formData.specializations.split(',').map(s => s.trim()).filter(s => s) : [],
+        consultations: consultations,
+        labTests: labTests,
+        medicines: medicines
+      }
+      
+      console.log('Creating plan with payload:', payload)
+      
       const response = await fetch('/api/super-admin/subscription-plans', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          adminId: formData.adminId,
-          maxConsultations: formData.maxConsultations ? parseInt(formData.maxConsultations) : null,
-          maxFamilyMembers: formData.maxFamilyMembers ? parseInt(formData.maxFamilyMembers) : null,
-          discountPercentage: formData.discountPercentage ? parseFloat(formData.discountPercentage) : null,
-          features: formData.features ? formData.features.split(',').map(f => f.trim()).filter(f => f) : [],
-          specializations: formData.specializations ? formData.specializations.split(',').map(s => s.trim()).filter(s => s) : [],
-          specialistConsultations: formData.specialistConsultations ? formData.specialistConsultations.split(',').map(s => s.trim()).filter(s => s) : [],
-          labTestDiscounts: formData.labTestDiscounts ? formData.labTestDiscounts.split(',').map(l => l.trim()).filter(l => l) : [],
-          pharmacyDiscounts: formData.pharmacyDiscounts ? formData.pharmacyDiscounts.split(',').map(p => p.trim()).filter(p => p) : []
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (response.ok) {
@@ -204,6 +267,7 @@ export default function SubscriptionPlansPage() {
         fetchPlans()
       } else {
         const errorData = await response.json()
+        console.error('Error response:', errorData)
         toast.error(errorData.error || 'Failed to create subscription plan')
       }
     } catch (error) {
@@ -216,19 +280,27 @@ export default function SubscriptionPlansPage() {
     if (!editingPlan) return
 
     try {
+      const payload = {
+        ...formData,
+        duration: formData.duration === 'unlimited' ? 365 : parseInt(formData.duration as string) || 30,
+        maxConsultations: formData.maxConsultations === 'unlimited' ? null : parseInt(formData.maxConsultations) || null,
+        maxFamilyMembers: formData.maxFamilyMembers === 'unlimited' ? null : parseInt(formData.maxFamilyMembers) || null,
+        discountPercentage: formData.discountPercentage ? parseFloat(formData.discountPercentage) : null,
+        features: formData.features.split(',').map(f => f.trim()).filter(f => f),
+        specializations: formData.specializations.split(',').map(s => s.trim()).filter(s => s),
+        consultations: consultations,
+        labTests: labTests,
+        medicines: medicines
+      }
+      
+      console.log('Updating plan with payload:', payload)
+      
       const response = await fetch(`/api/super-admin/subscription-plans/${editingPlan.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          maxConsultations: formData.maxConsultations ? parseInt(formData.maxConsultations) : null,
-          maxFamilyMembers: formData.maxFamilyMembers ? parseInt(formData.maxFamilyMembers) : null,
-          discountPercentage: formData.discountPercentage ? parseFloat(formData.discountPercentage) : null,
-          features: formData.features.split(',').map(f => f.trim()).filter(f => f),
-          specializations: formData.specializations.split(',').map(s => s.trim()).filter(s => s)
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (response.ok) {
@@ -238,6 +310,7 @@ export default function SubscriptionPlansPage() {
         fetchPlans()
       } else {
         const errorData = await response.json()
+        console.error('Error response:', errorData)
         toast.error(errorData.error || 'Failed to update subscription plan')
       }
     } catch (error) {
@@ -303,11 +376,33 @@ export default function SubscriptionPlansPage() {
       discountPercentage: '',
       features: '',
       specializations: '',
-      specialistConsultations: '',
-      labTestDiscounts: '',
-      pharmacyDiscounts: '',
+      consultations: [],
+      labTests: [],
+      medicines: [],
       isActive: true,
       adminId: ''
+    })
+    
+    // Reset CRUD state
+    setConsultations([])
+    setLabTests([])
+    setMedicines([])
+    setNewConsultation({
+      specialty: '',
+      number: '',
+      price: 0,
+      priceBeyondLimit: 0,
+      isUnlimited: false
+    })
+    setNewLabTest({
+      test: '',
+      discountPercentage: 0
+    })
+    setNewMedicine({
+      provider: '',
+      category: '',
+      discountPercentage: 0,
+      isUpTo: true
     })
   }
 
@@ -327,6 +422,84 @@ export default function SubscriptionPlansPage() {
       specializations: plan.specializations?.join(', ') || '',
       isActive: plan.isActive
     })
+    
+    // Load existing CRUD data
+    setConsultations(plan.consultations || [])
+    setLabTests(plan.labTests || [])
+    setMedicines(plan.medicines || [])
+  }
+  
+  // CRUD functions for consultations
+  const addConsultation = () => {
+    if (!newConsultation.specialty) return
+    
+    const consultation = {
+      id: Date.now().toString(),
+      specialty: newConsultation.specialty,
+      number: newConsultation.isUnlimited ? 'unlimited' : newConsultation.number,
+      price: newConsultation.price,
+      priceBeyondLimit: newConsultation.priceBeyondLimit,
+      isUnlimited: newConsultation.isUnlimited
+    }
+    
+    setConsultations([...consultations, consultation])
+    setNewConsultation({
+      specialty: '',
+      number: '',
+      price: 0,
+      priceBeyondLimit: 0,
+      isUnlimited: false
+    })
+  }
+  
+  const removeConsultation = (id: string) => {
+    setConsultations(consultations.filter(c => c.id !== id))
+  }
+  
+  // CRUD functions for lab tests
+  const addLabTest = () => {
+    if (!newLabTest.test) return
+    
+    const labTest = {
+      id: Date.now().toString(),
+      test: newLabTest.test,
+      discountPercentage: newLabTest.discountPercentage
+    }
+    
+    setLabTests([...labTests, labTest])
+    setNewLabTest({
+      test: '',
+      discountPercentage: 0
+    })
+  }
+  
+  const removeLabTest = (id: string) => {
+    setLabTests(labTests.filter(lt => lt.id !== id))
+  }
+  
+  // CRUD functions for medicines
+  const addMedicine = () => {
+    if (!newMedicine.provider || !newMedicine.category) return
+    
+    const medicine = {
+      id: Date.now().toString(),
+      provider: newMedicine.provider,
+      category: newMedicine.category,
+      discountPercentage: newMedicine.discountPercentage,
+      isUpTo: newMedicine.isUpTo
+    }
+    
+    setMedicines([...medicines, medicine])
+    setNewMedicine({
+      provider: '',
+      category: '',
+      discountPercentage: 0,
+      isUpTo: true
+    })
+  }
+  
+  const removeMedicine = (id: string) => {
+    setMedicines(medicines.filter(m => m.id !== id))
   }
 
   const getStatusBadge = (isActive: boolean) => {
@@ -471,7 +644,7 @@ export default function SubscriptionPlansPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="price">Price ($)</Label>
                     <Input
@@ -485,14 +658,23 @@ export default function SubscriptionPlansPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="duration">Duration</Label>
-                    <Input
-                      id="duration"
-                      type="number"
-                      value={formData.duration}
-                      onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value) || 0})}
-                      min="1"
-                    />
+                    <Select value={formData.duration === 'unlimited' ? 'unlimited' : formData.duration.toString()} onValueChange={(value) => setFormData({...formData, duration: value === 'unlimited' ? 'unlimited' : parseInt(value) || 30})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select duration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unlimited">Unlimited</SelectItem>
+                        <SelectItem value="7">7 days</SelectItem>
+                        <SelectItem value="30">30 days</SelectItem>
+                        <SelectItem value="90">90 days</SelectItem>
+                        <SelectItem value="180">180 days</SelectItem>
+                        <SelectItem value="365">1 year</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="durationUnit">Duration Unit</Label>
                     <Select value={formData.durationUnit} onValueChange={(value) => setFormData({...formData, durationUnit: value as any})}>
@@ -506,64 +688,20 @@ export default function SubscriptionPlansPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="maxConsultations">Max Consultations</Label>
-                    <Input
-                      id="maxConsultations"
-                      type="number"
-                      value={formData.maxConsultations}
-                      onChange={(e) => setFormData({...formData, maxConsultations: e.target.value})}
-                      placeholder="Unlimited"
-                    />
+                    <Label htmlFor="category">Category</Label>
+                    <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value as any})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="BASIC">Basic</SelectItem>
+                        <SelectItem value="PREMIUM">Premium</SelectItem>
+                        <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+                        <SelectItem value="CUSTOM">Custom</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="maxFamilyMembers">Max Family Members</Label>
-                    <Input
-                      id="maxFamilyMembers"
-                      type="number"
-                      value={formData.maxFamilyMembers}
-                      onChange={(e) => setFormData({...formData, maxFamilyMembers: e.target.value})}
-                      placeholder="Unlimited"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="discountPercentage">Discount (%)</Label>
-                    <Input
-                      id="discountPercentage"
-                      type="number"
-                      value={formData.discountPercentage}
-                      onChange={(e) => setFormData({...formData, discountPercentage: e.target.value})}
-                      placeholder="0"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="features">Features (comma-separated)</Label>
-                  <Textarea
-                    id="features"
-                    value={formData.features}
-                    onChange={(e) => setFormData({...formData, features: e.target.value})}
-                    placeholder="e.g., user-management, analytics-reports, priority-support"
-                    rows={2}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="specializations">Specializations (comma-separated)</Label>
-                  <Textarea
-                    id="specializations"
-                    value={formData.specializations}
-                    onChange={(e) => setFormData({...formData, specializations: e.target.value})}
-                    placeholder="e.g., cardiology, dermatology, pediatrics"
-                    rows={2}
-                  />
                 </div>
 
                 {/* Advanced Features */}
@@ -577,58 +715,280 @@ export default function SubscriptionPlansPage() {
                       <ChevronDown className={`h-4 w-4 transition-transform ${showAdvancedFeatures ? 'rotate-180' : ''}`} />
                     </Button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-4 mt-4">
+                  <CollapsibleContent className="space-y-6 mt-4">
+                    {/* Consultations Section */}
                     <div className="p-4 bg-gray-50 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-4 flex items-center">
-                        <Stethoscope className="mr-2 h-4 w-4" />
-                        Specialist Consultations
-                      </h4>
-                      <div className="space-y-2">
-                        <Label htmlFor="specialistConsultations">Specialist Consultations (comma-separated: specialization:free_limit)</Label>
-                        <Textarea
-                          id="specialistConsultations"
-                          value={formData.specialistConsultations}
-                          onChange={(e) => setFormData({...formData, specialistConsultations: e.target.value})}
-                          placeholder="e.g., cardiology:5, dermatology:3, pediatrics:unlimited"
-                          rows={2}
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium text-gray-900 flex items-center">
+                          <Stethoscope className="mr-2 h-4 w-4" />
+                          Specialist Consultations
+                        </h4>
+                        <Button size="sm" onClick={addConsultation}>
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <Select value={newConsultation.specialty} onValueChange={(value) => setNewConsultation({...newConsultation, specialty: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select specialty" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gp">General Practice (GP)</SelectItem>
+                            <SelectItem value="cardiology">Cardiology</SelectItem>
+                            <SelectItem value="dermatology">Dermatology</SelectItem>
+                            <SelectItem value="pediatrics">Pediatrics</SelectItem>
+                            <SelectItem value="orthopedics">Orthopedics</SelectItem>
+                            <SelectItem value="neurology">Neurology</SelectItem>
+                            <SelectItem value="psychiatry">Psychiatry</SelectItem>
+                            <SelectItem value="gynecology">Gynecology</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            checked={newConsultation.isUnlimited}
+                            onCheckedChange={(checked) => setNewConsultation({...newConsultation, isUnlimited: checked})}
+                          />
+                          <Label className="text-sm">Unlimited consultations</Label>
+                        </div>
+                        
+                        {!newConsultation.isUnlimited && (
+                          <Input
+                            placeholder="Number of consultations"
+                            type="number"
+                            value={newConsultation.number}
+                            onChange={(e) => setNewConsultation({...newConsultation, number: e.target.value})}
+                            min="1"
+                            className="col-span-2"
+                          />
+                        )}
+                        
+                        <Input
+                          placeholder="Price per consultation"
+                          type="number"
+                          value={newConsultation.price}
+                          onChange={(e) => setNewConsultation({...newConsultation, price: parseFloat(e.target.value) || 0})}
+                          min="0"
+                          step="0.01"
                         />
-                        <p className="text-xs text-gray-500">Format: specialization:free_limit (use "unlimited" for no limit)</p>
+                        
+                        <Input
+                          placeholder="Price beyond limit"
+                          type="number"
+                          value={newConsultation.priceBeyondLimit}
+                          onChange={(e) => setNewConsultation({...newConsultation, priceBeyondLimit: parseFloat(e.target.value) || 0})}
+                          min="0"
+                          step="0.01"
+                        />
+                      </div>
+                      
+                      {/* Consultations List */}
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {consultations.map((consultation) => (
+                          <div key={consultation.id} className="flex items-center justify-between p-3 bg-white rounded border">
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{consultation.specialty}</div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {consultation.isUnlimited ? (
+                                  <span className="text-green-600">Unlimited consultations</span>
+                                ) : (
+                                  <span>{consultation.number} consultations included</span>
+                                )}
+                                <span className="mx-2">•</span>
+                                <span>Price: ${consultation.price}</span>
+                                {consultation.priceBeyondLimit > 0 && (
+                                  <>
+                                    <span className="mx-2">•</span>
+                                    <span>Beyond limit: ${consultation.priceBeyondLimit}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeConsultation(consultation.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        {consultations.length === 0 && (
+                          <div className="text-center text-gray-500 py-4 text-sm">
+                            No consultations added yet
+                          </div>
+                        )}
                       </div>
                     </div>
 
+                    {/* Lab Tests Section */}
                     <div className="p-4 bg-blue-50 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-4 flex items-center">
-                        <FlaskConical className="mr-2 h-4 w-4" />
-                        Lab Test Discounts
-                      </h4>
-                      <div className="space-y-2">
-                        <Label htmlFor="labTestDiscounts">Lab Test Discounts (comma-separated: test_type:discount%)</Label>
-                        <Textarea
-                          id="labTestDiscounts"
-                          value={formData.labTestDiscounts}
-                          onChange={(e) => setFormData({...formData, labTestDiscounts: e.target.value})}
-                          placeholder="e.g., blood_test:15, xray:20, mri:10, all:5"
-                          rows={2}
-                        />
-                        <p className="text-xs text-gray-500">Format: test_type:discount% (use "all" for all tests)</p>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium text-gray-900 flex items-center">
+                          <FlaskConical className="mr-2 h-4 w-4" />
+                          Lab Test Discounts
+                        </h4>
+                        <Button size="sm" onClick={addLabTest}>
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                        <Select value={newLabTest.test} onValueChange={(value) => setNewLabTest({...newLabTest, test: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select test" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="blood_test">Blood Test</SelectItem>
+                            <SelectItem value="xray">X-Ray</SelectItem>
+                            <SelectItem value="mri">MRI</SelectItem>
+                            <SelectItem value="ct_scan">CT Scan</SelectItem>
+                            <SelectItem value="ultrasound">Ultrasound</SelectItem>
+                            <SelectItem value="ecg">ECG</SelectItem>
+                            <SelectItem value="urine_test">Urine Test</SelectItem>
+                            <SelectItem value="all">All Tests</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Label className="text-sm whitespace-nowrap">Discount Percentage:</Label>
+                          <Input
+                            placeholder="e.g., 15"
+                            type="number"
+                            value={newLabTest.discountPercentage}
+                            onChange={(e) => setNewLabTest({...newLabTest, discountPercentage: parseFloat(e.target.value) || 0})}
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            className="flex-1"
+                          />
+                          <span className="text-sm text-gray-500">%</span>
+                        </div>
+                      </div>
+                      
+                      {/* Lab Tests List */}
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {labTests.map((labTest) => (
+                          <div key={labTest.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{labTest.test}</div>
+                              <div className="text-xs text-gray-500">
+                                Discount: {labTest.discountPercentage}%
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeLabTest(labTest.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        {labTests.length === 0 && (
+                          <div className="text-center text-gray-500 py-4 text-sm">
+                            No lab tests added yet
+                          </div>
+                        )}
                       </div>
                     </div>
 
+                    {/* Medicines Section */}
                     <div className="p-4 bg-green-50 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-4 flex items-center">
-                        <Pill className="mr-2 h-4 w-4" />
-                        Pharmacy Medicine Discounts
-                      </h4>
-                      <div className="space-y-2">
-                        <Label htmlFor="pharmacyDiscounts">Pharmacy Medicine Discounts (comma-separated: medicine_type:discount%)</Label>
-                        <Textarea
-                          id="pharmacyDiscounts"
-                          value={formData.pharmacyDiscounts}
-                          onChange={(e) => setFormData({...formData, pharmacyDiscounts: e.target.value})}
-                          placeholder="e.g., generic:20, branded:10, chronic:15, all:5"
-                          rows={2}
-                        />
-                        <p className="text-xs text-gray-500">Format: medicine_type:discount% (use "all" for all medicines)</p>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium text-gray-900 flex items-center">
+                          <Pill className="mr-2 h-4 w-4" />
+                          Pharmacy Medicine Discounts
+                        </h4>
+                        <Button size="sm" onClick={addMedicine}>
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                        <Select value={newMedicine.provider} onValueChange={(value) => setNewMedicine({...newMedicine, provider: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Provider" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="apollo">Apollo Pharmacy</SelectItem>
+                            <SelectItem value="fortis">Fortis Health</SelectItem>
+                            <SelectItem value="max">Max Healthcare</SelectItem>
+                            <SelectItem value="cvs">CVS Pharmacy</SelectItem>
+                            <SelectItem value="walgreens">Walgreens</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        <Select value={newMedicine.category} onValueChange={(value) => setNewMedicine({...newMedicine, category: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="generic">Generic Medicines</SelectItem>
+                            <SelectItem value="branded">Branded Medicines</SelectItem>
+                            <SelectItem value="chronic">Chronic Conditions</SelectItem>
+                            <SelectItem value="acute">Acute Conditions</SelectItem>
+                            <SelectItem value="vitamins">Vitamins & Supplements</SelectItem>
+                            <SelectItem value="all">All Categories</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Label className="text-sm whitespace-nowrap">Discount Percentage:</Label>
+                          <Input
+                            placeholder="e.g., 20"
+                            type="number"
+                            value={newMedicine.discountPercentage}
+                            onChange={(e) => setNewMedicine({...newMedicine, discountPercentage: parseFloat(e.target.value) || 0})}
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            className="flex-1"
+                          />
+                          <span className="text-sm text-gray-500">%</span>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            checked={newMedicine.isUpTo}
+                            onCheckedChange={(checked) => setNewMedicine({...newMedicine, isUpTo: checked})}
+                          />
+                          <Label className="text-sm">Up to</Label>
+                        </div>
+                      </div>
+                      
+                      {/* Medicines List */}
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {medicines.map((medicine) => (
+                          <div key={medicine.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{medicine.provider} - {medicine.category}</div>
+                              <div className="text-xs text-gray-500">
+                                Discount: {medicine.discountPercentage}% {medicine.isUpTo ? '(up to)' : ''}
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeMedicine(medicine.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        {medicines.length === 0 && (
+                          <div className="text-center text-gray-500 py-4 text-sm">
+                            No medicines added yet
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CollapsibleContent>

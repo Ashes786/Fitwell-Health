@@ -56,6 +56,14 @@ export async function GET(request: NextRequest) {
           isActive: true,
           createdAt: true,
           updatedAt: true,
+          maxConsultations: true,
+          maxFamilyMembers: true,
+          discountPercentage: true,
+          features: true,
+          specializations: true,
+          consultations: true,
+          labTests: true,
+          medicines: true,
           admin: {
             select: {
               id: true,
@@ -68,7 +76,6 @@ export async function GET(request: NextRequest) {
               }
             }
           }
-          // Removed complex includes that were causing performance issues
         }
       }),
       db.subscriptionPlan.count({ where })
@@ -110,9 +117,9 @@ export async function POST(request: NextRequest) {
       discountPercentage,
       features,
       specializations,
-      specialistConsultations,
-      labTestDiscounts,
-      pharmacyDiscounts,
+      consultations,
+      labTests,
+      medicines,
       adminId
     } = body
 
@@ -152,9 +159,9 @@ export async function POST(request: NextRequest) {
         discountPercentage: discountPercentage ? parseFloat(discountPercentage) : null,
         features: features && features.length > 0 ? JSON.stringify(features) : null,
         specializations: specializations && specializations.length > 0 ? JSON.stringify(specializations) : null,
-        specialistConsultations: specialistConsultations && specialistConsultations.length > 0 ? JSON.stringify(specialistConsultations) : null,
-        labTestDiscounts: labTestDiscounts && labTestDiscounts.length > 0 ? JSON.stringify(labTestDiscounts) : null,
-        pharmacyDiscounts: pharmacyDiscounts && pharmacyDiscounts.length > 0 ? JSON.stringify(pharmacyDiscounts) : null,
+        consultations: consultations && consultations.length > 0 ? JSON.stringify(consultations) : null,
+        labTests: labTests && labTests.length > 0 ? JSON.stringify(labTests) : null,
+        medicines: medicines && medicines.length > 0 ? JSON.stringify(medicines) : null,
         isActive: true
       },
       include: {

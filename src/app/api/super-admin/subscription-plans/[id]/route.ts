@@ -31,6 +31,9 @@ export async function GET(
         discountPercentage: true,
         features: true,
         specializations: true,
+        consultations: true,
+        labTests: true,
+        medicines: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
@@ -46,7 +49,6 @@ export async function GET(
             }
           }
         }
-        // Removed complex includes that were causing performance issues
       }
     })
 
@@ -57,6 +59,129 @@ export async function GET(
     return NextResponse.json(plan)
   } catch (error) {
     console.error('Error fetching subscription plan:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const params = await context.params
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const {
+      name,
+      description,
+      price,
+      duration,
+      durationUnit,
+      category,
+      maxConsultations,
+      maxFamilyMembers,
+      discountPercentage,
+      features,
+      specializations,
+      consultations,
+      labTests,
+      medicines,
+      isActive
+    } = body
+
+    // Get current plan data
+    const currentPlan = await db.subscriptionPlan.findUnique({
+      where: { id: params.id },
+      include: {
+        admin: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!currentPlan) {
+      return NextResponse.json({ error: 'Subscription plan not found' }, { status: 404 })
+    }
+
+    // Update subscription plan
+    const updatedPlan = await db.subscriptionPlan.update({
+      where: { id: params.id },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(description !== undefined && { description }),
+        ...(price !== undefined && { price: parseFloat(price) }),
+        ...(duration !== undefined && { duration: parseInt(duration) }),
+        ...(durationUnit !== undefined && { durationUnit }),
+        ...(category !== undefined && { category }),
+        ...(maxConsultations !== undefined && { maxConsultations: maxConsultations ? parseInt(maxConsultations) : null }),
+        ...(maxFamilyMembers !== undefined && { maxFamilyMembers: maxFamilyMembers ? parseInt(maxFamilyMembers) : null }),
+        ...(discountPercentage !== undefined && { discountPercentage: discountPercentage ? parseFloat(discountPercentage) : null }),
+        ...(features !== undefined && { features: features && features.length > 0 ? JSON.stringify(features) : null }),
+        ...(specializations !== undefined && { specializations: specializations && specializations.length > 0 ? JSON.stringify(specializations) : null }),
+        ...(consultations !== undefined && { consultations: consultations && consultations.length > 0 ? JSON.stringify(consultations) : null }),
+        ...(labTests !== undefined && { labTests: labTests && labTests.length > 0 ? JSON.stringify(labTests) : null }),
+        ...(medicines !== undefined && { medicines: medicines && medicines.length > 0 ? JSON.stringify(medicines) : null }),
+        ...(isActive !== undefined && { isActive })
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        duration: true,
+        durationUnit: true,
+        category: true,
+        maxConsultations: true,
+        maxFamilyMembers: true,
+        discountPercentage: true,
+        features: true,
+        specializations: true,
+        consultations: true,
+        labTests: true,
+        medicines: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        admin: {
+          select: {
+            id: true,
+            networkName: true,
+            user: {
+              select: {
+                name: true,
+                email: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    // Trigger notification for plan update
+    await NotificationHelpers.onSubscriptionPlanUpdated(
+      updatedPlan.name,
+      currentPlan.admin.user.name || currentPlan.admin.user.email,
+      updatedPlan.id
+    )
+
+    return NextResponse.json({ 
+      plan: updatedPlan,
+      message: 'Subscription plan updated successfully' 
+    })
+  } catch (error) {
+    console.error('Error updating subscription plan:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -86,6 +211,9 @@ export async function PATCH(
       discountPercentage,
       features,
       specializations,
+      consultations,
+      labTests,
+      medicines,
       isActive
     } = body
 
@@ -114,7 +242,7 @@ export async function PATCH(
     const updatedPlan = await db.subscriptionPlan.update({
       where: { id: params.id },
       data: {
-        ...(name && { name }),
+        ...(name !== undefined && { name }),
         ...(description !== undefined && { description }),
         ...(price !== undefined && { price: parseFloat(price) }),
         ...(duration !== undefined && { duration: parseInt(duration) }),
@@ -125,6 +253,9 @@ export async function PATCH(
         ...(discountPercentage !== undefined && { discountPercentage: discountPercentage ? parseFloat(discountPercentage) : null }),
         ...(features !== undefined && { features: features || [] }),
         ...(specializations !== undefined && { specializations: specializations || [] }),
+        ...(consultations !== undefined && { consultations: consultations || [] }),
+        ...(labTests !== undefined && { labTests: labTests || [] }),
+        ...(medicines !== undefined && { medicines: medicines || [] }),
         ...(isActive !== undefined && { isActive })
       },
       select: {
